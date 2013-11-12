@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daylight.WebApi.Tests", "Daylight.WebApi.Tests\Daylight.WebApi.Tests.csproj", "{21750153-2AD0-4CBA-B71C-28FFA4DD73AB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Production", "Production", "{9BEC74B2-2A58-48D4-87E6-CD623601C0F7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{56120C41-E8E8-4C6A-BE64-DAB70C808F95}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daylight.WebApi", "Daylight.WebApi\Daylight.WebApi.csproj", "{2FE33CCC-C051-429C-BA7A-20C92A78DD0E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daylight.WebApi.Contracts", "Daylight.WebApi.Contracts\Daylight.WebApi.Contracts.csproj", "{BE69093A-3C15-4029-A893-3B6E54C97F99}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daylight.WebApi.Mvc", "Daylight.WebApi.Mvc\Daylight.WebApi.Mvc.csproj", "{39B89BEC-A521-411E-A225-C339D1D0B58C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{21750153-2AD0-4CBA-B71C-28FFA4DD73AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21750153-2AD0-4CBA-B71C-28FFA4DD73AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21750153-2AD0-4CBA-B71C-28FFA4DD73AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21750153-2AD0-4CBA-B71C-28FFA4DD73AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FE33CCC-C051-429C-BA7A-20C92A78DD0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FE33CCC-C051-429C-BA7A-20C92A78DD0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FE33CCC-C051-429C-BA7A-20C92A78DD0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FE33CCC-C051-429C-BA7A-20C92A78DD0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE69093A-3C15-4029-A893-3B6E54C97F99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE69093A-3C15-4029-A893-3B6E54C97F99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE69093A-3C15-4029-A893-3B6E54C97F99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE69093A-3C15-4029-A893-3B6E54C97F99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39B89BEC-A521-411E-A225-C339D1D0B58C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39B89BEC-A521-411E-A225-C339D1D0B58C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39B89BEC-A521-411E-A225-C339D1D0B58C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39B89BEC-A521-411E-A225-C339D1D0B58C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{21750153-2AD0-4CBA-B71C-28FFA4DD73AB} = {56120C41-E8E8-4C6A-BE64-DAB70C808F95}
+		{2FE33CCC-C051-429C-BA7A-20C92A78DD0E} = {9BEC74B2-2A58-48D4-87E6-CD623601C0F7}
+		{BE69093A-3C15-4029-A893-3B6E54C97F99} = {9BEC74B2-2A58-48D4-87E6-CD623601C0F7}
+		{39B89BEC-A521-411E-A225-C339D1D0B58C} = {9BEC74B2-2A58-48D4-87E6-CD623601C0F7}
+	EndGlobalSection
+EndGlobal
