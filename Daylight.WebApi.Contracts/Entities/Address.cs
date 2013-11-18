@@ -11,8 +11,9 @@ namespace Daylight.WebApi.Contracts.Entities
 {
     using System;
     using System.Collections.Generic;
-    
-    public partial class Address
+    using System.Data;
+
+    public partial class Address : IStateEntity
     {
         public System.Guid AddressId { get; set; }
         public System.Guid PatientId { get; set; }
@@ -27,5 +28,8 @@ namespace Daylight.WebApi.Contracts.Entities
         public System.Data.Spatial.DbGeography GeoLocation { get; set; }
     
         public virtual Patient Patient { get; set; }
+
+        private EntityState state = EntityState.Unchanged;
+        public EntityState State { get { return state; } set { state = value; } }
     }
 }

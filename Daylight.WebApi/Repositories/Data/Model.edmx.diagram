@@ -4,17 +4,25 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="92a525f7514b47cda3a1fdb05c13857e" Name="Diagram1" ZoomLevel="82">
-        <EntityTypeShape EntityType="DaylightModel.Address" Width="1.5" PointX="8.875" PointY="20.5" />
-        <EntityTypeShape EntityType="DaylightModel.DeathReport" Width="1.5" PointX="2.125" PointY="16.125" />
-        <EntityTypeShape EntityType="DaylightModel.Name" Width="1.5" PointX="5.625" PointY="21.75" />
-        <EntityTypeShape EntityType="DaylightModel.Patient" Width="1.5" PointX="5.75" PointY="17.25" />
-        <EntityTypeShape EntityType="DaylightModel.Relationship" Width="1.5" PointX="8.875" PointY="17.25" />
-        <EntityTypeShape EntityType="DaylightModel.Telecom" Width="1.5" PointX="2.125" PointY="18.375" />
+      <Diagram DiagramId="92a525f7514b47cda3a1fdb05c13857e" Name="Diagram1" ZoomLevel="108">
+        <EntityTypeShape EntityType="DaylightModel.Address" Width="1.5" PointX="7.75" PointY="18.375" />
+        <EntityTypeShape EntityType="DaylightModel.DeathReport" Width="1.5" PointX="2.25" PointY="11.375" />
+        <EntityTypeShape EntityType="DaylightModel.Name" Width="1.5" PointX="5.625" PointY="18.25" />
+        <EntityTypeShape EntityType="DaylightModel.Patient" Width="1.5" PointX="5.625" PointY="13" />
+        <EntityTypeShape EntityType="DaylightModel.Relationship" Width="1.5" PointX="8.125" PointY="13" />
+        <EntityTypeShape EntityType="DaylightModel.Telecom" Width="1.5" PointX="2.125" PointY="17.375" />
         <AssociationConnector Association="DaylightModel.FK_Address_Patient" />
         <AssociationConnector Association="DaylightModel.FK_Name_Patient" />
         <AssociationConnector Association="DaylightModel.FK_Relationship_Patient" />
         <AssociationConnector Association="DaylightModel.FK_Telecoms_Patient" />
+        <EntityTypeShape EntityType="DaylightModel.Condition" Width="1.5" PointX="10.375" PointY="13.125" />
+        <EntityTypeShape EntityType="DaylightModel.Medication" Width="1.5" PointX="10.375" PointY="16.5" />
+        <EntityTypeShape EntityType="DaylightModel.Procedure" Width="1.5" PointX="5.625" PointY="9" />
+        <AssociationConnector Association="DaylightModel.FK_Condition_Patient" />
+        <AssociationConnector Association="DaylightModel.FK_Medication_Patient" />
+        <AssociationConnector Association="DaylightModel.FK_Procedure_Patient" />
+        <AssociationConnector Association="DaylightModel.FK_DeathReport_Patient" />
+        <AssociationConnector Association="DaylightModel.FK_Medication_Condition" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

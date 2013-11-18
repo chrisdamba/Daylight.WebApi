@@ -1,16 +1,14 @@
 ﻿<!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>@ViewBag.Title</title>
-    @Styles.Render("~/Content/css")
-    @Scripts.Render("~/bundles/modernizr")
+    <meta charset="utf-8">
+    <title>Daylight Surgery - Clinical Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    @RenderSection("Header", required: false)
+    <script src="http://use.edgefonts.net/source-sans-pro.js"></script>
 </head>
 <body>
     @RenderBody()
-
-    @Scripts.Render("~/bundles/jquery")
-    @RenderSection("scripts", required: false)
+    @RenderSection("Javascript", required: false)
 </body>
 </html>

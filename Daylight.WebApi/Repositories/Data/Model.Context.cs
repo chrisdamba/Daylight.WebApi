@@ -37,5 +37,8 @@ namespace Daylight.WebApi.Contracts.Entities
         public DbSet<Patient> Patients { get; set; }
         public DbSet<Relationship> Relationships { get; set; }
         public DbSet<Telecom> Telecoms { get; set; }
+        public DbSet<Condition> Conditions { get; set; }
+        public DbSet<Medication> Medications { get; set; }
+        public DbSet<Procedure> Procedures { get; set; }
     }
 }

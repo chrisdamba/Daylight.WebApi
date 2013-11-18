@@ -17,5 +17,8 @@ namespace Daylight.WebApi.Contracts.Entities
         public System.Guid Id { get; set; }
         public Nullable<System.DateTime> DateOfDeath { get; set; }
         public string Report { get; set; }
+        public System.Guid PatientId { get; set; }
+    
+        public virtual Patient Patient { get; set; }
     }
 }

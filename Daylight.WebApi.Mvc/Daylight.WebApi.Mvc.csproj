@@ -155,6 +155,7 @@
     <Compile Include="App_Start\UnityConfig.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Bootstrapper.cs" />
+    <Compile Include="ContentExtensions.cs" />
     <Compile Include="ControllerExtensions.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Factories\IItemFactory.cs" />
@@ -165,13 +166,24 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\AddressViewModel.cs" />
+    <Compile Include="Models\ConditionViewModel.cs" />
+    <Compile Include="Models\MedicationViewModel.cs" />
     <Compile Include="Models\NameViewModel.cs" />
     <Compile Include="Models\PatientViewModel.cs" />
+    <Compile Include="Models\ProcedureViewModel.cs" />
     <Compile Include="Models\RelationshipViewModel.cs" />
     <Compile Include="Models\TelecomsViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="bootstrap\css\bootstrap-responsive.css" />
+    <Content Include="bootstrap\css\bootstrap-responsive.min.css" />
+    <Content Include="bootstrap\css\bootstrap.css" />
+    <Content Include="bootstrap\css\bootstrap.min.css" />
+    <Content Include="bootstrap\img\glyphicons-halflings-white.png" />
+    <Content Include="bootstrap\img\glyphicons-halflings.png" />
+    <Content Include="bootstrap\js\bootstrap.js" />
+    <Content Include="bootstrap\js\bootstrap.min.js" />
     <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
     <Content Include="Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
     <Content Include="Content\themes\base\images\ui-bg_glass_55_fbf9ee_1x400.png" />
@@ -226,9 +238,46 @@
     <Content Include="Content\themes\base\minified\jquery.ui.slider.min.css" />
     <Content Include="Content\themes\base\minified\jquery.ui.tabs.min.css" />
     <Content Include="Content\themes\base\minified\jquery.ui.theme.min.css" />
+    <Content Include="css\styles.css" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
+    <Content Include="Js\app.js.map" />
+    <Content Include="Js\vendor.js.map" />
     <None Include="Scripts\jquery-1.7.1.intellisense.js" />
+    <Content Include="img\blog.jpg" />
+    <Content Include="img\github.jpg" />
+    <Content Include="img\logo.png" />
+    <Content Include="img\twitter.jpg" />
+    <Content Include="Js\app.js" />
+    <Content Include="Js\vendor.js" />
+    <Content Include="lib\backbone-min.js" />
+    <Content Include="lib\jquery-1.9.1.min.js" />
+    <Content Include="lib\parse-1.2.2.min.js" />
+    <Content Include="lib\underscore-min.js" />
+    <Content Include="pics\Amy_Jones.jpg" />
+    <Content Include="pics\Amy_Jones50.jpg" />
+    <Content Include="pics\Eugene_Lee.jpg" />
+    <Content Include="pics\Eugene_Lee50.jpg" />
+    <Content Include="pics\Gary_Donovan.jpg" />
+    <Content Include="pics\Gary_Donovan50.jpg" />
+    <Content Include="pics\James_King.jpg" />
+    <Content Include="pics\James_King50.jpg" />
+    <Content Include="pics\John_Williams.jpg" />
+    <Content Include="pics\John_Williams50.jpg" />
+    <Content Include="pics\Julie_Taylor.jpg" />
+    <Content Include="pics\Julie_Taylor50.jpg" />
+    <Content Include="pics\Kathleen_Byrne.jpg" />
+    <Content Include="pics\Kathleen_Byrne50.jpg" />
+    <Content Include="pics\Lisa_Wong.jpg" />
+    <Content Include="pics\Lisa_Wong50.jpg" />
+    <Content Include="pics\Paula_Gates.jpg" />
+    <Content Include="pics\Paula_Gates50.jpg" />
+    <Content Include="pics\Paul_Jones.jpg" />
+    <Content Include="pics\Paul_Jones50.jpg" />
+    <Content Include="pics\Ray_Moore.jpg" />
+    <Content Include="pics\Ray_Moore50.jpg" />
+    <Content Include="pics\Steven_Wells.jpg" />
+    <Content Include="pics\Steven_Wells50.jpg" />
     <Content Include="Scripts\jquery-1.7.1.js" />
     <Content Include="Scripts\jquery-1.7.1.min.js" />
     <None Include="Scripts\jquery.validate-vsdoc.js" />
@@ -243,6 +292,10 @@
     <Content Include="Scripts\knockout-2.1.0.debug.js" />
     <Content Include="Scripts\knockout-2.1.0.js" />
     <Content Include="Scripts\modernizr-2.5.3.js" />
+    <Content Include="test\css\test.css" />
+    <Content Include="test\index.html" />
+    <Content Include="test\javascripts\test-vendor.js" />
+    <Content Include="test\javascripts\test.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -270,6 +323,9 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="test\css\test.css.map" />
+    <Content Include="test\javascripts\test-vendor.js.map" />
+    <Content Include="test\javascripts\test.js.map" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

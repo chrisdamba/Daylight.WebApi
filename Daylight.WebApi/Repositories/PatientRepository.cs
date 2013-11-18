@@ -60,6 +60,35 @@ namespace Daylight.WebApi.Repositories
                     telecom.PatientId = patient.PatientId;
                 }
 
+                foreach (var condition in patient.Conditions)
+                {
+                    condition.ConditionId = condition.ConditionId == Guid.Empty ? Guid.NewGuid() : condition.ConditionId;
+                    condition.PatientId = patient.PatientId;
+                    foreach (var med in condition.Medications)
+                    {
+                        med.MedicationId = med.MedicationId == Guid.Empty ? Guid.NewGuid() : med.MedicationId;
+                        med.PatientId = patient.PatientId;
+                    }
+
+                    foreach (var procedure in condition.Procedures)
+                    {
+                        procedure.ProcedureId = procedure.ProcedureId == Guid.Empty ? Guid.NewGuid() : procedure.ProcedureId;
+                        procedure.PatientId = patient.PatientId;
+                    }
+                }
+
+                foreach (var medication in patient.Medications)
+                {
+                    medication.MedicationId = medication.MedicationId == Guid.Empty ? Guid.NewGuid() : medication.MedicationId;
+                    medication.PatientId = patient.PatientId;
+                }
+
+                foreach (var proc in patient.Procedures)
+                {
+                    proc.ProcedureId = proc.ProcedureId == Guid.Empty ? Guid.NewGuid() : proc.ProcedureId;
+                    proc.PatientId = patient.PatientId;
+                }
+
                 // Updates the entities in the context
                 var entries = patient.Names.Cast<IStateEntity>()
                                 .Union(new IStateEntity[] { patient })
@@ -68,6 +97,12 @@ namespace Daylight.WebApi.Repositories
                                 .Union(patient.Relationships.Cast<IStateEntity>()
                                         .Union(new IStateEntity[] { patient }))
                                 .Union(patient.Telecoms.Cast<IStateEntity>()
+                                        .Union(new IStateEntity[] { patient }))
+                                .Union(patient.Conditions.Cast<IStateEntity>()
+                                        .Union(new IStateEntity[] { patient }))
+                                .Union(patient.Medications.Cast<IStateEntity>()
+                                        .Union(new IStateEntity[] { patient }))
+                                .Union(patient.Procedures.Cast<IStateEntity>()
                                         .Union(new IStateEntity[] { patient }))
                                 .ToArray();
 
@@ -88,6 +123,9 @@ namespace Daylight.WebApi.Repositories
                     .Include(Lambda.Property<Patient>(x => x.Addresses))
                     .Include(Lambda.Property<Patient>(x => x.Relationships))
                     .Include(Lambda.Property<Patient>(x => x.Telecoms))
+                    .Include(Lambda.Property<Patient>(x => x.Conditions))
+                    .Include(Lambda.Property<Patient>(x => x.Medications))
+                    .Include(Lambda.Property<Patient>(x => x.Procedures))
                     .SingleOrDefault(x => x.PatientId == id);
             }
         }
@@ -101,6 +139,9 @@ namespace Daylight.WebApi.Repositories
                     .Include(Lambda.Property<Patient>(x => x.Addresses))
                     .Include(Lambda.Property<Patient>(x => x.Relationships))
                     .Include(Lambda.Property<Patient>(x => x.Telecoms))
+                    .Include(Lambda.Property<Patient>(x => x.Conditions))
+                    .Include(Lambda.Property<Patient>(x => x.Medications))
+                    .Include(Lambda.Property<Patient>(x => x.Procedures))
                     .Where(x => ids.Contains(x.PatientId)).ToArray();
             }
         }
