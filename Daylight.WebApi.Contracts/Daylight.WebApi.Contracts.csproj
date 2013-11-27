@@ -67,6 +67,7 @@
     <Compile Include="Entities\Telecom.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="IConditionRepository.cs" />
     <Compile Include="IPatientRepository.cs" />
     <Compile Include="IPatientService.cs" />
     <Compile Include="PatientEventArgs.cs" />

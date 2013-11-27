@@ -3,7 +3,6 @@ using System.Data;
 using System.Linq;
 using System.Runtime.Serialization;
 using Daylight.WebApi.Contracts.Entities;
-using Daylight.WebApi.Core.Attributes;
 
 
 namespace Daylight.WebApi.Mvc.Models
@@ -11,26 +10,26 @@ namespace Daylight.WebApi.Mvc.Models
     [DataContract]
     public class PatientViewModel
     {
-        private AddressViewModel[] addresses;
-        private NameViewModel[] names;
-        private RelationshipViewModel[] relationships;
-        private TelecomsViewModel[] telecoms;
-
         public PatientViewModel()
         {
         }
 
         public PatientViewModel(Patient patient)
         {
-            this.Id = patient.PatientId;
-            this.Dob = patient.DateOfBirth;
-            this.DobEstimate = patient.DateOfBirthEstimate;
-            this.Username = patient.Username;
-            this.RelationshipStatus = patient.RelationshipStatus;
-            this.Addresses = patient.Addresses.Select(x => new AddressViewModel(x)).ToArray();
-            this.Names = patient.Names.Select(x => new NameViewModel(x)).ToArray();
-            this.Relationships = patient.Relationships.Select(x => new RelationshipViewModel(x)).ToArray();
-            this.Telecoms = patient.Telecoms.Select(x => new TelecomsViewModel(x)).ToArray();
+            Id = patient.PatientId;
+            Dob = patient.DateOfBirth;
+            Username = patient.Username;
+            RelationshipStatus = patient.RelationshipStatus;
+            var patientAddress = patient.Addresses.FirstOrDefault();
+            if (patientAddress != null)
+                Address = string.Format("{0}, {1}, {2}, {3}", patientAddress.Building, patientAddress.Street, patientAddress.AreaLocality, patientAddress.City);
+            Uri = string.Format("#patients/{0}", patient.PatientId);
+            var patientName = patient.Names.FirstOrDefault();
+            if (patientName != null)
+                Name = (patient.Names != null) ? string.Format("{0} {1}", patientName.GivenName,
+                                                                  patientName.FamilyName) : string.Empty;
+            Gender = (patient.Gender == "M") ? "Male" : "Female";
+
         }
 
         [DataMember]
@@ -40,43 +39,25 @@ namespace Daylight.WebApi.Mvc.Models
         public string Username { get; set; }
 
         [DataMember]
+        public string Gender { get; set; }
+
+        [DataMember]
         public string RelationshipStatus { get; set; }
 
         [DataMember]
-        public NameViewModel[] Names
-        {
-            get { return names ?? new NameViewModel[0]; }
-            set { names = value; }
-        }
+        public string Name { get; set; }
 
         [DataMember]
-        public string[] OtherNames { get; set; }
+        public string Phone { get; set; }
 
         [DataMember]
-        public TelecomsViewModel[] Telecoms {
-            get { return telecoms ?? new TelecomsViewModel[0]; }
-            set { telecoms = value; }
-        }
-
-        [DataMember]
-        public DateTime Dob { get; set; }
+        public string Uri { get; set; }
         
         [DataMember]
-        public bool DobEstimate { get; set; }
+        public DateTime Dob { get; set; }
 
         [DataMember]
-        public RelationshipViewModel[] Relationships
-        {
-            get { return relationships ?? new RelationshipViewModel[0]; }
-            set { relationships = value; }
-        }
-
-        [DataMember]
-        public AddressViewModel[] Addresses
-        {
-            get { return addresses ?? new AddressViewModel[0]; }
-            set { addresses = value; }
-        }
+        public string Address { get; set; }
 
         public Patient ToEntity(Patient patient)
         {
