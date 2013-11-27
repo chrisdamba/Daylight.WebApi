@@ -29,7 +29,11 @@ namespace Daylight.WebApi.Mvc.Models
                 Name = (patient.Names != null) ? string.Format("{0} {1}", patientName.GivenName,
                                                                   patientName.FamilyName) : string.Empty;
             Gender = (patient.Gender == "M") ? "Male" : "Female";
+            var patientPhone = patient.Telecoms.SingleOrDefault(x => x.TelecomType == "cellphone");
+            if (patientPhone != null) Phone = patientPhone.Value;
 
+            var patientEmail = patient.Telecoms.SingleOrDefault(x => x.TelecomType == "email");
+            if (patientEmail != null) Email = patientEmail.Value;
         }
 
         [DataMember]
@@ -49,6 +53,9 @@ namespace Daylight.WebApi.Mvc.Models
 
         [DataMember]
         public string Phone { get; set; }
+
+        [DataMember]
+        public string Email { get; set; }
 
         [DataMember]
         public string Uri { get; set; }
