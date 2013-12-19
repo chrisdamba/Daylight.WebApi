@@ -23,16 +23,15 @@ namespace Daylight.WebApi.Mvc.Models
             var patientAddress = patient.Addresses.FirstOrDefault();
             if (patientAddress != null)
                 Address = string.Format("{0}, {1}, {2}, {3}", patientAddress.Building, patientAddress.Street, patientAddress.AreaLocality, patientAddress.City);
-            Uri = string.Format("#patients/{0}", patient.PatientId);
             var patientName = patient.Names.FirstOrDefault();
             if (patientName != null)
                 Name = (patient.Names != null) ? string.Format("{0} {1}", patientName.GivenName,
                                                                   patientName.FamilyName) : string.Empty;
             Gender = (patient.Gender == "M") ? "Male" : "Female";
-            var patientPhone = patient.Telecoms.SingleOrDefault(x => x.TelecomType == "cellphone");
+            var patientPhone = patient.Telecoms.FirstOrDefault(x => x.TelecomType == "cellphone");
             if (patientPhone != null) Phone = patientPhone.Value;
 
-            var patientEmail = patient.Telecoms.SingleOrDefault(x => x.TelecomType == "email");
+            var patientEmail = patient.Telecoms.FirstOrDefault(x => x.TelecomType == "email");
             if (patientEmail != null) Email = patientEmail.Value;
         }
 
@@ -57,9 +56,6 @@ namespace Daylight.WebApi.Mvc.Models
         [DataMember]
         public string Email { get; set; }
 
-        [DataMember]
-        public string Uri { get; set; }
-        
         [DataMember]
         public DateTime Dob { get; set; }
 

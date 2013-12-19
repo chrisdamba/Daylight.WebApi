@@ -3,14 +3,71 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <title>@ViewBag.Title</title>
-    @Styles.Render("~/Content/css")
-    @Scripts.Render("~/bundles/modernizr")
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    
+    <title>@(ViewBag.Title ?? "Dashboard | Daylight Adminstrap")</title>
+    
+    <!--jquery-->
+    <link href="@Url.Content("~/assets/jquery/css/jquery-ui-1.8.16.custom.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/assets/datepicker/css/datepicker.css")" rel="stylesheet" type="text/css" />
+    <!-- backrid -->
+    <link href="@Url.Content("~/assets/app/css/backgrid.css")" rel="stylesheet" type="text/css" />
+	<link href="@Url.Content("~/assets/app/css/backgrid-filter.css")" rel="stylesheet" />
+    <link href="@Url.Content("~/assets/app/css/backgrid-paginator.css")" rel="stylesheet" />
+    <!--bootstrap-->
+    <link href="@Url.Content("~/assets/bootstrap/css/bootstrap.min.css")" rel="stylesheet">
+    <link href="@Url.Content("~/assets/bootstrap/css/bootstrap.icon-large.min.css")" rel="stylesheet">
+    <!--datatables-->
+    <link href="@Url.Content("~/assets/DataTables/css/DT_bootstrap.css")" rel="stylesheet">
+    <!--bootstrap-wysihtml5-->
+    <link href="@Url.Content("~/assets/bootstrap-wysihtml5/css/bootstrap-wysihtml5.css")" rel="stylesheet">
 </head>
 <body>
+     <!--Navigation-->
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container-fluid">
+                <a class="brand" href="index.html">
+                    <img src="assets/app/img/logo.png" height="45" alt="logo" /></a>
+                <ul id="primary-nav" class="nav">
+                    <li><a href="/"><i class="nav-icon-9"></i><span>Dashboard</span></a></li>
+                    <li class="dropdown"><a href="#patients" data-toggle="dropdown"><i class="nav-icon-1"></i><span>
+                        My Patients</span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#patients"><i class="icon-list-alt"></i>&nbsp;Patient List</a></li>
+                            <li><a href="#patients?page=1&count=20"><i class="icon-list-alt"></i>&nbsp;Report 2</a></li>
+                            <li><a href="#patients"><i class="icon-list-alt"></i>&nbsp;Report 3</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="forms.html"><i class="nav-icon-12"></i><span>Forms</span></a></li>
+                    <li class="dropdown"><a href="#" data-toggle="dropdown"><i class="nav-icon-11"></i><span>
+                        Gallery</span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="slideshow.html"><i class="icon-play-circle"></i>&nbsp;Fullscreen Slideshow</a></li>
+                            <li><a href="gallery.html"><i class="icon-picture"></i>&nbsp;Image Gallery</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="calendar.html"><i class="nav-icon-10"></i><span>Appointments</span></a></li>
+                </ul>
+                <ul id="secondary-nav" class="nav pull-right">
+                    <li><a data-toggle="modal" href="#myModal"><i class="icon-user icon-white"></i>&nbsp;Ian Muringai</a></li>
+                    <li class="dropdown"><a href="#" data-toggle="dropdown"><i class="icon-cog icon-white">
+                    </i><span>Settings</span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#"><i class="icon-wrench"></i>&nbsp;Site Config</a></li>
+                            <li><a href="#"><i class="icon-picture"></i>&nbsp;Themes</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="/"><i class="icon-off icon-white"></i>&nbsp;Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    
     @RenderBody()
-
-    @Scripts.Render("~/bundles/jquery")
-    @RenderSection("scripts", required: false)
+    @RenderSection("Javascript", false)
 </body>
 </html>
