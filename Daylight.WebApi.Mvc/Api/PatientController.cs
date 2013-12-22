@@ -43,12 +43,12 @@ namespace Daylight.WebApi.Mvc.Api
         }
 
         // GET api/patients
-        public IEnumerable<PatientViewModel> Get()
+        public IEnumerable<PatientViewModel> Get(int skip = 0, int take = int.MaxValue)
         {
-            return Get(null);
+            return Get(null, null, skip, take);
         }
 
-        // GET api/patients/{patientId}
+         // GET api/patients/{patientId}
         public PatientViewModel Get(Guid patientId)
         {
             return viewFactory.GetPatient(patientId);

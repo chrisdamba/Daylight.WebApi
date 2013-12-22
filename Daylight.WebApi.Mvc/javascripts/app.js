@@ -223,13 +223,14 @@ module.exports = {
       type: 'daylight/collections/patient_pageable_collection',
       lifestyle: 'transient',
       properties: {
-        _url: 'patients.json'
+        _url: '/API/Patients'
       }
     },
     PatientModel: {
       type: 'daylight/models/patient_model',
       properties: {
-        _urlRoot: '/API/Patients'
+        _urlRoot: '/API/Patients',
+        _thumbnailPath: '${patient.thumbnailPath}'
       }
     },
     ConditionsCollection: {
@@ -396,6 +397,20 @@ Application = (function(_super) {
     if (params == null) {
       params = {};
     }
+    /*route = @appModel.get('routes').patients
+    		route = "#{route}"
+    */
+
+    /*patientsList = new PatientCollection url: 'patients.json'
+    
+    		patientListView = new PatientListView 
+    			collection: patientsList
+    
+    		patientsList.fetch()
+    		
+    		##@$el.html patientListView.render().$el
+    */
+
     if ((_ref = this.currentPatient) != null) {
       _ref.dispose();
     }
@@ -405,7 +420,7 @@ Application = (function(_super) {
       route = window.decache(this.router.addParamsToRoute(route, params));
     }
     collection = null;
-    delete window.App.currentPatient;
+    delete window.App.currentPlaylist;
     if (!(this.currentView instanceof PatientListView)) {
       collection = new PatientCollection;
       this.showView(new PatientListView({
@@ -418,62 +433,6 @@ Application = (function(_super) {
       collection.setFilter(params);
       collection.fetch();
     }
-    return this.router.navigate(route);
-  };
-
-  Application.prototype.showPatientsGrid = function(e) {
-    var columns, filter, pageableGrid, pageablePatients, paginator, route;
-    route = this.appModel.get('routes').patients;
-    route = "" + route;
-    columns = [
-      {
-        name: "name",
-        label: "Name",
-        cell: "string",
-        editable: false
-      }, {
-        name: "dob",
-        label: "Date of Birth",
-        cell: "date",
-        editable: false
-      }, {
-        name: "address",
-        label: "Address",
-        cell: "string",
-        editable: false
-      }, {
-        name: "phone",
-        label: "Contact Number",
-        cell: "string",
-        editable: false
-      }, {
-        name: "email",
-        label: "Email",
-        cell: "string",
-        editable: false
-      }
-    ];
-    pageablePatients = new PatientPageableCollection;
-    pageablePatients.fetch;
-    pageableGrid = new Backgrid.Grid({
-      columns: columns,
-      collection: pageablePatients
-    });
-    filter = new Backgrid.Extension.ClientSideFilter({
-      collection: pageablePatients.fullCollection,
-      fields: ["name"]
-    });
-    this.$el.html(filter.render().$el);
-    filter.$el.css({
-      float: "right",
-      margin: "10px"
-    });
-    this.$el.append(pageableGrid.render().$el);
-    paginator = new Backgrid.Extension.Paginator({
-      collection: pageablePatients
-    });
-    this.$el.append(paginator.render().$el);
-    pageablePatients.fetch;
     return this.router.navigate(route);
   };
 
@@ -492,10 +451,11 @@ Application = (function(_super) {
     if (this.currentPatient && ((_ref = this.currentPatient) != null ? _ref.id : void 0) === id) {
       return this.currentPatient.navigate(index, subIndex, editMode);
     } else {
-      patientModel = new PatientModel({
+      patientModel = window.IoC.get('PatientModel', {
         id: id
+      }, {
+        parse: true
       });
-      patientModel.fetch();
       window.App.currentPatient = this.currentPatient = patientModel;
       this.currentPatient.on('navigate', this.onPatientPageChanged);
       return this.currentPatient.fetch({
@@ -658,30 +618,9 @@ var ConfigMerger;
 ConfigMerger = (function() {
   function ConfigMerger() {}
 
-  ConfigMerger.prototype.execute = function(config, customSettings) {
-    var arr, ns, pattern, settings, str, tokens, value, _i, _len;
-    settings = config.defaultSettings;
-    _.extendDeep(config.defaultSettings, customSettings);
+  ConfigMerger.prototype.execute = function(config) {
+    var str;
     str = JSON.stringify(config);
-    tokens = str.match(/"\${.+?}"/g);
-    for (_i = 0, _len = tokens.length; _i < _len; _i++) {
-      pattern = tokens[_i];
-      ns = pattern.replace(/"\${(.+?)}"/g, '$1');
-      arr = ns.split('.');
-      value = settings;
-      while (arr.length > 0) {
-        value = value[arr.shift()];
-        if (!value) {
-          throw new Error("ConfigMerger.execute() - Cannot find value for setting ns '" + ns + "'");
-        }
-      }
-      if (_.isString(value) || _.isArray(value)) {
-        value = JSON.stringify(value);
-      }
-      pattern = pattern.replace(/\$/g, '\\$');
-      pattern = pattern.replace(/\./g, '\\.');
-      str = str.replace(new RegExp(pattern, 'g'), value);
-    }
     return config = JSON.parse(str);
   };
 
@@ -785,9 +724,9 @@ PatientModel = (function(_super) {
     _hasParsed: void 0
   };
 
-  PatientModel.prototype.url = 'API/Patients';
-
-  PatientModel.prototype.idAttribute = 'id';
+  PatientModel.prototype.urlRoot = function() {
+    return window.App.url(this._urlRoot);
+  };
 
   PatientModel.prototype.initialize = function(options) {
     var _this = this;
@@ -1352,12 +1291,16 @@ var PatientView, PatientViewTemplate, _ref,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-PatientViewTemplate = 'templates/patient_view_template';
+PatientViewTemplate = require('templates/patient_view_template');
 
 PatientView = (function(_super) {
   __extends(PatientView, _super);
 
   function PatientView() {
+    this.onSaveSuccess = __bind(this.onSaveSuccess, this);
+    this.onSaveStart = __bind(this.onSaveStart, this);
+    this.onNavigate = __bind(this.onNavigate, this);
+    this.onDestroy = __bind(this.onDestroy, this);
     this.render = __bind(this.render, this);
     this.template = __bind(this.template, this);
     _ref = PatientView.__super__.constructor.apply(this, arguments);
@@ -1368,10 +1311,37 @@ PatientView = (function(_super) {
     return PatientViewTemplate(data);
   };
 
+  PatientView.prototype.initialize = function(options) {
+    PatientView.__super__.initialize.call(this, options);
+    this.bindTo(this.model, 'destroy', this.onDestroy);
+    this.bindTo(this.model, 'navigate', this.onNavigate);
+    this.bindTo(this.model, 'save:start', this.onSaveStart);
+    return this.bindTo(this.model, 'save:success', this.onSaveSuccess);
+  };
+
   PatientView.prototype.render = function() {
-    console.log(this.model.toJSON());
     this.$el.html(this.template(this.model.toJSON()));
     return this;
+  };
+
+  PatientView.prototype.editMode = function(mode) {
+    return this.model.editMode(mode);
+  };
+
+  PatientView.prototype.onDestroy = function() {
+    return window.App.eventAggregator.trigger('navigate:patients');
+  };
+
+  PatientView.prototype.onNavigate = function(e) {
+    return this.editMode(e.to.editMode);
+  };
+
+  PatientView.prototype.onSaveStart = function(model, response, options) {
+    return alert('Saving');
+  };
+
+  PatientView.prototype.onSaveSuccess = function(model, response, options) {
+    return alert('Saved');
   };
 
   return PatientView;
@@ -1434,10 +1404,29 @@ Config = require('config');
 ConfigMerger = require('config_merger');
 
 $(function() {
+  var config, configMerger;
   delete Backbone.Model.prototype.escape;
+  configMerger = new ConfigMerger();
+  config = configMerger.execute(Config);
+  window.IoC.init(config.IoC);
   window.App = {
     eventAggregator: new support.EventAggregator(),
-    host: '',
+    setting: function(path, defaultValue) {
+      var arg, value, _i, _len, _ref;
+      if (defaultValue == null) {
+        defaultValue = void 0;
+      }
+      value = config.defaultSettings;
+      _ref = path.split('.');
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        arg = _ref[_i];
+        value = value[arg];
+        if (value === void 0) {
+          return defaultValue;
+        }
+      }
+      return value;
+    },
     pageUrl: function(o) {
       var url;
       url = o.editMode ? '#edit/' : '#';
@@ -1445,7 +1434,7 @@ $(function() {
       return url;
     },
     url: function(url) {
-      return url;
+      return window.App.setting('patient.rootUrl').concat(url);
     }
   };
   return new Application($('#js-content'));
@@ -1474,6 +1463,7 @@ Router = (function(_super) {
     'view/patients/:id': 'patient',
     ':id/condition:index.:subIndex': 'patient',
     ':id/condition:index': 'patient',
+    'patients?*query': 'default',
     'patients': 'patients',
     'patients/:id': 'patient',
     ':id': 'patient'

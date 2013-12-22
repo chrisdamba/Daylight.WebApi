@@ -21222,9 +21222,7 @@ var Grid = Backgrid.Grid = Backbone.View.extend({
     IoC.prototype.get = function(id, constructorArguments, options) {
       var args, constructor, instance, lifestyle, obj, properties, type;
       obj = this._config[id];
-      console.console.log(obj);
       if (obj) {
-        console.log(obj);
         type = obj.type;
         lifestyle = obj.lifestyle;
         if (lifestyle === 'singleton') {
