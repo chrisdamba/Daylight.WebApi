@@ -1190,13 +1190,13 @@ PatientListView = (function(_super) {
 
   PatientListView.prototype.onFetchStart = function() {
     this.$('.load-more').addClass('activate');
-    this.$('#followingBallsG').show();
+    this.$('.activate').show();
     return this.$('.js-patients-loadmore').html('Loading...');
   };
 
   PatientListView.prototype.onFetchEnd = function() {
     this.$('.load-more').removeClass('activate');
-    this.$('#followingBallsG').hide();
+    this.$('.activate').hide();
     this.$('.js-patients-loadmore').html('Load More');
     return this.showNoResults();
   };
@@ -1924,7 +1924,7 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<div class="container">\n    <div class="row clearfix">\n        <div class="col-md-12 column">\n            <ul class="nav nav-pills">\n                <li><a href="#create" title="+ Add new patient"><i class="icon-large icon-user-add"></i></a></li>\n            </ul>\n        </div>\n    </div>\n    <div class="row clearfix">\n        <div class="col-md-8 column">\n            <table class="table table-bordered table-striped table-selectable">\n                <thead>\n                    <tr>\n                        <th>Name</th>\n                        <th>Gender</th>\n                        <th>Date Of Birth</th>\n                        <th>Address</th>\n                        <th>Phone</th>\n                        <th>Actions</th>                        \n                    </tr>\n                </thead>\n                <tbody class="patient-grid">\n                    <p class="no-results" style="display:none;">No Results</p>\n                </tbody>\n            </table>\n            <!-- Load More "Link" -->  \n            <div class="load-more">\n                <div id="followingBallsG" style="display:none;">\n                    <div id="followingBallsG_1" class="followingBallsG">\n                    </div>\n                    <div id="followingBallsG_2" class="followingBallsG">\n                    </div>\n                    <div id="followingBallsG_3" class="followingBallsG">\n                    </div>\n                    <div id="followingBallsG_4" class="followingBallsG">\n                    </div>\n                </div>\n                <a href="#" class="js-patients-loadmore">Load More</a>\n            </div>  \n        </div>\n        <div class="col-md-4 column">\n        </div>\n    </div>\n</div>\n');
+      __out.push('<div class="container">\n    <div class="row clearfix">\n        <div class="col-md-12 column">\n            <ul class="nav nav-pills">\n                <li><a href="#create" title="+ Add new patient"><i class="icon-large icon-user-add"></i></a></li>\n            </ul>\n        </div>\n    </div>\n    <div class="row clearfix">\n        <div class="col-md-8 column">\n            <table class="table table-bordered table-striped table-selectable">\n                <thead>\n                    <tr>\n                        <th>Name</th>\n                        <th>Gender</th>\n                        <th>Date Of Birth</th>\n                        <th>Address</th>\n                        <th>Phone</th>\n                        <th>Actions</th>                        \n                    </tr>\n                </thead>\n                <tbody class="patient-grid">\n                    <p class="no-results" style="display:none;">No Results</p>\n                </tbody>\n            </table>\n            <!-- Load More "Link" -->  \n            <div class="load-more">\n                <div id="followingBallsG" style="display:none;">\n                    <div id="followingBallsG_1" class="followingBallsG">\n                    </div>\n                    <div id="followingBallsG_2" class="followingBallsG">\n                    </div>\n                    <div id="followingBallsG_3" class="followingBallsG">\n                    </div>\n                    <div id="followingBallsG_4" class="followingBallsG">\n                    </div>\n                </div>\n\n                <a href="#" class="js-patients-loadmore">\n                    <div class="activate" style="display:none;"></div>\n                    Load More\n                </a>\n            </div>  \n        </div>\n        <div class="col-md-4 column">\n        </div>\n    </div>\n</div>\n');
     
     }).call(this);
     

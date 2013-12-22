@@ -554,6 +554,6 @@ background-color:#000000;
     color:#666; 
 }
 
-.load-more .activate { 
+.activate { 
     background:url('loadmorespinner.gif') 140px 9px no-repeat #eee; 
 }
