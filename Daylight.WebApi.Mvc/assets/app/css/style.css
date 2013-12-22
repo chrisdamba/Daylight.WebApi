@@ -541,3 +541,19 @@ background-color:#000000;
 .visuallyhidden {
   overflow: hidden;  
 }
+
+.load-more { 
+    background-color:#eee; 
+    color:#999; font-weight:bold; 
+    text-align:center; 
+    padding:10px 0; 
+    cursor:pointer; 
+}
+
+.load-more:hover { 
+    color:#666; 
+}
+
+.load-more .activate { 
+    background:url('loadmorespinner.gif') 140px 9px no-repeat #eee; 
+}

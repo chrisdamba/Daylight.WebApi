@@ -1107,7 +1107,7 @@ PatientListView = (function(_super) {
     this.showNoResults = __bind(this.showNoResults, this);
     this.onCollectionOpen = __bind(this.onCollectionOpen, this);
     this.onCollectionEnd = __bind(this.onCollectionEnd, this);
-    this.onSeeMore = __bind(this.onSeeMore, this);
+    this.onLoadMore = __bind(this.onLoadMore, this);
     this.onFetchEnd = __bind(this.onFetchEnd, this);
     this.onFetchStart = __bind(this.onFetchStart, this);
     this.reset = __bind(this.reset, this);
@@ -1123,7 +1123,7 @@ PatientListView = (function(_super) {
   PatientListView.prototype.template = PatientListTemplate;
 
   PatientListView.prototype.events = {
-    'click .js-playlist-seemore': 'onSeeMore'
+    'click .js-patients-loadmore': 'onLoadMore'
   };
 
   PatientListView.prototype.dispose = function() {
@@ -1141,6 +1141,10 @@ PatientListView = (function(_super) {
     this.listenTo(this.collection, 'reset', function(collection, options) {
       return _this.reset();
     });
+    this.listenTo(this.collection, 'fetch:start', this.onFetchStart);
+    this.listenTo(this.collection, 'fetch:end', this.onFetchEnd);
+    this.listenTo(this.collection, 'end', this.onCollectionEnd);
+    this.listenTo(this.collection, 'open', this.onCollectionOpen);
     return _.bindAll(this, 'render');
   };
 
@@ -1185,26 +1189,29 @@ PatientListView = (function(_super) {
   };
 
   PatientListView.prototype.onFetchStart = function() {
-    this.$('.loading-more').removeClass('visuallyhidden');
-    return $.scrollTo('.js-playlist-seemore');
+    this.$('.load-more').addClass('activate');
+    this.$('#followingBallsG').show();
+    return this.$('.js-patients-loadmore').html('Loading...');
   };
 
   PatientListView.prototype.onFetchEnd = function() {
-    this.$('.loading-more').addClass('visuallyhidden');
+    this.$('.load-more').removeClass('activate');
+    this.$('#followingBallsG').hide();
+    this.$('.js-patients-loadmore').html('Load More');
     return this.showNoResults();
   };
 
-  PatientListView.prototype.onSeeMore = function(e) {
+  PatientListView.prototype.onLoadMore = function(e) {
     e.preventDefault();
     return this.collection.getMore();
   };
 
   PatientListView.prototype.onCollectionEnd = function(e) {
-    return this.$('.js-playlist-seemore').addClass('visuallyhidden');
+    return this.$('.js-patients-loadmore').html('Load More');
   };
 
   PatientListView.prototype.onCollectionOpen = function(e) {
-    return this.$('.js-playlist-seemore').removeClass('visuallyhidden');
+    return this.$('.js-patients-loadmore').html('Load More');
   };
 
   PatientListView.prototype.showNoResults = function() {
@@ -1917,7 +1924,7 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<div class="container">\n    <div class="row clearfix">\n        <div class="col-md-12 column">\n            <ul class="nav nav-pills">\n                <li><a href="#create" title="+ Add new patient"><i class="icon-large icon-user-add"></i></a></li>\n            </ul>\n        </div>\n    </div>\n    <div class="row clearfix">\n        <div class="col-md-8 column">\n            <table class="table table-bordered table-striped table-selectable">\n                <thead>\n                    <tr>\n                        <th>Name</th>\n                        <th>Gender</th>\n                        <th>Date Of Birth</th>\n                        <th>Address</th>\n                        <th>Phone</th>\n                        <th>Actions</th>                        \n                    </tr>\n                </thead>\n                <tbody class="patient-grid">\n                    <p class="no-results" style="display:none;">No Results</p>\n                </tbody>\n            </table>\n            <div class="loading loading-more visuallyhidden">\n                <div id="followingBallsG">\n                    <div id="followingBallsG_1" class="followingBallsG">\n                    </div>\n                    <div id="followingBallsG_2" class="followingBallsG">\n                    </div>\n                    <div id="followingBallsG_3" class="followingBallsG">\n                    </div>\n                    <div id="followingBallsG_4" class="followingBallsG">\n                    </div>\n                </div>\n            </div>\n            <div class="seeMore">\n                <a href="#" class="btn js-playlist-seemore">See More</a>\n            </div>\n        </div>\n        <div class="col-md-4 column">\n        </div>\n    </div>\n</div>\n');
+      __out.push('<div class="container">\n    <div class="row clearfix">\n        <div class="col-md-12 column">\n            <ul class="nav nav-pills">\n                <li><a href="#create" title="+ Add new patient"><i class="icon-large icon-user-add"></i></a></li>\n            </ul>\n        </div>\n    </div>\n    <div class="row clearfix">\n        <div class="col-md-8 column">\n            <table class="table table-bordered table-striped table-selectable">\n                <thead>\n                    <tr>\n                        <th>Name</th>\n                        <th>Gender</th>\n                        <th>Date Of Birth</th>\n                        <th>Address</th>\n                        <th>Phone</th>\n                        <th>Actions</th>                        \n                    </tr>\n                </thead>\n                <tbody class="patient-grid">\n                    <p class="no-results" style="display:none;">No Results</p>\n                </tbody>\n            </table>\n            <!-- Load More "Link" -->  \n            <div class="load-more">\n                <div id="followingBallsG" style="display:none;">\n                    <div id="followingBallsG_1" class="followingBallsG">\n                    </div>\n                    <div id="followingBallsG_2" class="followingBallsG">\n                    </div>\n                    <div id="followingBallsG_3" class="followingBallsG">\n                    </div>\n                    <div id="followingBallsG_4" class="followingBallsG">\n                    </div>\n                </div>\n                <a href="#" class="js-patients-loadmore">Load More</a>\n            </div>  \n        </div>\n        <div class="col-md-4 column">\n        </div>\n    </div>\n</div>\n');
     
     }).call(this);
     

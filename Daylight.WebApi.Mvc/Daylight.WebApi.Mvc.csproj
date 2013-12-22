@@ -179,6 +179,7 @@
     <Content Include="assets\app\css\backgrid-select2-cell.css" />
     <Content Include="assets\app\css\backgrid-text-cell.css" />
     <Content Include="assets\app\css\backgrid.css" />
+    <Content Include="assets\app\css\loadmorespinner.gif" />
     <Content Include="assets\app\css\style.css" />
     <Content Include="assets\app\img\buttons.png" />
     <Content Include="assets\app\img\linen-bg.jpg" />
