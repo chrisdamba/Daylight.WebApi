@@ -219,13 +219,6 @@ module.exports = {
         _url: '/API/Patients'
       }
     },
-    PatientPageableCollection: {
-      type: 'daylight/collections/patient_pageable_collection',
-      lifestyle: 'transient',
-      properties: {
-        _url: '/API/Patients'
-      }
-    },
     PatientModel: {
       type: 'daylight/models/patient_model',
       properties: {
@@ -279,7 +272,7 @@ module.exports = ConfigMerger;
 });
 
 ;require.register("daylight/application", function(exports, require, module) {
-var AddWidgetModalView, Application, ApplicationModel, DashboardView, PatientCollection, PatientCreateView, PatientListView, PatientModel, PatientPageableCollection, PatientTableView, PatientView, Router,
+var AddWidgetModalView, Application, ApplicationModel, DashboardView, PatientCollection, PatientCreateView, PatientListView, PatientModel, PatientView, Router,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -292,11 +285,7 @@ DashboardView = require('daylight/views/dashboard_view');
 
 AddWidgetModalView = require('daylight/views/add_widget_view');
 
-PatientPageableCollection = require('daylight/collections/patient_pageable_collection');
-
 PatientView = require('daylight/views/patient_view');
-
-PatientTableView = require('daylight/views/patient_table_view');
 
 PatientListView = require('daylight/views/patient_list_view');
 
@@ -305,8 +294,6 @@ PatientCreateView = require('daylight/views/patient_create_view');
 Router = require('router/router');
 
 PatientCollection = require('daylight/collections/patient_collection');
-
-PatientPageableCollection = require('daylight/collections/patient_pageable_collection');
 
 Application = (function(_super) {
   __extends(Application, _super);
@@ -579,39 +566,6 @@ module.exports = PatientCollection;
 
 });
 
-;require.register("daylight/collections/patient_pageable_collection", function(exports, require, module) {
-var PatientModel, PatientPageableCollection, _ref,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-PatientModel = require('daylight/models/patient_model');
-
-PatientPageableCollection = (function(_super) {
-  __extends(PatientPageableCollection, _super);
-
-  function PatientPageableCollection() {
-    _ref = PatientPageableCollection.__super__.constructor.apply(this, arguments);
-    return _ref;
-  }
-
-  PatientPageableCollection.prototype.url = 'API/Patients';
-
-  PatientPageableCollection.prototype.model = PatientModel;
-
-  PatientPageableCollection.prototype.state = {
-    pageSize: 15
-  };
-
-  PatientPageableCollection.prototype.mode = 'client';
-
-  return PatientPageableCollection;
-
-})(support.LazyCollection);
-
-module.exports = PatientPageableCollection;
-
-});
-
 ;require.register("daylight/config_merger", function(exports, require, module) {
 var ConfigMerger;
 
@@ -662,33 +616,6 @@ module.exports = ApplicationModel;
 
 });
 
-;require.register("daylight/models/patient_collection", function(exports, require, module) {
-var PatientCollection, PatientModel, _ref,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-PatientModel = require('daylight/models/patient_model');
-
-PatientCollection = (function(_super) {
-  __extends(PatientCollection, _super);
-
-  function PatientCollection() {
-    _ref = PatientCollection.__super__.constructor.apply(this, arguments);
-    return _ref;
-  }
-
-  PatientCollection.prototype.url = 'patients.json';
-
-  PatientCollection.prototype.model = PatientModel;
-
-  return PatientCollection;
-
-})(support.LazyCollection);
-
-module.exports = PatientCollection;
-
-});
-
 ;require.register("daylight/models/patient_model", function(exports, require, module) {
 var PatientModel, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -709,6 +636,7 @@ PatientModel = (function(_super) {
     id: void 0,
     username: void 0,
     relationshipStatus: void 0,
+    prefix: void 0,
     name: '',
     otherNames: void 0,
     phone: void 0,
@@ -716,6 +644,7 @@ PatientModel = (function(_super) {
     dob: void 0,
     address: void 0,
     gender: void 0,
+    dateRegistered: void 0,
     uri: void 0,
     _editMode: false,
     _index: 0,
@@ -891,20 +820,17 @@ module.exports = AddWidgetModalView;
 });
 
 ;require.register("daylight/views/dashboard_view", function(exports, require, module) {
-var AddWidgetView, DashboardTemplate, DashboardView, _ref,
+var DashboardTemplate, DashboardView, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 DashboardTemplate = require('templates/dashboard_template');
 
-AddWidgetView = require('daylight/views/add_widget_view');
-
 DashboardView = (function(_super) {
   __extends(DashboardView, _super);
 
   function DashboardView() {
-    this.addWidgetClick = __bind(this.addWidgetClick, this);
     this.render = __bind(this.render, this);
     _ref = DashboardView.__super__.constructor.apply(this, arguments);
     return _ref;
@@ -912,19 +838,9 @@ DashboardView = (function(_super) {
 
   DashboardView.prototype.template = DashboardTemplate;
 
-  DashboardView.prototype.events = {
-    'click #addWidgetBtn': 'addWidgetClick'
-  };
-
   DashboardView.prototype.render = function() {
     this.$el.html(this.template());
     return this;
-  };
-
-  DashboardView.prototype.addWidgetClick = function() {
-    console.log("showme");
-    this.addWidgetView = new AddWidgetView;
-    return this.addWidgetView.render();
   };
 
   return DashboardView;
@@ -960,7 +876,7 @@ PatientCreateView = (function(_super) {
 
   PatientCreateView.prototype.id = "create";
 
-  PatientCreateView.prototype.className = "modal fade hide";
+  PatientCreateView.prototype.className = "modal fade";
 
   PatientCreateView.prototype.template = PatientCreateTemplate;
 
@@ -968,7 +884,86 @@ PatientCreateView = (function(_super) {
     'keydown': 'onKeyDown',
     'click .js-cancel-btn': 'onCancelClick',
     'click .js-save-btn': 'onSaveClick',
+    'click .js-next-btn': 'runBootstrapWizard',
+    'mouseover': 'createDatePicker',
     'hidden': 'teardown'
+  };
+
+  PatientCreateView.prototype.validationOptions = {
+    rules: {
+      fname: {
+        required: true,
+        length: 50
+      },
+      lname: {
+        required: true,
+        length: 50
+      },
+      building: {
+        required: true
+      },
+      locality: {
+        required: true
+      },
+      addressType: {
+        required: true
+      },
+      street: {
+        required: true
+      },
+      dob: {
+        required: true
+      },
+      mobile: {
+        required: true
+      },
+      relationshipStatus: {
+        required: true
+      },
+      rfname: {
+        required: true,
+        length: 50
+      },
+      rlname: {
+        required: true,
+        length: 50
+      },
+      rmobile: {
+        required: true
+      },
+      rtype: {
+        required: true,
+        length: 50
+      }
+    },
+    messages: {
+      fname: 'Please specify first name',
+      lname: 'Please specify last name',
+      building: 'Please specify building name/house number',
+      street: 'Please specify street name',
+      dob: 'Please specify date of birth',
+      mobile: 'Please specify telephone/mobile number',
+      relationshipStatus: 'Please specifiy the marital status',
+      rfname: 'Please specify first name',
+      rlname: 'Please specify last name',
+      rmobile: 'Please specify telephone/mobile number',
+      rtype: 'Please specify relationship to patient'
+    },
+    highlight: function(el) {
+      return $(el).closest(".form-group").removeClass("has-success").addClass("has-error");
+    },
+    unhighlight: function(el) {
+      return $(el).closest(".form-group").removeClass("has-error").addClass("has-success");
+    },
+    errorElement: 'span',
+    errorClass: 'help-block',
+    errorPlacement: function(error, el) {
+      if (el.parent('.input-group').length) {
+        return error.insertAfter(el.parent());
+      } else {
+        return error.insertAfter(el);
+      }
+    }
   };
 
   PatientCreateView.prototype.initialize = function(options) {
@@ -983,21 +978,56 @@ PatientCreateView = (function(_super) {
       show: false
     });
     this.delegateEvents(this.events);
+    this.runFuelWizard();
     return this;
   };
 
   PatientCreateView.prototype.save = function() {
-    var name,
+    var address, collection, dob, fname, gender, lname, mname, phone, relationshipStatus,
       _this = this;
-    name = this.$('#patient-name-input').val();
+    fname = this.$('#fname').val();
+    mname = this.$('#mname').val();
+    lname = this.$('#lname').val();
+    gender = this.$("input:radio[name ='gender']:checked").val();
+    relationshipStatus = this.$("input:radio[name ='marital-status']:checked").val();
+    address = this.$('#patient-address-input').val();
+    dob = this.$('#patient-dob-input').val();
+    phone = this.$('#patient-phone-input').val();
+    collection = window.IoC.get('PatientCollection');
+    this.model.collection = collection;
     this.model.set(this.model.parse({
-      name: name
+      gender: gender,
+      relationshipStatus: relationshipStatus,
+      address: address,
+      dob: dob,
+      phone: phone
     }));
     return this.model.save(null, {
       wait: true,
       success: function(model, response, options) {
+        $.smallBox({
+          title: 'Patient has been successfully created!',
+          content: "<i class='fa fa-clock-o'></i> <i>1 seconds ago...</i>",
+          color: '#5F895F',
+          iconSmall: 'fa fa-check bounce animated',
+          timeout: 4000
+        });
         window.App.eventAggregator.trigger('navigate:patient');
         return _this.close();
+      }
+    });
+  };
+
+  PatientCreateView.prototype.createDatePicker = function(e) {
+    var view;
+    view = this;
+    return $(e.currentTarget).datepicker({
+      maxDate: '-2',
+      defaultDate: view.selectedDate,
+      onSelect: function(dateText, datePicker) {
+        console.log('onSelect', dateText);
+        view.selectedDate = dateText;
+        return view.onDateChange(datePicker);
       }
     });
   };
@@ -1024,13 +1054,58 @@ PatientCreateView = (function(_super) {
 
   PatientCreateView.prototype.onSaveClick = function(e) {
     e.preventDefault();
-    alert('Save Clicked');
     return this.save();
   };
 
   PatientCreateView.prototype.onCancelClick = function(e) {
     e.preventDefault();
     return this.close();
+  };
+
+  PatientCreateView.prototype.runFuelWizard = function() {
+    var wizard;
+    wizard = $('.wizard').wizard();
+    wizard.on('changed', function(e, data) {
+      var $valid, $validator;
+      console.log('changed');
+      console.log(data.step);
+      if (data.step === 1 && data.direction === 'next') {
+        $validator = $("#newpatient-wizard").validate(this.validationOptions);
+        console.log($validator);
+        $valid = $('#newpatient-wizard').valid();
+        console.log($valid);
+        if (!$valid) {
+          $validator.focusInvalid();
+          return false;
+        } else {
+          $('.wizard').find('.steps').children('li').eq(index - 1).addClass('complete');
+          return $('.wizard').find('.steps').children('li').eq(index - 1).find('.chevron').html('<i class=\"fa fa-check\"></i>');
+        }
+      }
+    });
+    return wizard.on('finished', function(e, data) {
+      return console.log('finsihed');
+    });
+  };
+
+  PatientCreateView.prototype.runBootstrapWizard = function() {
+    var $validator;
+    $validator = $("#patient-create-form").validate(this.validationOptions);
+    return $('#bootstrap-wizard-1').bootstrapWizard({
+      tabClass: 'form-wizard',
+      onNext: function(tab, navigation, index) {
+        var $valid;
+        $valid = $('#patient-create-form').valid();
+        console.log($valid);
+        if (!$valid) {
+          $validator.focusInvalid();
+          return false;
+        } else {
+          $("#bootstrap-wizard-1").find(".form-wizard").children("li").eq(index - 1).addClass("complete");
+          return $("#bootstrap-wizard-1").find(".form-wizard").children("li").eq(index - 1).find(".step").html("<i class=\"fa fa-check\"></i>");
+        }
+      }
+    });
   };
 
   return PatientCreateView;
@@ -1189,15 +1264,11 @@ PatientListView = (function(_super) {
   };
 
   PatientListView.prototype.onFetchStart = function() {
-    this.$('.load-more').addClass('activate');
-    this.$('.activate').show();
-    return this.$('.js-patients-loadmore').html('Loading...');
+    return this.$('#loader').html('<h3><i class="fa fa-cog fa-spin"></i> Loading...</h3>');
   };
 
   PatientListView.prototype.onFetchEnd = function() {
-    this.$('.load-more').removeClass('activate');
-    this.$('.activate').hide();
-    this.$('.js-patients-loadmore').html('Load More');
+    this.$('#loader').html('<h3>Load more</h3>');
     return this.showNoResults();
   };
 
@@ -1207,11 +1278,11 @@ PatientListView = (function(_super) {
   };
 
   PatientListView.prototype.onCollectionEnd = function(e) {
-    return this.$('.js-patients-loadmore').html('Load More');
+    return this.$('#loader').html('<h3>Load more</h3>');
   };
 
   PatientListView.prototype.onCollectionOpen = function(e) {
-    return this.$('.js-patients-loadmore').html('Load More');
+    return this.$('#loader').html('<h3>Load more</h3>');
   };
 
   PatientListView.prototype.showNoResults = function() {
@@ -1234,60 +1305,6 @@ PatientListView = (function(_super) {
 
 if (typeof module !== "undefined" && module !== null) {
   module.exports = PatientListView;
-}
-
-});
-
-;require.register("daylight/views/patient_table_view", function(exports, require, module) {
-var PatientTableView, _ref,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-PatientTableView = (function(_super) {
-  __extends(PatientTableView, _super);
-
-  function PatientTableView() {
-    _ref = PatientTableView.__super__.constructor.apply(this, arguments);
-    return _ref;
-  }
-
-  PatientTableView.prototype.columns = {
-    name: {
-      header: "Name"
-    },
-    gender: {
-      header: "Gender"
-    },
-    dob: {
-      header: "Date of Birth",
-      draw: function(model) {
-        return new Date(model.get("dob"));
-      }
-    }
-  };
-
-  PatientTableView.prototype.pagination = true;
-
-  PatientTableView.prototype.size = 15;
-
-  PatientTableView.prototype.search = {
-    query: "name",
-    detail: "Search by name..."
-  };
-
-  PatientTableView.prototype.filters = {
-    type: {
-      type: "option",
-      options: [["All", ""], "Male", "Female"]
-    }
-  };
-
-  return PatientTableView;
-
-})(Backbone.TableView);
-
-if (typeof module !== "undefined" && module !== null) {
-  module.exports = PatientTableView;
 }
 
 });
@@ -1444,7 +1461,7 @@ $(function() {
       return window.App.setting('patient.rootUrl').concat(url);
     }
   };
-  return new Application($('#js-content'));
+  return new Application($('#content'));
 });
 
 });
@@ -1746,7 +1763,7 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<div class="container-fluid">\n        <!--subnav-->\n        <div class="subnav">\n            <ul class="nav nav-pills">\n                <li><a href="#addwidget">+ Add Widget</a></li>\n                <li><a href="dashboardprinterfriendly.html" target="_blank">Printer Friendly</a></li>\n                <li><a href="#" onclick="javascript:ShowHelp()">Help</a></li>\n            </ul>\n        </div>\n        <!--Dashboad-->\n        <div id="columns" class="row-fluid">\n            <ul id="widget1" class="column ui-sortable unstyled">\n                <li id="Widget1" class="widget">\n                    <div class="widget-head">\n                        <span>Patients List</span></div>\n                    <div class="widget-content">\n                        <iframe id="iframeWidget1" class="widget-iframe" style="overflow: hidden;" src="widgets/widget1.html">\n                        </iframe>\n                    </div>\n                </li>\n                <li id="Widget4" class="widget">\n                    <div class="widget-head">\n                        <span>Avg. Surgery Visit Duration</span></div>\n                    <div class="widget-content">\n                        <iframe id="iframeWidget4" class="widget-iframe" style="overflow: hidden;" src="widgets/widget4.html">\n                        </iframe>\n                    </div>\n                </li>\n            </ul>\n            <ul id="widget2" class="column ui-sortable unstyled">\n                <li id="Widget2" class="widget">\n                    <div class="widget-head">\n                        <span>Daily Visits</span></div>\n                    <div class="widget-content">\n                        <iframe id="iframeWidget3" class="widget-iframe" style="overflow: hidden;" src="widgets/widget3.html">\n                        </iframe>\n                    </div>\n                </li>\n                <li id="Widget5" class="widget">\n                    <div class="widget-head">\n                        <span>Next Appointments</span></div>\n                    <div class="widget-content">\n                        <iframe id="iframeWidget5" class="widget-iframe" style="overflow: hidden;" src="widgets/widget5.html">\n                        </iframe>\n                    </div>\n                </li>\n            </ul>\n            <ul id="widget3" class="column ui-sortable unstyled">\n                <li id="Widget3" class="widget">\n                    <div class="widget-head">\n                        <span>Age-Gender Distribution</span></div>\n                    <div class="widget-content">\n                        <iframe id="iframeWidget2" class="widget-iframe" style="overflow: hidden;" src="widgets/widget2.html">\n                        </iframe>\n                    </div>\n                </li>\n                <li id="Widget6" class="widget">\n                    <div class="widget-head">\n                        <span>Oustanding Payments</span></div>\n                    <div class="widget-content">\n                        <iframe id="iframeWidget6" class="widget-iframe" style="overflow: hidden;" src="widgets/widget6.html">\n                        </iframe>\n                    </div>\n                </li>\n            </ul>\n        </div>\n    </div>');
+      __out.push('<div class="row">\n\t<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">\n\t\t<h1 class="page-title txt-color-blueDark"><i class="fa-fw fa fa-home"></i> Dashboard <span>> My Dashboard</span></h1>\n\t</div>\n\t<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">\n\t\t<ul id="sparks" class="">\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> My Income <span class="txt-color-blue">$47,171</span></h5>\n\t\t\t\t<div class="sparkline txt-color-blue hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t1300, 1877, 2500, 2577, 2000, 2100, 3000, 2700, 3631, 2471, 2700, 3631, 2471\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> Site Traffic <span class="txt-color-purple"><i class="fa fa-arrow-circle-up" data-rel="bootstrap-tooltip" title="Increased"></i>&nbsp;45%</span></h5>\n\t\t\t\t<div class="sparkline txt-color-purple hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t110,150,300,130,400,240,220,310,220,300, 270, 210\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> Site Orders <span class="txt-color-greenDark"><i class="fa fa-shopping-cart"></i>&nbsp;2447</span></h5>\n\t\t\t\t<div class="sparkline txt-color-greenDark hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t110,150,300,130,400,240,220,310,220,300, 270, 210\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t</ul>\n\t</div>\n</div>\n<!-- widget grid -->\n<section id="widget-grid" class="">\n\n\t<!-- row -->\n\t<div class="row">\n\t\t<article class="col-sm-12">\n\t\t\t<!-- new widget -->\n\t\t\t<div class="jarviswidget" id="wid-id-0" data-widget-togglebutton="false" data-widget-editbutton="false" data-widget-fullscreenbutton="false" data-widget-colorbutton="false" data-widget-deletebutton="false">\n\t\t\t\t<!-- widget options:\n\t\t\t\tusage: <div class="jarviswidget" id="wid-id-0" data-widget-editbutton="false">\n\n\t\t\t\tdata-widget-colorbutton="false"\n\t\t\t\tdata-widget-editbutton="false"\n\t\t\t\tdata-widget-togglebutton="false"\n\t\t\t\tdata-widget-deletebutton="false"\n\t\t\t\tdata-widget-fullscreenbutton="false"\n\t\t\t\tdata-widget-custombutton="false"\n\t\t\t\tdata-widget-collapsed="true"\n\t\t\t\tdata-widget-sortable="false"\n\n\t\t\t\t-->\n\t\t\t\t<header>\n\t\t\t\t\t<span class="widget-icon"> <i class="glyphicon glyphicon-stats txt-color-darken"></i> </span>\n\t\t\t\t\t<h2>Live Feeds </h2>\n\n\t\t\t\t\t<ul class="nav nav-tabs pull-right in" id="myTab">\n\t\t\t\t\t\t<li class="active">\n\t\t\t\t\t\t\t<a data-toggle="tab" href="#s1"><i class="fa fa-clock-o"></i> <span class="hidden-mobile hidden-tablet">Live Stats</span></a>\n\t\t\t\t\t\t</li>\n\n\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t<a data-toggle="tab" href="#s2"><i class="fa fa-facebook"></i> <span class="hidden-mobile hidden-tablet">Social Network</span></a>\n\t\t\t\t\t\t</li>\n\n\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t<a data-toggle="tab" href="#s3"><i class="fa fa-dollar"></i> <span class="hidden-mobile hidden-tablet">Revenue</span></a>\n\t\t\t\t\t\t</li>\n\t\t\t\t\t</ul>\n\n\t\t\t\t</header>\n\n\t\t\t\t<!-- widget div-->\n\t\t\t\t<div class="no-padding">\n\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t<div class="jarviswidget-editbox">\n\n\t\t\t\t\t\ttest\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- end widget edit box -->\n\n\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t<!-- content -->\n\t\t\t\t\t\t<div id="myTabContent" class="tab-content">\n\t\t\t\t\t\t\t<div class="tab-pane fade active in padding-10 no-padding-bottom" id="s1">\n\t\t\t\t\t\t\t\t<div class="row no-space">\n\t\t\t\t\t\t\t\t\t<div class="col-xs-12 col-sm-12 col-md-8 col-lg-8">\n\t\t\t\t\t\t\t\t\t\t<span class="demo-liveupdate-1"> <span class="onoffswitch-title">Live switch</span> <span class="onoffswitch">\n\t\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="start_interval" class="onoffswitch-checkbox" id="start_interval">\n\t\t\t\t\t\t\t\t\t\t\t\t<label class="onoffswitch-label" for="start_interval"> <div class="onoffswitch-inner" data-swchon-text="ON" data-swchoff-text="OFF"></div> <div class="onoffswitch-switch"></div> </label> </span> </span>\n\t\t\t\t\t\t\t\t\t\t<div id="updating-chart" class="chart-large txt-color-blue"></div>\n\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 show-stats">\n\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t\t\t<span class="col-xs-6 col-sm-6 col-md-12 col-lg-12"> <span class="text"> My Tasks <span class="pull-right">130/200</span> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="progress">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="progress-bar bg-color-blueDark" style="width: 65%;"></div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div> </span>\n\t\t\t\t\t\t\t\t\t\t\t<span class="col-xs-6 col-sm-6 col-md-12 col-lg-12"> <span class="text"> Transfered <span class="pull-right">440 GB</span> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="progress">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="progress-bar bg-color-blue" style="width: 34%;"></div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div> </span>\n\t\t\t\t\t\t\t\t\t\t\t<span class="col-xs-6 col-sm-6 col-md-12 col-lg-12"> <span class="text"> Bugs Squashed<span class="pull-right">77%</span> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="progress">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="progress-bar bg-color-blue" style="width: 77%;"></div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div> </span>\n\t\t\t\t\t\t\t\t\t\t\t<span class="col-xs-6 col-sm-6 col-md-12 col-lg-12"> <span class="text"> User Testing <span class="pull-right">7 Days</span> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="progress">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="progress-bar bg-color-greenLight" style="width: 84%;"></div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div> </span>\n\n\t\t\t\t\t\t\t\t\t\t\t<span class="show-stat-buttons"> <span class="col-xs-12 col-sm-6 col-md-6 col-lg-6"> <a href="javascript:void(0);" class="btn btn-default btn-block hidden-xs">Generate PDF</a> </span> <span class="col-xs-12 col-sm-6 col-md-6 col-lg-6"> <a href="javascript:void(0);" class="btn btn-default btn-block hidden-xs">Report a bug</a> </span> </span>\n\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="show-stat-microcharts">\n\t\t\t\t\t\t\t\t\t<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">\n\n\t\t\t\t\t\t\t\t\t\t<div class="easy-pie-chart txt-color-orangeDark" data-percent="33" data-pie-size="50">\n\t\t\t\t\t\t\t\t\t\t\t<span class="percent percent-sign">35</span>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<span class="easy-pie-title"> Server Load <i class="fa fa-caret-up icon-color-bad"></i> </span>\n\t\t\t\t\t\t\t\t\t\t<ul class="smaller-stat hidden-sm pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="label bg-color-greenLight"><i class="fa fa-caret-up"></i> 97%</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="label bg-color-blueLight"><i class="fa fa-caret-down"></i> 44%</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-greenLight hidden-sm hidden-md pull-right" data-sparkline-type="line" data-sparkline-height="33px" data-sparkline-width="70px" data-fill-color="transparent">\n\t\t\t\t\t\t\t\t\t\t\t130, 187, 250, 257, 200, 210, 300, 270, 363, 247, 270, 363, 247\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">\n\t\t\t\t\t\t\t\t\t\t<div class="easy-pie-chart txt-color-greenLight" data-percent="78.9" data-pie-size="50">\n\t\t\t\t\t\t\t\t\t\t\t<span class="percent percent-sign">78.9 </span>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<span class="easy-pie-title"> Disk Space <i class="fa fa-caret-down icon-color-good"></i></span>\n\t\t\t\t\t\t\t\t\t\t<ul class="smaller-stat hidden-sm pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="label bg-color-blueDark"><i class="fa fa-caret-up"></i> 76%</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="label bg-color-blue"><i class="fa fa-caret-down"></i> 3%</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-blue hidden-sm hidden-md pull-right" data-sparkline-type="line" data-sparkline-height="33px" data-sparkline-width="70px" data-fill-color="transparent">\n\t\t\t\t\t\t\t\t\t\t\t257, 200, 210, 300, 270, 363, 130, 187, 250, 247, 270, 363, 247\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">\n\t\t\t\t\t\t\t\t\t\t<div class="easy-pie-chart txt-color-blue" data-percent="23" data-pie-size="50">\n\t\t\t\t\t\t\t\t\t\t\t<span class="percent percent-sign">23 </span>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<span class="easy-pie-title"> Transfered <i class="fa fa-caret-up icon-color-good"></i></span>\n\t\t\t\t\t\t\t\t\t\t<ul class="smaller-stat hidden-sm pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="label bg-color-darken">10GB</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="label bg-color-blueDark"><i class="fa fa-caret-up"></i> 10%</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-darken hidden-sm hidden-md pull-right" data-sparkline-type="line" data-sparkline-height="33px" data-sparkline-width="70px" data-fill-color="transparent">\n\t\t\t\t\t\t\t\t\t\t\t200, 210, 363, 247, 300, 270, 130, 187, 250, 257, 363, 247, 270\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">\n\t\t\t\t\t\t\t\t\t\t<div class="easy-pie-chart txt-color-darken" data-percent="36" data-pie-size="50">\n\t\t\t\t\t\t\t\t\t\t\t<span class="percent degree-sign">36 <i class="fa fa-caret-up"></i></span>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<span class="easy-pie-title"> Temperature <i class="fa fa-caret-down icon-color-good"></i></span>\n\t\t\t\t\t\t\t\t\t\t<ul class="smaller-stat hidden-sm pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="label bg-color-red"><i class="fa fa-caret-up"></i> 124</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="label bg-color-blue"><i class="fa fa-caret-down"></i> 40 F</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-red hidden-sm hidden-md pull-right" data-sparkline-type="line" data-sparkline-height="33px" data-sparkline-width="70px" data-fill-color="transparent">\n\t\t\t\t\t\t\t\t\t\t\t2700, 3631, 2471, 2700, 3631, 2471, 1300, 1877, 2500, 2577, 2000, 2100, 3000\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end s1 tab pane -->\n\n\t\t\t\t\t\t\t<div class="tab-pane fade" id="s2">\n\t\t\t\t\t\t\t\t<div class="widget-body-toolbar bg-color-white">\n\n\t\t\t\t\t\t\t\t\t<form class="form-inline" role="form">\n\n\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t<label class="sr-only" for="s123">Show From</label>\n\t\t\t\t\t\t\t\t\t\t\t<input type="email" class="form-control input-sm" id="s123" placeholder="Show From">\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t<input type="email" class="form-control input-sm" id="s124" placeholder="To">\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t<div class="btn-group hidden-phone pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<a class="btn dropdown-toggle btn-xs btn-default" data-toggle="dropdown"><i class="fa fa-cog"></i> More <span class="caret"> </span> </a>\n\t\t\t\t\t\t\t\t\t\t\t<ul class="dropdown-menu pull-right">\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-file-text-alt"></i> Export to PDF</a>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-question-sign"></i> Help</a>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t</form>\n\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class="padding-10">\n\t\t\t\t\t\t\t\t\t<div id="statsChart" class="chart-large has-legend-unique"></div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end s2 tab pane -->\n\n\t\t\t\t\t\t\t<div class="tab-pane fade" id="s3">\n\n\t\t\t\t\t\t\t\t<div class="widget-body-toolbar bg-color-white smart-form" id="rev-toggles">\n\n\t\t\t\t\t\t\t\t\t<div class="inline-group">\n\n\t\t\t\t\t\t\t\t\t\t<label for="gra-0" class="checkbox">\n\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="gra-0" id="gra-0" checked="checked">\n\t\t\t\t\t\t\t\t\t\t\t<i></i> Target </label>\n\t\t\t\t\t\t\t\t\t\t<label for="gra-1" class="checkbox">\n\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="gra-1" id="gra-1" checked="checked">\n\t\t\t\t\t\t\t\t\t\t\t<i></i> Actual </label>\n\t\t\t\t\t\t\t\t\t\t<label for="gra-2" class="checkbox">\n\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="gra-2" id="gra-2" checked="checked">\n\t\t\t\t\t\t\t\t\t\t\t<i></i> Signups </label>\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t<div class="btn-group hidden-phone pull-right">\n\t\t\t\t\t\t\t\t\t\t<a class="btn dropdown-toggle btn-xs btn-default" data-toggle="dropdown"><i class="fa fa-cog"></i> More <span class="caret"> </span> </a>\n\t\t\t\t\t\t\t\t\t\t<ul class="dropdown-menu pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-file-text-alt"></i> Export to PDF</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-question-sign"></i> Help</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="padding-10">\n\t\t\t\t\t\t\t\t\t<div id="flotcontainer" class="chart-large has-legend-unique"></div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end s3 tab pane -->\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<!-- end content -->\n\t\t\t\t\t</div>\n\n\t\t\t\t</div>\n\t\t\t\t<!-- end widget div -->\n\t\t\t</div>\n\t\t\t<!-- end widget -->\n\n\t\t</article>\n\t</div>\n\n\t<!-- end row -->\n\n\t<!-- row -->\n\n\t<div class="row">\n\n\t\t<article class="col-sm-12 col-md-12 col-lg-6">\n\n\t\t\t<!-- new widget -->\n\t\t\t<div class="jarviswidget jarviswidget-color-blueDark" id="wid-id-1" data-widget-editbutton="false" data-widget-fullscreenbutton="false">\n\n\t\t\t\t<!-- widget options:\n\t\t\t\tusage: <div class="jarviswidget" id="wid-id-0" data-widget-editbutton="false">\n\n\t\t\t\tdata-widget-colorbutton="false"\n\t\t\t\tdata-widget-editbutton="false"\n\t\t\t\tdata-widget-togglebutton="false"\n\t\t\t\tdata-widget-deletebutton="false"\n\t\t\t\tdata-widget-fullscreenbutton="false"\n\t\t\t\tdata-widget-custombutton="false"\n\t\t\t\tdata-widget-collapsed="true"\n\t\t\t\tdata-widget-sortable="false"\n\n\t\t\t\t-->\n\n\t\t\t\t<header>\n\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-comments txt-color-white"></i> </span>\n\t\t\t\t\t<h2> SmartChat </h2>\n\t\t\t\t\t<div class="widget-toolbar">\n\t\t\t\t\t\t<!-- add: non-hidden - to disable auto hide -->\n\n\t\t\t\t\t\t<div class="btn-group">\n\t\t\t\t\t\t\t<button class="btn dropdown-toggle btn-xs btn-success" data-toggle="dropdown">\n\t\t\t\t\t\t\t\tStatus <i class="fa fa-caret-down"></i>\n\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t<ul class="dropdown-menu pull-right js-status-update">\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-circle txt-color-green"></i> Online</a>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-circle txt-color-red"></i> Busy</a>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-circle txt-color-orange"></i> Away</a>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li class="divider"></li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-power-off"></i> Log Off</a>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</header>\n\n\t\t\t\t<!-- widget div-->\n\t\t\t\t<div>\n\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Title:</label>\n\t\t\t\t\t\t\t<input type="text" />\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- end widget edit box -->\n\n\t\t\t\t\t<div class="widget-body widget-hide-overflow no-padding">\n\t\t\t\t\t\t<!-- content goes here -->\n\n\t\t\t\t\t\t<!-- CHAT CONTAINER -->\n\t\t\t\t\t\t<div id="chat-container">\n\t\t\t\t\t\t\t<span class="chat-list-open-close"><i class="fa fa-user"></i><b>!</b></span>\n\n\t\t\t\t\t\t\t<div class="chat-list-body custom-scroll">\n\t\t\t\t\t\t\t\t<ul id="chat-users">\n\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><img src="img/avatars/5.png">Robin Berry <span class="badge badge-inverse">23</span><span class="state"><i class="fa fa-circle txt-color-green pull-right"></i></span></a>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><img src="img/avatars/male.png">Mark Zeukartech <span class="state"><i class="last-online pull-right">2hrs</i></span></a>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><img src="img/avatars/male.png">Belmain Dolson <span class="state"><i class="last-online pull-right">45m</i></span></a>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><img src="img/avatars/male.png">Galvitch Drewbery <span class="state"><i class="fa fa-circle txt-color-green pull-right"></i></span></a>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><img src="img/avatars/male.png">Sadi Orlaf <span class="state"><i class="fa fa-circle txt-color-green pull-right"></i></span></a>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><img src="img/avatars/male.png">Markus <span class="state"><i class="last-online pull-right">2m</i></span> </a>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><img src="img/avatars/sunny.png">Sunny <span class="state"><i class="last-online pull-right">2m</i></span> </a>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><img src="img/avatars/male.png">Denmark <span class="state"><i class="last-online pull-right">2m</i></span> </a>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class="chat-list-footer">\n\n\t\t\t\t\t\t\t\t<div class="control-group">\n\n\t\t\t\t\t\t\t\t\t<form class="smart-form">\n\n\t\t\t\t\t\t\t\t\t\t<section>\n\t\t\t\t\t\t\t\t\t\t\t<label class="input">\n\t\t\t\t\t\t\t\t\t\t\t\t<input type="text" id="filter-chat-list" placeholder="Filter">\n\t\t\t\t\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t\t\t\t\t</section>\n\n\t\t\t\t\t\t\t\t\t</form>\n\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<!-- CHAT BODY -->\n\t\t\t\t\t\t<div id="chat-body" class="chat-body custom-scroll">\n\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t<li class="message">\n\t\t\t\t\t\t\t\t\t<img src="img/avatars/5.png" class="online">\n\t\t\t\t\t\t\t\t\t<span class="message-text">\n\t\t\t\t\t\t\t\t\t\t<time>\n\t\t\t\t\t\t\t\t\t\t\t12:23pm\n\t\t\t\t\t\t\t\t\t\t</time> <a href="javascript:void(0);" class="username">Sadi Orlaf</a> Hey did you see the new elected board of director? He\'s a bit of a arse if you ask me...anyway here is the report you requested. I am off to launch Lisa and Andrew, you wanna join?\n\t\t\t\t\t\t\t\t\t\t<p class="chat-file row">\n\t\t\t\t\t\t\t\t\t\t\t<b class="pull-left col-sm-6"> <!--<i class="fa fa-spinner fa-spin"></i>--> <i class="fa fa-file"></i> report-2013-demographic-report-annual-earnings.xls </b>\n\t\t\t\t\t\t\t\t\t\t\t<span class="col-sm-6 pull-right"> <a href="javascript:void(0);" class="btn btn-xs btn-default">cancel</a> <a href="javascript:void(0);" class="btn btn-xs btn-success">save</a> </span>\n\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t<p class="chat-file row">\n\t\t\t\t\t\t\t\t\t\t\t<b class="pull-left col-sm-6"> <i class="fa fa-ok txt-color-green"></i> tobacco-report-2012.doc </b>\n\t\t\t\t\t\t\t\t\t\t\t<span class="col-sm-6 pull-right"> <a href="javascript:void(0);" class="btn btn-xs btn-primary">open</a> </span>\n\t\t\t\t\t\t\t\t\t\t</p> </span>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li class="message">\n\t\t\t\t\t\t\t\t\t<img src="img/avatars/sunny.png" class="online">\n\t\t\t\t\t\t\t\t\t<span class="message-text">\n\t\t\t\t\t\t\t\t\t\t<time>\n\t\t\t\t\t\t\t\t\t\t\t12:23pm\n\t\t\t\t\t\t\t\t\t\t</time> <a href="javascript:void(0);" class="username">John Doe</a> Haha! Yeah I know what you mean. Thanks for the file Sadi! <i class="fa fa-smile-o txt-color-orange"></i> </span>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t</ul>\n\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<!-- CHAT FOOTER -->\n\t\t\t\t\t\t<div class="chat-footer">\n\n\t\t\t\t\t\t\t<!-- CHAT TEXTAREA -->\n\t\t\t\t\t\t\t<div class="textarea-div">\n\n\t\t\t\t\t\t\t\t<div class="typearea">\n\t\t\t\t\t\t\t\t\t<textarea placeholder="Write a reply..." id="textarea-expand" class="custom-scroll"></textarea>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<!-- CHAT REPLY/SEND -->\n\t\t\t\t\t\t\t<span class="textarea-controls">\n\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-primary pull-right">\n\t\t\t\t\t\t\t\t\tReply\n\t\t\t\t\t\t\t\t</button> <span class="pull-right smart-form" style="margin-top: 3px; margin-right: 10px;"> <label class="checkbox pull-right">\n\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="subscription" id="subscription">\n\t\t\t\t\t\t\t\t\t\t<i></i>Press <strong> ENTER </strong> to send </label> </span> <a href="javascript:void(0);" class="pull-left"><i class="fa fa-camera fa-fw fa-lg"></i></a> </span>\n\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<!-- end content -->\n\t\t\t\t\t</div>\n\n\t\t\t\t</div>\n\t\t\t\t<!-- end widget div -->\n\t\t\t</div>\n\t\t\t<!-- end widget -->\n\n\t\t\t<!-- new widget -->\n\t\t\t<div class="jarviswidget jarviswidget-color-blueDark" id="wid-id-3" data-widget-colorbutton="false">\n\n\t\t\t\t<!-- widget options:\n\t\t\t\tusage: <div class="jarviswidget" id="wid-id-0" data-widget-editbutton="false">\n\n\t\t\t\tdata-widget-colorbutton="false"\n\t\t\t\tdata-widget-editbutton="false"\n\t\t\t\tdata-widget-togglebutton="false"\n\t\t\t\tdata-widget-deletebutton="false"\n\t\t\t\tdata-widget-fullscreenbutton="false"\n\t\t\t\tdata-widget-custombutton="false"\n\t\t\t\tdata-widget-collapsed="true"\n\t\t\t\tdata-widget-sortable="false"\n\n\t\t\t\t-->\n\t\t\t\t<header>\n\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-calendar"></i> </span>\n\t\t\t\t\t<h2> My Events </h2>\n\t\t\t\t\t<div class="widget-toolbar">\n\t\t\t\t\t\t<!-- add: non-hidden - to disable auto hide -->\n\t\t\t\t\t\t<div class="btn-group">\n\t\t\t\t\t\t\t<button class="btn dropdown-toggle btn-xs btn-default" data-toggle="dropdown">\n\t\t\t\t\t\t\t\tShowing <i class="fa fa-caret-down"></i>\n\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t<ul class="dropdown-menu js-status-update pull-right">\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);" id="mt">Month</a>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);" id="ag">Agenda</a>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);" id="td">Today</a>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</header>\n\n\t\t\t\t<!-- widget div-->\n\t\t\t\t<div>\n\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t<div class="jarviswidget-editbox">\n\n\t\t\t\t\t\t<input class="form-control" type="text">\n\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- end widget edit box -->\n\n\t\t\t\t\t<div class="widget-body no-padding">\n\t\t\t\t\t\t<!-- content goes here -->\n\t\t\t\t\t\t<div class="widget-body-toolbar">\n\n\t\t\t\t\t\t\t<div id="calendar-buttons">\n\n\t\t\t\t\t\t\t\t<div class="btn-group">\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0)" class="btn btn-default btn-xs" id="btn-prev"><i class="fa fa-chevron-left"></i></a>\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0)" class="btn btn-default btn-xs" id="btn-next"><i class="fa fa-chevron-right"></i></a>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div id="calendar"></div>\n\n\t\t\t\t\t\t<!-- end content -->\n\t\t\t\t\t</div>\n\n\t\t\t\t</div>\n\t\t\t\t<!-- end widget div -->\n\t\t\t</div>\n\t\t\t<!-- end widget -->\n\n\t\t</article>\n\n\t\t<article class="col-sm-12 col-md-12 col-lg-6">\n\n\t\t\t<!-- new widget -->\n\t\t\t<div class="jarviswidget" id="wid-id-2" data-widget-colorbutton="false" data-widget-editbutton="false">\n\n\t\t\t\t<!-- widget options:\n\t\t\t\tusage: <div class="jarviswidget" id="wid-id-0" data-widget-editbutton="false">\n\n\t\t\t\tdata-widget-colorbutton="false"\n\t\t\t\tdata-widget-editbutton="false"\n\t\t\t\tdata-widget-togglebutton="false"\n\t\t\t\tdata-widget-deletebutton="false"\n\t\t\t\tdata-widget-fullscreenbutton="false"\n\t\t\t\tdata-widget-custombutton="false"\n\t\t\t\tdata-widget-collapsed="true"\n\t\t\t\tdata-widget-sortable="false"\n\n\t\t\t\t-->\n\n\t\t\t\t<header>\n\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-map-marker"></i> </span>\n\t\t\t\t\t<h2>Birds Eye</h2>\n\t\t\t\t\t<div class="widget-toolbar hidden-mobile">\n\t\t\t\t\t\t<span class="onoffswitch-title"><i class="fa fa-location-arrow"></i> Realtime</span>\n\t\t\t\t\t\t<span class="onoffswitch">\n\t\t\t\t\t\t\t<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" checked="checked" id="myonoffswitch">\n\t\t\t\t\t\t\t<label class="onoffswitch-label" for="myonoffswitch"> <div class="onoffswitch-inner" data-swchon-text="YES" data-swchoff-text="NO"></div> <div class="onoffswitch-switch"></div> </label> </span>\n\t\t\t\t\t</div>\n\t\t\t\t</header>\n\n\t\t\t\t<!-- widget div-->\n\t\t\t\t<div>\n\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Title:</label>\n\t\t\t\t\t\t\t<input type="text" />\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- end widget edit box -->\n\n\t\t\t\t\t<div class="widget-body no-padding">\n\t\t\t\t\t\t<!-- content goes here -->\n\n\t\t\t\t\t\t<div id="vector-map" class="vector-map"></div>\n\t\t\t\t\t\t<div id="heat-fill">\n\t\t\t\t\t\t\t<span class="fill-a">0</span>\n\n\t\t\t\t\t\t\t<span class="fill-b">5,000</span>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<table class="table table-striped table-hover table-condensed">\n\t\t\t\t\t\t\t<thead>\n\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t<th>Country</th>\n\t\t\t\t\t\t\t\t\t<th>Visits</th>\n\t\t\t\t\t\t\t\t\t<th class="text-align-center">User Activity</th>\n\t\t\t\t\t\t\t\t\t<th class="text-align-center">Online</th>\n\t\t\t\t\t\t\t\t\t<th class="text-align-center">Demographic</th>\n\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t</thead>\n\t\t\t\t\t\t\t<tbody>\n\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t<td><a href="javascript:void(0);">USA</a></td>\n\t\t\t\t\t\t\t\t\t<td>4,977</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-blue text-align-center" data-sparkline-height="22px" data-sparkline-width="90px" data-sparkline-barwidth="2">\n\t\t\t\t\t\t\t\t\t\t2700, 3631, 2471, 1300, 1877, 2500, 2577, 2700, 3631, 2471, 2000, 2100, 3000\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">143</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline display-inline" data-sparkline-type=\'pie\' data-sparkline-piecolor=\'["#E979BB", "#57889C"]\' data-sparkline-offset="90" data-sparkline-piesize="23px">\n\t\t\t\t\t\t\t\t\t\t17,83\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="btn-group display-inline pull-right text-align-left hidden-tablet">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-cog fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t\t<ul class="dropdown-menu dropdown-menu-xs pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-file fa-lg fa-fw txt-color-greenLight"></i> <u>P</u>DF</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-times fa-lg fa-fw txt-color-red"></i> <u>D</u>elete</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="divider"></li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="text-align-center">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Cancel</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t<td><a href="javascript:void(0);">Australia</a></td>\n\t\t\t\t\t\t\t\t\t<td>4,873</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-blue text-align-center" data-sparkline-height="22px" data-sparkline-width="90px" data-sparkline-barwidth="2">\n\t\t\t\t\t\t\t\t\t\t1000, 1100, 3030, 1300, -1877, -2500, -2577, -2700, 3631, 2471, 4700, 1631, 2471\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">247</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline display-inline" data-sparkline-type=\'pie\' data-sparkline-piecolor=\'["#E979BB", "#57889C"]\' data-sparkline-offset="90" data-sparkline-piesize="23px">\n\t\t\t\t\t\t\t\t\t\t22,88\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="btn-group display-inline pull-right text-align-left hidden-tablet">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-cog fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t\t<ul class="dropdown-menu dropdown-menu-xs pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-file fa-lg fa-fw txt-color-greenLight"></i> <u>P</u>DF</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-times fa-lg fa-fw txt-color-red"></i> <u>D</u>elete</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="divider"></li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="text-align-center">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Cancel</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t<td><a href="javascript:void(0);">India</a></td>\n\t\t\t\t\t\t\t\t\t<td>3,671</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-blue text-align-center" data-sparkline-height="22px" data-sparkline-width="90px" data-sparkline-barwidth="2">\n\t\t\t\t\t\t\t\t\t\t3631, 1471, 2400, 3631, 471, 1300, 1177, 2500, 2577, 3000, 4100, 3000, 7700\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">373</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline display-inline" data-sparkline-type=\'pie\' data-sparkline-piecolor=\'["#E979BB", "#57889C"]\' data-sparkline-offset="90" data-sparkline-piesize="23px">\n\t\t\t\t\t\t\t\t\t\t10,90\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="btn-group display-inline pull-right text-align-left hidden-tablet">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-cog fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t\t<ul class="dropdown-menu dropdown-menu-xs pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-file fa-lg fa-fw txt-color-greenLight"></i> <u>P</u>DF</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-times fa-lg fa-fw txt-color-red"></i> <u>D</u>elete</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="divider"></li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="text-align-center">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Cancel</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t<td><a href="javascript:void(0);">Brazil</a></td>\n\t\t\t\t\t\t\t\t\t<td>2,476</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-blue text-align-center" data-sparkline-height="22px" data-sparkline-width="90px" data-sparkline-barwidth="2">\n\t\t\t\t\t\t\t\t\t\t2700, 1877, 2500, 2577, 2000, 3631, 2471, -2700, -3631, 2471, 1300, 2100, 3000,\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">741</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline display-inline" data-sparkline-type=\'pie\' data-sparkline-piecolor=\'["#E979BB", "#57889C"]\' data-sparkline-offset="90" data-sparkline-piesize="23px">\n\t\t\t\t\t\t\t\t\t\t34,66\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="btn-group display-inline pull-right text-align-left hidden-tablet">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-cog fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t\t<ul class="dropdown-menu dropdown-menu-xs pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-file fa-lg fa-fw txt-color-greenLight"></i> <u>P</u>DF</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-times fa-lg fa-fw txt-color-red"></i> <u>D</u>elete</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="divider"></li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="text-align-center">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Cancel</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t<td><a href="javascript:void(0);">Turkey</a></td>\n\t\t\t\t\t\t\t\t\t<td>1,476</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-blue text-align-center" data-sparkline-height="22px" data-sparkline-width="90px" data-sparkline-barwidth="2">\n\t\t\t\t\t\t\t\t\t\t1300, 1877, 2500, 2577, 2000, 2100, 3000, -2471, -2700, -3631, -2471, 2700, 3631\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">123</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline display-inline" data-sparkline-type=\'pie\' data-sparkline-piecolor=\'["#E979BB", "#57889C"]\' data-sparkline-offset="90" data-sparkline-piesize="23px">\n\t\t\t\t\t\t\t\t\t\t75,25\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="btn-group display-inline pull-right text-align-left hidden-tablet">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-cog fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t\t<ul class="dropdown-menu dropdown-menu-xs pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-file fa-lg fa-fw txt-color-greenLight"></i> <u>P</u>DF</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-times fa-lg fa-fw txt-color-red"></i> <u>D</u>elete</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="divider"></li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="text-align-center">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Cancel</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t<td><a href="javascript:void(0);">Canada</a></td>\n\t\t\t\t\t\t\t\t\t<td>146</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-orange text-align-center" data-sparkline-height="22px" data-sparkline-width="90px" data-sparkline-barwidth="2">\n\t\t\t\t\t\t\t\t\t\t5, 34, 10, 1, 4, 6, -9, -1, 0, 0, 5, 6, 7\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">23</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline display-inline" data-sparkline-type=\'pie\' data-sparkline-piecolor=\'["#E979BB", "#57889C"]\' data-sparkline-offset="90" data-sparkline-piesize="23px">\n\t\t\t\t\t\t\t\t\t\t50,50\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="btn-group display-inline pull-right text-align-left hidden-tablet">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-cog fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t\t<ul class="dropdown-menu dropdown-menu-xs pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-file fa-lg fa-fw txt-color-greenLight"></i> <u>P</u>DF</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-times fa-lg fa-fw txt-color-red"></i> <u>D</u>elete</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="divider"></li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="text-align-center">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Cancel</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t</tbody>\n\t\t\t\t\t\t\t<tfoot>\n\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t<td colspan=5>\n\t\t\t\t\t\t\t\t\t<ul class="pagination pagination-xs no-margin">\n\t\t\t\t\t\t\t\t\t\t<li class="prev disabled">\n\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Previous</a>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t<li class="active">\n\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">1</a>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">2</a>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">3</a>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t<li class="next">\n\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Next</a>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t</ul></td>\n\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t</tfoot>\n\t\t\t\t\t\t</table>\n\n\t\t\t\t\t\t<!-- end content -->\n\n\t\t\t\t\t</div>\n\n\t\t\t\t</div>\n\t\t\t\t<!-- end widget div -->\n\t\t\t</div>\n\t\t\t<!-- end widget -->\n\n\t\t\t<!-- new widget -->\n\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="wid-id-4" data-widget-editbutton="false" data-widget-colorbutton="false">\n\n\t\t\t\t<!-- widget options:\n\t\t\t\tusage: <div class="jarviswidget" id="wid-id-0" data-widget-editbutton="false">\n\n\t\t\t\tdata-widget-colorbutton="false"\n\t\t\t\tdata-widget-editbutton="false"\n\t\t\t\tdata-widget-togglebutton="false"\n\t\t\t\tdata-widget-deletebutton="false"\n\t\t\t\tdata-widget-fullscreenbutton="false"\n\t\t\t\tdata-widget-custombutton="false"\n\t\t\t\tdata-widget-collapsed="true"\n\t\t\t\tdata-widget-sortable="false"\n\n\t\t\t\t-->\n\n\t\t\t\t<header>\n\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-check txt-color-white"></i> </span>\n\t\t\t\t\t<h2> ToDo\'s </h2>\n\t\t\t\t\t<!-- <div class="widget-toolbar">\n\t\t\t\t\tadd: non-hidden - to disable auto hide\n\n\t\t\t\t\t</div>-->\n\t\t\t\t</header>\n\n\t\t\t\t<!-- widget div-->\n\t\t\t\t<div>\n\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Title:</label>\n\t\t\t\t\t\t\t<input type="text" />\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- end widget edit box -->\n\n\t\t\t\t\t<div class="widget-body no-padding smart-form">\n\t\t\t\t\t\t<!-- content goes here -->\n\t\t\t\t\t\t<h5 class="todo-group-title"><i class="fa fa-warning"></i> Critical Tasks (<small class="num-of-tasks">1</small>)</h5>\n\t\t\t\t\t\t<ul id="sortable1" class="todo">\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t<span class="handle"> <label class="checkbox">\n\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t<i></i> </label> </span>\n\t\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\t\t\t\t<strong>Ticket #17643</strong> - Hotfix for WebApp interface issue [<a href="javascript:void(0);" class="font-xs">More Details</a>] <span class="text-muted">Sea deep blessed bearing under darkness from God air living isn\'t. </span>\n\t\t\t\t\t\t\t\t\t<span class="date">Jan 1, 2014</span>\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t<h5 class="todo-group-title"><i class="fa fa-exclamation"></i> Important Tasks (<small class="num-of-tasks">3</small>)</h5>\n\t\t\t\t\t\t<ul id="sortable2" class="todo">\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t<span class="handle"> <label class="checkbox">\n\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t<i></i> </label> </span>\n\t\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\t\t\t\t<strong>Ticket #1347</strong> - Inbox email is being sent twice <small>(bug fix)</small> [<a href="javascript:void(0);" class="font-xs">More Details</a>] <span class="date">Nov 22, 2013</span>\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t<span class="handle"> <label class="checkbox">\n\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t<i></i> </label> </span>\n\t\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\t\t\t\t<strong>Ticket #1314</strong> - Call customer support re: Issue <a href="javascript:void(0);" class="font-xs">#6134</a><small>(code review)</small>\n\t\t\t\t\t\t\t\t\t<span class="date">Nov 22, 2013</span>\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t<span class="handle"> <label class="checkbox">\n\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t<i></i> </label> </span>\n\t\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\t\t\t\t<strong>Ticket #17643</strong> - Hotfix for WebApp interface issue [<a href="javascript:void(0);" class="font-xs">More Details</a>] <span class="text-muted">Sea deep blessed bearing under darkness from God air living isn\'t. </span>\n\t\t\t\t\t\t\t\t\t<span class="date">Jan 1, 2014</span>\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t</ul>\n\n\t\t\t\t\t\t<h5 class="todo-group-title"><i class="fa fa-check"></i> Completed Tasks (<small class="num-of-tasks">1</small>)</h5>\n\t\t\t\t\t\t<ul id="sortable3" class="todo">\n\t\t\t\t\t\t\t<li class="complete">\n\t\t\t\t\t\t\t\t<span class="handle" style="display:none"> <label class="checkbox state-disabled">\n\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="checkbox-inline" checked="checked" disabled="disabled">\n\t\t\t\t\t\t\t\t\t\t<i></i> </label> </span>\n\t\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\t\t\t\t<strong>Ticket #17643</strong> - Hotfix for WebApp interface issue [<a href="javascript:void(0);" class="font-xs">More Details</a>] <span class="text-muted">Sea deep blessed bearing under darkness from God air living isn\'t. </span>\n\t\t\t\t\t\t\t\t\t<span class="date">Jan 1, 2014</span>\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t</ul>\n\n\t\t\t\t\t\t<!-- end content -->\n\t\t\t\t\t</div>\n\n\t\t\t\t</div>\n\t\t\t\t<!-- end widget div -->\n\t\t\t</div>\n\t\t\t<!-- end widget -->\n\n\t\t</article>\n\n\t</div>\n\n\t<!-- end row -->\n\n</section>\n<!-- end widget grid -->\n\n<script type="text/javascript">\n\t// DO NOT REMOVE : GLOBAL FUNCTIONS!\n\tpageSetUp();\n\n\t/*\n\t * PAGE RELATED SCRIPTS\n\t */\n\n\t$(".js-status-update a").click(function() {\n\t\tvar selText = $(this).text();\n\t\t$this = $(this);\n\t\t$this.parents(\'.btn-group\').find(\'.dropdown-toggle\').html(selText + \' <span class="caret"></span>\');\n\t\t$this.parents(\'.dropdown-menu\').find(\'li\').removeClass(\'active\');\n\t\t$this.parent().addClass(\'active\');\n\t});\n\n\t/*\n\t* TODOs\n\t* TODO: add a way to add more todo\'s to list\n\t*/\n\n\t// initialize sortable\n\t$(function() {\n\t\t$("#sortable1, #sortable2").sortable({\n\t\t\thandle : \'.handle\',\n\t\t\tconnectWith : ".todo",\n\t\t\tupdate : countTasks\n\t\t}).disableSelection();\n\t});\n\n\t// check and uncheck\n\t$(\'.todo .checkbox > input[type="checkbox"]\').click(function() {\n\t\t$this = $(this).parent().parent().parent();\n\n\t\tif ($(this).prop(\'checked\')) {\n\t\t\t$this.addClass("complete");\n\n\t\t\t// remove this if you want to undo a check list once checked\n\t\t\t//$(this).attr("disabled", true);\n\t\t\t$(this).parent().hide();\n\n\t\t\t// once clicked - add class, copy to memory then remove and add to sortable3\n\t\t\t$this.slideUp(500, function() {\n\t\t\t\t$this.clone().prependTo("#sortable3").effect("highlight", {}, 800);\n\t\t\t\t$this.remove();\n\t\t\t\tcountTasks();\n\t\t\t});\n\t\t} else {\n\t\t\t// insert undo code here...\n\t\t}\n\n\t})\n\t// count tasks\n\tfunction countTasks() {\n\n\t\t$(\'.todo-group-title\').each(function() {\n\t\t\t$this = $(this);\n\t\t\t$this.find(".num-of-tasks").text($this.next().find("li").size());\n\t\t});\n\n\t}\n\n\t/*\n\t* RUN PAGE GRAPHS\n\t*/\n\n\t// Load FLOAT dependencies (related to page)\n\tloadScript("js/plugin/flot/jquery.flot.cust.js", loadFlotResize);\n\n\tfunction loadFlotResize() {\n\t\tloadScript("js/plugin/flot/jquery.flot.resize.js", loadFlotToolTip);\n\t}\n\n\tfunction loadFlotToolTip() {\n\t\tloadScript("js/plugin/flot/jquery.flot.tooltip.js", generatePageGraphs);\n\t}\n\n\tfunction generatePageGraphs() {\n\n\t\t/* TAB 1: UPDATING CHART */\n\t\t// For the demo we use generated data, but normally it would be coming from the server\n\n\t\tvar data = [], totalPoints = 200, $UpdatingChartColors = $("#updating-chart").css(\'color\');\n\t\tfunction getRandomData() {\n\t\t\tif (data.length > 0)\n\t\t\t\tdata = data.slice(1);\n\n\t\t\t// do a random walk\n\t\t\twhile (data.length < totalPoints) {\n\t\t\t\tvar prev = data.length > 0 ? data[data.length - 1] : 50;\n\t\t\t\tvar y = prev + Math.random() * 10 - 5;\n\t\t\t\tif (y < 0)\n\t\t\t\t\ty = 0;\n\t\t\t\tif (y > 100)\n\t\t\t\t\ty = 100;\n\t\t\t\tdata.push(y);\n\t\t\t}\n\n\t\t\t// zip the generated y values with the x values\n\t\t\tvar res = [];\n\t\t\tfor (var i = 0; i < data.length; ++i)\n\t\t\t\tres.push([i, data[i]])\n\t\t\treturn res;\n\t\t}\n\n\t\t// setup control widget\n\t\tvar updateInterval = 1500;\n\t\t$("#updating-chart").val(updateInterval).change(function() {\n\n\t\t\tvar v = $(this).val();\n\t\t\tif (v && !isNaN(+v)) {\n\t\t\t\tupdateInterval = +v;\n\t\t\t\t$(this).val("" + updateInterval);\n\t\t\t}\n\n\t\t});\n\n\t\t// setup plot\n\t\tvar options = {\n\t\t\tyaxis : {\n\t\t\t\tmin : 0,\n\t\t\t\tmax : 100\n\t\t\t},\n\t\t\txaxis : {\n\t\t\t\tmin : 0,\n\t\t\t\tmax : 100\n\t\t\t},\n\t\t\tcolors : [$UpdatingChartColors],\n\t\t\tseries : {\n\t\t\t\tlines : {\n\t\t\t\t\tlineWidth : 1,\n\t\t\t\t\tfill : true,\n\t\t\t\t\tfillColor : {\n\t\t\t\t\t\tcolors : [{\n\t\t\t\t\t\t\topacity : 0.4\n\t\t\t\t\t\t}, {\n\t\t\t\t\t\t\topacity : 0\n\t\t\t\t\t\t}]\n\t\t\t\t\t},\n\t\t\t\t\tsteps : false\n\n\t\t\t\t}\n\t\t\t}\n\t\t};\n\n\t\tvar plot = $.plot($("#updating-chart"), [getRandomData()], options);\n\n\t\t/* live switch */\n\t\t$(\'input[type="checkbox"]#start_interval\').click(function() {\n\t\t\tif ($(this).prop(\'checked\')) {\n\t\t\t\t$on = true;\n\t\t\t\tvar updateInterval = 1500;\n\t\t\t\tupdate();\n\t\t\t} else {\n\t\t\t\tclearInterval(updateInterval);\n\t\t\t\t$on = false;\n\t\t\t}\n\t\t});\n\n\t\tfunction update() {\n\t\t\tif ($on == true) {\n\t\t\t\tplot.setData([getRandomData()]);\n\t\t\t\tplot.draw();\n\t\t\t\tsetTimeout(update, updateInterval);\n\n\t\t\t} else {\n\t\t\t\tclearInterval(updateInterval)\n\t\t\t}\n\n\t\t}\n\n\t\tvar $on = false;\n\n\t\t/*end updating chart*/\n\n\t\t/* TAB 2: Social Network  */\n\n\t\t$(function() {\n\t\t\t// jQuery Flot Chart\n\t\t\tvar twitter = [[1, 27], [2, 34], [3, 51], [4, 48], [5, 55], [6, 65], [7, 61], [8, 70], [9, 65], [10, 75], [11, 57], [12, 59], [13, 62]], facebook = [[1, 25], [2, 31], [3, 45], [4, 37], [5, 38], [6, 40], [7, 47], [8, 55], [9, 43], [10, 50], [11, 47], [12, 39], [13, 47]], data = [{\n\t\t\t\tlabel : "Twitter",\n\t\t\t\tdata : twitter,\n\t\t\t\tlines : {\n\t\t\t\t\tshow : true,\n\t\t\t\t\tlineWidth : 1,\n\t\t\t\t\tfill : true,\n\t\t\t\t\tfillColor : {\n\t\t\t\t\t\tcolors : [{\n\t\t\t\t\t\t\topacity : 0.1\n\t\t\t\t\t\t}, {\n\t\t\t\t\t\t\topacity : 0.13\n\t\t\t\t\t\t}]\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\tpoints : {\n\t\t\t\t\tshow : true\n\t\t\t\t}\n\t\t\t}, {\n\t\t\t\tlabel : "Facebook",\n\t\t\t\tdata : facebook,\n\t\t\t\tlines : {\n\t\t\t\t\tshow : true,\n\t\t\t\t\tlineWidth : 1,\n\t\t\t\t\tfill : true,\n\t\t\t\t\tfillColor : {\n\t\t\t\t\t\tcolors : [{\n\t\t\t\t\t\t\topacity : 0.1\n\t\t\t\t\t\t}, {\n\t\t\t\t\t\t\topacity : 0.13\n\t\t\t\t\t\t}]\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\tpoints : {\n\t\t\t\t\tshow : true\n\t\t\t\t}\n\t\t\t}];\n\n\t\t\tvar options = {\n\t\t\t\tgrid : {\n\t\t\t\t\thoverable : true\n\t\t\t\t},\n\t\t\t\tcolors : ["#568A89", "#3276B1"],\n\t\t\t\ttooltip : true,\n\t\t\t\ttooltipOpts : {\n\t\t\t\t\t//content : "Value <b>$x</b> Value <span>$y</span>",\n\t\t\t\t\tdefaultTheme : false\n\t\t\t\t},\n\t\t\t\txaxis : {\n\t\t\t\t\tticks : [[1, "JAN"], [2, "FEB"], [3, "MAR"], [4, "APR"], [5, "MAY"], [6, "JUN"], [7, "JUL"], [8, "AUG"], [9, "SEP"], [10, "OCT"], [11, "NOV"], [12, "DEC"], [13, "JAN+1"]]\n\t\t\t\t},\n\t\t\t\tyaxes : {\n\n\t\t\t\t}\n\t\t\t};\n\n\t\t\tvar plot3 = $.plot($("#statsChart"), data, options);\n\t\t});\n\n\t\t// END TAB 2\n\n\t\t// TAB THREE GRAPH //\n\t\t/* TAB 3: Revenew  */\n\n\t\t$(function() {\n\n\t\t\tvar trgt = [[1354586000000, 153], [1364587000000, 658], [1374588000000, 198], [1384589000000, 663], [1394590000000, 801], [1404591000000, 1080], [1414592000000, 353], [1424593000000, 749], [1434594000000, 523], [1444595000000, 258], [1454596000000, 688], [1464597000000, 364]], prft = [[1354586000000, 53], [1364587000000, 65], [1374588000000, 98], [1384589000000, 83], [1394590000000, 980], [1404591000000, 808], [1414592000000, 720], [1424593000000, 674], [1434594000000, 23], [1444595000000, 79], [1454596000000, 88], [1464597000000, 36]], sgnups = [[1354586000000, 647], [1364587000000, 435], [1374588000000, 784], [1384589000000, 346], [1394590000000, 487], [1404591000000, 463], [1414592000000, 479], [1424593000000, 236], [1434594000000, 843], [1444595000000, 657], [1454596000000, 241], [1464597000000, 341]], toggles = $("#rev-toggles"), target = $("#flotcontainer");\n\n\t\t\tvar data = [{\n\t\t\t\tlabel : "Target Profit",\n\t\t\t\tdata : trgt,\n\t\t\t\tbars : {\n\t\t\t\t\tshow : true,\n\t\t\t\t\talign : "center",\n\t\t\t\t\tbarWidth : 30 * 30 * 60 * 1000 * 80\n\t\t\t\t}\n\t\t\t}, {\n\t\t\t\tlabel : "Actual Profit",\n\t\t\t\tdata : prft,\n\t\t\t\tcolor : \'#3276B1\',\n\t\t\t\tlines : {\n\t\t\t\t\tshow : true,\n\t\t\t\t\tlineWidth : 3\n\t\t\t\t},\n\t\t\t\tpoints : {\n\t\t\t\t\tshow : true\n\t\t\t\t}\n\t\t\t}, {\n\t\t\t\tlabel : "Actual Signups",\n\t\t\t\tdata : sgnups,\n\t\t\t\tcolor : \'#71843F\',\n\t\t\t\tlines : {\n\t\t\t\t\tshow : true,\n\t\t\t\t\tlineWidth : 1\n\t\t\t\t},\n\t\t\t\tpoints : {\n\t\t\t\t\tshow : true\n\t\t\t\t}\n\t\t\t}]\n\n\t\t\tvar options = {\n\t\t\t\tgrid : {\n\t\t\t\t\thoverable : true\n\t\t\t\t},\n\t\t\t\ttooltip : true,\n\t\t\t\ttooltipOpts : {\n\t\t\t\t\t//content: \'%x - %y\',\n\t\t\t\t\t//dateFormat: \'%b %y\',\n\t\t\t\t\tdefaultTheme : false\n\t\t\t\t},\n\t\t\t\txaxis : {\n\t\t\t\t\tmode : "time"\n\t\t\t\t},\n\t\t\t\tyaxes : {\n\t\t\t\t\ttickFormatter : function(val, axis) {\n\t\t\t\t\t\treturn "$" + val;\n\t\t\t\t\t},\n\t\t\t\t\tmax : 1200\n\t\t\t\t}\n\n\t\t\t};\n\n\t\t\tplot2 = null;\n\n\t\t\tfunction plotNow() {\n\t\t\t\tvar d = [];\n\t\t\t\ttoggles.find(\':checkbox\').each(function() {\n\t\t\t\t\tif ($(this).is(\':checked\')) {\n\t\t\t\t\t\td.push(data[$(this).attr("name").substr(4, 1)]);\n\t\t\t\t\t}\n\t\t\t\t});\n\t\t\t\tif (d.length > 0) {\n\t\t\t\t\tif (plot2) {\n\t\t\t\t\t\tplot2.setData(d);\n\t\t\t\t\t\tplot2.draw();\n\t\t\t\t\t} else {\n\t\t\t\t\t\tplot2 = $.plot(target, d, options);\n\t\t\t\t\t}\n\t\t\t\t}\n\n\t\t\t};\n\n\t\t\ttoggles.find(\':checkbox\').on(\'change\', function() {\n\t\t\t\tplotNow();\n\t\t\t});\n\t\t\tplotNow()\n\n\t\t});\n\n\t}\n\n\t/*\n\t * VECTOR MAP\n\t */\n\n\tdata_array = {\n\t\t"US" : 4977,\n\t\t"AU" : 4873,\n\t\t"IN" : 3671,\n\t\t"BR" : 2476,\n\t\t"TR" : 1476,\n\t\t"CN" : 146,\n\t\t"CA" : 134,\n\t\t"BD" : 100\n\t};\n\n\t\n\t/*\n\t * FULL CALENDAR JS\n\t */\t\n\n\tif ($("#calendar").length) {\n\t\tvar date = new Date();\n\t\tvar d = date.getDate();\n\t\tvar m = date.getMonth();\n\t\tvar y = date.getFullYear();\n\n\t\tvar calendar = $(\'#calendar\').fullCalendar({\n\n\t\t\teditable : true,\n\t\t\tdraggable : true,\n\t\t\tselectable : false,\n\t\t\tselectHelper : true,\n\t\t\tunselectAuto : false,\n\t\t\tdisableResizing : false,\n\n\t\t\theader : {\n\t\t\t\tleft : \'title\', //,today\n\t\t\t\tcenter : \'prev, next, today\',\n\t\t\t\tright : \'month, agendaWeek, agenDay\' //month, agendaDay,\n\t\t\t},\n\n\t\t\tselect : function(start, end, allDay) {\n\t\t\t\tvar title = prompt(\'Event Title:\');\n\t\t\t\tif (title) {\n\t\t\t\t\tcalendar.fullCalendar(\'renderEvent\', {\n\t\t\t\t\t\ttitle : title,\n\t\t\t\t\t\tstart : start,\n\t\t\t\t\t\tend : end,\n\t\t\t\t\t\tallDay : allDay\n\t\t\t\t\t}, true // make the event "stick"\n\t\t\t\t\t);\n\t\t\t\t}\n\t\t\t\tcalendar.fullCalendar(\'unselect\');\n\t\t\t},\n\n\t\t\tevents : [{\n\t\t\t\ttitle : \'All Day Event\',\n\t\t\t\tstart : new Date(y, m, 1),\n\t\t\t\tdescription : \'long description\',\n\t\t\t\tclassName : ["event", "bg-color-greenLight"],\n\t\t\t\ticon : \'fa-check\'\n\t\t\t}, {\n\t\t\t\ttitle : \'Long Event\',\n\t\t\t\tstart : new Date(y, m, d - 5),\n\t\t\t\tend : new Date(y, m, d - 2),\n\t\t\t\tclassName : ["event", "bg-color-red"],\n\t\t\t\ticon : \'fa-lock\'\n\t\t\t}, {\n\t\t\t\tid : 999,\n\t\t\t\ttitle : \'Repeating Event\',\n\t\t\t\tstart : new Date(y, m, d - 3, 16, 0),\n\t\t\t\tallDay : false,\n\t\t\t\tclassName : ["event", "bg-color-blue"],\n\t\t\t\ticon : \'fa-clock-o\'\n\t\t\t}, {\n\t\t\t\tid : 999,\n\t\t\t\ttitle : \'Repeating Event\',\n\t\t\t\tstart : new Date(y, m, d + 4, 16, 0),\n\t\t\t\tallDay : false,\n\t\t\t\tclassName : ["event", "bg-color-blue"],\n\t\t\t\ticon : \'fa-clock-o\'\n\t\t\t}, {\n\t\t\t\ttitle : \'Meeting\',\n\t\t\t\tstart : new Date(y, m, d, 10, 30),\n\t\t\t\tallDay : false,\n\t\t\t\tclassName : ["event", "bg-color-darken"]\n\t\t\t}, {\n\t\t\t\ttitle : \'Lunch\',\n\t\t\t\tstart : new Date(y, m, d, 12, 0),\n\t\t\t\tend : new Date(y, m, d, 14, 0),\n\t\t\t\tallDay : false,\n\t\t\t\tclassName : ["event", "bg-color-darken"]\n\t\t\t}, {\n\t\t\t\ttitle : \'Birthday Party\',\n\t\t\t\tstart : new Date(y, m, d + 1, 19, 0),\n\t\t\t\tend : new Date(y, m, d + 1, 22, 30),\n\t\t\t\tallDay : false,\n\t\t\t\tclassName : ["event", "bg-color-darken"]\n\t\t\t}, {\n\t\t\t\ttitle : \'Smartadmin Open Day\',\n\t\t\t\tstart : new Date(y, m, 28),\n\t\t\t\tend : new Date(y, m, 29),\n\t\t\t\tclassName : ["event", "bg-color-darken"]\n\t\t\t}],\n\n\t\t\teventRender : function(event, element, icon) {\n\t\t\t\tif (!event.description == "") {\n\t\t\t\t\telement.find(\'.fc-event-title\').append("<br/><span class=\'ultra-light\'>" + event.description + "</span>");\n\t\t\t\t}\n\t\t\t\tif (!event.icon == "") {\n\t\t\t\t\telement.find(\'.fc-event-title\').append("<i class=\'air air-top-right fa " + event.icon + " \'></i>");\n\t\t\t\t}\n\t\t\t}\n\t\t});\n\n\t};\n\n\t/* hide default buttons */\n\t$(\'.fc-header-right, .fc-header-center\').hide();\n\n\t\n\n\n\t$(\'#calendar-buttons #btn-prev\').click(function() {\n\t\t$(\'.fc-button-prev\').click();\n\t\treturn false;\n\t});\n\n\t$(\'#calendar-buttons #btn-next\').click(function() {\n\t\t$(\'.fc-button-next\').click();\n\t\treturn false;\n\t});\n\n\t$(\'#calendar-buttons #btn-today\').click(function() {\n\t\t$(\'.fc-button-today\').click();\n\t\treturn false;\n\t});\n\n\t$(\'#mt\').click(function() {\n\t\t$(\'#calendar\').fullCalendar(\'changeView\', \'month\');\n\t});\n\n\t$(\'#ag\').click(function() {\n\t\t$(\'#calendar\').fullCalendar(\'changeView\', \'agendaWeek\');\n\t});\n\n\t$(\'#td\').click(function() {\n\t\t$(\'#calendar\').fullCalendar(\'changeView\', \'agendaDay\');\n\t});\n\n\t/*\n\t * CHAT\n\t */\n\n\t$.filter_input = $(\'#filter-chat-list\');\n\t$.chat_users_container = $(\'#chat-container > .chat-list-body\')\n\t$.chat_users = $(\'#chat-users\')\n\t$.chat_list_btn = $(\'#chat-container > .chat-list-open-close\');\n\t$.chat_body = $(\'#chat-body\');\n\n\t/*\n\t * LIST FILTER\n\t */\n\n\t( function($) {\n\t\t\t// custom css expression for a case-insensitive contains()\n\t\t\tjQuery.expr[\':\'].Contains = function(a, i, m) {\n\t\t\t\treturn (a.textContent || a.innerText || "").toUpperCase().indexOf(m[3].toUpperCase()) >= 0;\n\t\t\t};\n\n\t\t\tfunction listFilter(list) {// header is any element, list is an unordered list\n\t\t\t\t// create and add the filter form to the header\n\n\t\t\t\t$.filter_input.change(function() {\n\t\t\t\t\tvar filter = $(this).val();\n\t\t\t\t\tif (filter) {\n\t\t\t\t\t\t// this finds all links in a list that contain the input,\n\t\t\t\t\t\t// and hide the ones not containing the input while showing the ones that do\n\t\t\t\t\t\t$.chat_users.find("a:not(:Contains(" + filter + "))").parent().slideUp();\n\t\t\t\t\t\t$.chat_users.find("a:Contains(" + filter + ")").parent().slideDown();\n\t\t\t\t\t} else {\n\t\t\t\t\t\t$.chat_users.find("li").slideDown();\n\t\t\t\t\t}\n\t\t\t\t\treturn false;\n\t\t\t\t}).keyup(function() {\n\t\t\t\t\t// fire the above change event after every letter\n\t\t\t\t\t$(this).change();\n\n\t\t\t\t});\n\n\t\t\t}\n\n\t\t\t//ondomready\n\t\t\t$(function() {\n\t\t\t\tlistFilter($.chat_users);\n\t\t\t});\n\n\t\t}(jQuery));\n\n\t$.chat_list_btn.click(function() {\n\t\t$(this).parent(\'#chat-container\').toggleClass(\'open\');\n\t})\n\n\t$.chat_body.animate({\n\t\tscrollTop : $.chat_body[0].scrollHeight\n\t}, 500);\n\n</script>\n');
     
     }).call(this);
     
@@ -1796,7 +1813,7 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<!--<div class="modal fade hide" role="dialog">-->\n    <div class="modal-dialog">\n        <div class="modal-container">\n            <div class="modal-header">\n                <button type="button" class="close" data-dismiss="modal">×</button>\n                <h4 class="modal-title">Patient Registration</h4>\n            </div>\n            <div class="modal-body"> \n                <form class="form-horizontal" role="form">\n                    <div class="control-group">\n                        <label class="col-sm-2  control-label" for="inputName">Name</label>\n                        <div class="controls">\n                            <div class="input-prepend">\n                                <span class="add-on"><i class="icon-nameplate"></i></span>\n                                <input class="span4" id="inputName" type="text">\n                            </div>                            \n                        </div>\n                    </div>\n                    <div class="control-group">\n                        <label class="col-sm-2 control-label" for="gender">\n                            Gender</label>\n                        <div class="controls">\n                            <label class="radio inline" >\n                                <input type="radio" name="gender" id="optionsMale" value="Male" checked>Male\n                            </label>\n                            <label class="radio inline">\n                                <input type="radio" name="gender" id="optionsFemale" value="Female">Female\n                            </label>\n                        </div>\n                    </div>\n                    <div class="control-group">\n                        <label class="control-label" for="salutation">\n                            Salutation</label>\n                        <div class="controls">\n                            <label class="radio inline">\n                                <input type="radio" name="salutation" id="optionsMr" value="Mr." checked>Mr.\n                                    \n                            </label>\n                            <label class="radio inline">\n                                <input type="radio" name="salutation" id="optionsMrs" value="Mrs.">Mrs.\n                            </label>\n                            <label class="radio inline">\n                                <input type="radio" name="salutation" id="optionsMiss" value="Miss.">Miss\n                            </label>\n                            <label class="radio inline">\n                                <input type="radio" name="salutation" id="optionsMs" value="Ms.">Ms.\n                            </label>\n                            <label class="radio inline">\n                                <input type="radio" name="salutation" id="optionsDr" value="Dr.">Dr.\n                            </label>\n                            <label class="radio inline">\n                                <input type="radio" name="salutation" id="optionsProf" value="Prof.">Prof.\n                            </label>\n                        </div>\n                    </div>\n                    <div class="control-group">\n                        <label class="control-label" for="marital-status">\n                             Marital Status</label>\n                        <div class="controls">\n                            <label class="radio inline">\n                                <input type="radio" name="marital-status" id="optionsMarried" value="Married" checked>Married\n                            </label>\n                            <label class="radio inline">\n                                <input type="radio" name="marital-status" id="optionsSingle" value="Single">Single\n                            </label>\n                            <label class="radio inline">\n                                <input type="radio" name="marital-status" id="optionsDivorced" value="Divorced">Divorced\n                            </label>\n                            <label class="radio inline">\n                                <input type="radio" name="marital-status" id="optionsCommonLaw" value="Common Law">Common Law\n                            </label>\n                            <label class="radio inline">\n                                <input type="radio" name="marital-status" id="optionsSeparated" value="Separated">Separated\n                            </label>\n                            <label class="radio inline">\n                                <input type="radio" name="marital-status" id="optionsWidowed" value="Widowed">Widowed\n                            </label>\n                        </div>\n                    </div>\n                    <div class="control-group">\n                        <label class="control-label" for="inputBirthdate">\n                            Date Of Birth</label>\n                        <div class="controls">\n                            <input type="text" id="inputBirthdate" class="datepicker" data-date-format="mm/dd/yyyy">\n                        </div>\n                    </div>\n                    <div class="control-group">\n                        <label class="control-label" for="inputAddress">\n                            Address</label>\n                        <div class="controls">\n                            <textarea id="inputAddress" rows="3"></textarea>\n                        </div>\n                    </div>  \n                    <div class="control-group">\n                        <label class="control-label" for="inputPhone">\n                            Phone</label>\n                        <div class="controls">\n                            <div class="input-prepend">\n                                <span class="add-on"><i class="icon-comment"></i></span>\n                                <input class="span4" id="inputPhone" type="text">\n                            </div>\n                        </div>\n                    </div>\n                    <div class="control-group">\n                        <label class="control-label" for="inputEmail">\n                            E-mail</label>\n                        <div class="controls">\n                            <div class="input-prepend">\n                                <span class="add-on"><i class="icon-envelope"></i></span>\n                                <input class="span4" id="inputEmail" type="text">\n                            </div>\n                        </div>\n                    </div>                                             \n                </form>                     \n            </div>\n            <div class="modal-footer">\n                <a href="#" class="btn btn-primary js-save-btn" data-dismiss="modal">Save changes</a> \n                <a href="#" class="btn js-cancel-btn" data-dismiss="modal">Cancel</a>\n            </div>\n        </div>\n    </div>\n<!--</div>-->');
+      __out.push('<div class="modal-dialog">\n\t\t<div class="modal-content">\n\t\t\t<div class="modal-header">\n\t\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t\t&times;\n\t\t\t\t</button>\n\t\t\t\t<h4 class="modal-title" id="myModalLabel">Patient Registration</h4>\n\t\t\t</div>\n\t\t\t<div class="modal-body">\n\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t<div class="widget-body fuelux col-sm-12">\n\t\t\t\t\t\t\t<div class="wizard">\n\t\t\t\t\t\t\t\t<ul class="steps">\n\t\t\t\t\t\t\t\t\t<li data-target="#step1" class="active">\n\t\t\t\t\t\t\t\t\t\t<span class="badge badge-info">1</span>Step 1<span class="chevron"></span>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t<li data-target="#step2">\n\t\t\t\t\t\t\t\t\t\t<span class="badge">2</span>Step 2<span class="chevron"></span>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t<li data-target="#step3">\n\t\t\t\t\t\t\t\t\t\t<span class="badge">3</span>Step 3<span class="chevron"></span>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t<div class="actions">\n\t\t\t\t\t\t\t\t\t<button type="button" class="btn btn-sm btn-primary btn-prev">\n\t\t\t\t\t\t\t\t\t\t<i class="fa fa-arrow-left"></i>Prev\n\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t<button type="button" class="btn btn-sm btn-success btn-next" data-last="Finish">\n\t\t\t\t\t\t\t\t\t\tNext<i class="fa fa-arrow-right"></i>\n\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class="step-content">\n\t\t\t\t\t\t\t\t<form class="form-horizontal" id="newpatient-wizard" method="post">\n\t\t\t\t\t\t\t\t\t<div class="step-pane active" id="step1">\n\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t<h3><strong>Step 1 </strong> - Basic Information</h3>\n\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group margin-bottom-sm">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<label class="control-label"><h4>Salutation</h4></label>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="inline-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<label class="radio  radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Mr." id="optionsMr" checked>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Mr.</label>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Mrs." id="optionsMrs">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Mrs.</label>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Miss" id="optionsMiss">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Miss</label>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Ms." id="optionsMs">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Ms.</label>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" id="optionsDr" value="Dr.">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Dr.</label>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" id="optionsProf" value="Prof">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Prof.</label>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-4">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-user fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="First Name" type="text" name="fname" id="fname">\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-4">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-user fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="Middle Name" type="text" name="mname" id="mname">\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-4">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-user fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="Last Name" type="text" name="lname" id="lname">\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<label class="control-label"><h4>Is name legal?</h4></label>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="inline-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<label class="radio  radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="legalname" value="True" id="nameLegalY" checked>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Yes</label>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="legalname"  value="False" id="nameLegalN">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>No</label>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-user fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<select class="form-control input-lg" name="relationshipStatus">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="" selected="selected">Marital Status</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Married">Married</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Single">Single</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Divorced">Divorced</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Common Law">Common Law</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Separated">Separated</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Widowed">Widowed</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</select>\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-calendar fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="text" name="dob" placeholder="Date Of Birth" class="form-control input-lg" id="dob" data-dateformat="dd/mm/yy">\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<label class="control-label"><h4>Gender</h4></label>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="inline-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<label class="radio  radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="gender" id="optionsMale" value="M" checked>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Male</label>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="gender" id="optionsFemale" value="F">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Female</label>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-phone fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" data-mask="(999) 999-999" data-mask-placeholder= "X" placeholder="Phone" type="text" name="phone" id="phone">\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-mobile fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" data-mask="9999 999-999" data-mask-placeholder= "X" placeholder="Mobile" type="text" name="mobile" id="mobile">\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-envelope fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="email@address.com" type="text" name="email" id="email">\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\t\t\t\t\t\t\t\t\t\t\t\t<h4>Address </h4>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-building fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="Building Name/House Number" type="text" name="building" id="building">\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-envelope-o fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="Street Name" type="text" name="street" id="street">\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-map-marker fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="Area Locality" type="text" name="locality" id="locality">\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-map-marker fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<select class="form-control input-lg" name="city" id="city">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="" selected="selected">Select City/Town</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Harare">Harare</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Bulawayo">Bulawayo</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Chitungwiza">Chitungwiza</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Gweru">Gweru</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Mutare">Mutare</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Chegutu">Chegutu</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Chinhoyi">Chinhoyi</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Bindura">Bindura</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Mt. Darwin">Mt. Darwin</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Kariba">Kariba</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Chipinge">Chipinge</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Rusape">Rusape</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Marondera">Marondera</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Kwekwe">Kwekwe</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Kadoma">Kadoma</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Gwanda">Gwanda</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Triangle">Triangle</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Beitbridge">Beitbridge</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Masvingo">Masvingo</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Zvishavane">Zvishavane</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Hwange">Hwange</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-map-marker fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<select class="form-control input-lg" name="province" id="province">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="" selected="selected">Select Province</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Bulawayo">Bulawayo</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Harare">Harare</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Manicaland">Manicaland</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Mashonaland Central">Mashonaland Central</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Mashonaland East">Mashonaland East</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Mashonaland West">Mashonaland West</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Masvingo">Masvingo</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Matabeleland North">Matabeleland North</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Matabeleland South">Matabeleland South</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Midlands">Midlands</option>\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-map-marker fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<select class="form-control input-lg" name="addressType" id="addressType">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="" selected="selected">Address Type</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Residential">Residential</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Industrial">Industrial</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Commercial">Commercial</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Military">Military</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Agricultural">Agricultural</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<option value="Educational">Educational</option>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="step-pane" id="step2">\n\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t<h3><strong>Step 2</strong> - Next of kin Information</h3>\n\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-user fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="First Name" type="text" name="rfname" id="rfname">\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-user fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="Last Name" type="text" name="rlname" id="rlname">\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<label class="control-label"><h4>Is patient dependant?</h4></label>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="inline-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<label class="radio  radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="dependant" value="True" id="dependantY" checked>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Yes</label>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="dependant"  value="False" id="dependantN">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>No</label>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-user fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="Relationship to patient" type="text" name="rtype" id="rtype">\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-calendar fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="text" name="rdob" placeholder="Date Of Birth" class="form-control input-lg" id="rdob" data-dateformat="dd/mm/yy">\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-phone fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" data-mask="(999) 999-999" data-mask-placeholder= "X" placeholder="Phone" type="text" name="rphone" id="rphone">\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-mobile fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" data-mask="9999 999-999" data-mask-placeholder= "X" placeholder="Mobile" type="text" name="rmobile" id="rmobile">\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-envelope fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="email@address.com" type="text" name="remail" id="remail">\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="step-pane" id="step3">\n\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t<h3><strong>Step 3</strong> - Finished</h3>\n\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t<h1 class="text-center text-success"><strong><i class="fa fa-check fa-lg"></i> Complete</strong></h1>\n\t\t\t\t\t\t\t\t\t\t<h4 class="text-center">Click finish to Save Changes</h4>\n\t\t\t\t\t\t\t\t\t\t<br>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</form>\n\t\t\t\t\t\t</div>\t\t\t\t\t\n\t\t\t\t</div>\t\t\n\t\t\t</div>\n\n\t\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t\t<!--<button type="button" class="close" data-dismiss="modal">\n\t\t\t\t\tCancel\n\t\t\t\t</button>\n\t\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\t\tSave Changes\n\t\t\t\t</button>-->\n\t\t\t</div>\t\t\t\n\t\t</div>\n\t</div>\t');
     
     }).call(this);
     
@@ -1846,15 +1863,19 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<td>');
+      __out.push('<td>\n    <img src="img/avatars/avatar92.jpg" class="img-square avatar hidden-phone" />\n    <a href="#view/patients/');
+    
+      __out.push(__sanitize(this.id));
+    
+      __out.push('" class="name">');
     
       __out.push(__sanitize(this.name));
     
-      __out.push('</td>\n<td>');
+      __out.push('</a>\n    <span class="subtext">Registered: ');
     
-      __out.push(__sanitize(this.gender));
+      __out.push(__sanitize(this.dateRegistered));
     
-      __out.push('</td>\n<td>');
+      __out.push('</span>\n</td>\n<td>');
     
       __out.push(__sanitize(this.dob));
     
@@ -1862,19 +1883,23 @@ module.exports = function (__obj) {
     
       __out.push(__sanitize(this.address));
     
-      __out.push('</td>\n<td>');
+      __out.push('</td>\n<td>\n    <i class="fa fa-mobile"></i>\n    <span>');
     
       __out.push(__sanitize(this.phone));
     
-      __out.push('</td>\n<td class="center ">\n    <a href="#view/patients/');
+      __out.push('</span>\n</td>\n<td class="align-right">\n    <a href="#">');
+    
+      __out.push(__sanitize(this.email));
+    
+      __out.push('</a>\n</td>\n<td class="align-center ">\n    <a href="#view/patients/');
     
       __out.push(__sanitize(this.id));
     
-      __out.push('" rel="tooltip" data-original-title="View">\n    \t<i class="icon-user"></i>\n    </a>&nbsp;&nbsp;&nbsp;\n    <a href="#edit/patients/');
+      __out.push('" rel="tooltip" title="View">\n        <i class="fa fa-user"></i> \n    </a>&nbsp;&nbsp;&nbsp;\n\t<a href="#edit/patients/');
     
       __out.push(__sanitize(this.id));
     
-      __out.push('" rel="tooltip" data-original-title="Edit">\n    \t<i class="icon-pencil"></i>\n    </a>&nbsp;&nbsp;&nbsp;\n    <a href="#" rel="tooltip" data-original-title="Delete">\n    \t<i class="icon-trash"></i>\n    </a>&nbsp;&nbsp;&nbsp;\n</td>');
+      __out.push('" rel="tooltip" title="Edit">\n\t   <i class="fa fa-pencil"></i>\n    </a>&nbsp;&nbsp;&nbsp;\n\t<a href="#" rel="tooltip" id="smart-mod-eg1" title="Delete">\n\t   <i class="fa fa-trash-o"></i>\n\t</a>&nbsp;&nbsp;&nbsp;\n</td>');
     
     }).call(this);
     
@@ -1924,7 +1949,7 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<div class="container">\n    <div class="row clearfix">\n        <div class="col-md-12 column">\n            <ul class="nav nav-pills">\n                <li><a href="#create" title="+ Add new patient"><i class="icon-large icon-user-add"></i></a></li>\n            </ul>\n        </div>\n    </div>\n    <div class="row clearfix">\n        <div class="col-md-8 column">\n            <table class="table table-bordered table-striped table-selectable">\n                <thead>\n                    <tr>\n                        <th>Name</th>\n                        <th>Gender</th>\n                        <th>Date Of Birth</th>\n                        <th>Address</th>\n                        <th>Phone</th>\n                        <th>Actions</th>                        \n                    </tr>\n                </thead>\n                <tbody class="patient-grid">\n                    <p class="no-results" style="display:none;">No Results</p>\n                </tbody>\n            </table>\n            <!-- Load More "Link" -->  \n            <div class="load-more">\n                <div id="followingBallsG" style="display:none;">\n                    <div id="followingBallsG_1" class="followingBallsG">\n                    </div>\n                    <div id="followingBallsG_2" class="followingBallsG">\n                    </div>\n                    <div id="followingBallsG_3" class="followingBallsG">\n                    </div>\n                    <div id="followingBallsG_4" class="followingBallsG">\n                    </div>\n                </div>\n\n                <a href="#" class="js-patients-loadmore">\n                    <div class="activate" style="display:none;"></div>\n                    Load More\n                </a>\n            </div>  \n        </div>\n        <div class="col-md-4 column">\n        </div>\n    </div>\n</div>\n');
+      __out.push('\t\t<div class="container-fluid">\n            <div id="pad-wrapper" class="users-list">\n                <div class="row-fluid header">\n                    <h3>My Patients</h3>\n                    <div class="span10">\n                        <a href="#create" class="btn btn-primary btn-lg" title="+ Add new patient">\n                            <span>\n                              <i class="fa fa-plus"></i>\n                            </span>\n\t\t\t\t\t\t\tNEW PATIENT\n                        </a>\t\t\t\t\t\t\n                    </div>\n                </div>\n\n                <!-- Patients table -->\n                <div class="row-fluid table">\n                    <table class="table table-hover">\n                        <thead>\n                            <tr>\n                                <th class="span4 sortable">\n                                    Name\n                                </th>\n                                <th class="span3 sortable">\n                                    <span class="line"></span>Date Of Birth\n                                </th>\n                                <th class="span2 sortable">\n                                    <span class="line"></span>Address\n                                </th>\n                                 <th class="span3 sortable">\n                                    <span class="line"></span>Phone\n                                </th>\n                                <th class="span3 sortable align-right">\n                                    <span class="line"></span>Email\n                                </th>\n                                <th class="span3 sortable align-right">\n                                \t<span class="line"></span>Actions\n                                </th>  \n                            </tr>\n                        </thead>\n                        <tbody class="patient-grid">\n                            <p class="no-results" style="display:none;">No Results</p>\n                        </tbody>\n                    </table>\n                </div>\n                <!-- Load More "Link" -->  \n\t            <div class="load-more">\n\t                <a href="#" class="js-patients-loadmore">\n\t                    <button class="btn btn-primary btn-lg btn-block" type="button" id="loader">\n\t\t\t\t\t\t\tLoad More\n\t\t\t\t\t\t</button>\n\t                </a>\t                \n\t            </div>                  \n                <!-- end users table -->\n            </div>\n        </div>');
     
     }).call(this);
     
@@ -1978,65 +2003,15 @@ module.exports = function (__obj) {
     
       __out.push(__sanitize(this.name));
     
-      __out.push('\n\t\t\t\t\t\t</h1>\n\t\t\t\t\t</div> <address> ');
+      __out.push('\n\t\t\t\t\t\t</h1>\n\t\t\t\t\t</div> \n\t\t\t\t\t<address> ');
     
       __out.push(__sanitize(this.address));
     
-      __out.push('<br /> <abbr title="Phone">P:</abbr> ');
+      __out.push('<br /> \n\t\t\t\t\t\t<abbr title="Phone">P:</abbr> \n\t\t\t\t\t\t');
     
       __out.push(__sanitize(this.phone));
     
-      __out.push('</address>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class="row clearfix">\n\t\t\t\t<div class="col-md-12 column">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\t\t<div class="col-md-4 column">\n\t\t</div>\n\t</div>\n</div>');
-    
-    }).call(this);
-    
-  }).call(__obj);
-  __obj.safe = __objSafe, __obj.escape = __escape;
-  return __out.join('');
-}
-});
-
-;require.register("templates/patients_template", function(exports, require, module) {
-module.exports = function (__obj) {
-  if (!__obj) __obj = {};
-  var __out = [], __capture = function(callback) {
-    var out = __out, result;
-    __out = [];
-    callback.call(this);
-    result = __out.join('');
-    __out = out;
-    return __safe(result);
-  }, __sanitize = function(value) {
-    if (value && value.ecoSafe) {
-      return value;
-    } else if (typeof value !== 'undefined' && value != null) {
-      return __escape(value);
-    } else {
-      return '';
-    }
-  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
-  __safe = __obj.safe = function(value) {
-    if (value && value.ecoSafe) {
-      return value;
-    } else {
-      if (!(typeof value !== 'undefined' && value != null)) value = '';
-      var result = new String(value);
-      result.ecoSafe = true;
-      return result;
-    }
-  };
-  if (!__escape) {
-    __escape = __obj.escape = function(value) {
-      return ('' + value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    };
-  }
-  (function() {
-    (function() {
-      __out.push('<br/>\n<br/>\n<br/>\n<div class="row-fluid">\n    <div class="span4 text-center">\n        <img src="img/twitter.jpg" width="100"><br/><br/>\n        <p>Follow me on Twitter<br/>\n        <a href="http://twitter.com/ccoenraets">@chridam</a></p>\n        <br/>\n    </div>\n\n    <div class="span4 text-center">\n        <img src="img/github.jpg" width="100"><br/><br/>\n        <p>Watch me code on GitHub<br/>\n        <a href="https://github.com/chrisdamba">https://github.com/chrisdamba</a></p>\n        <br/>\n    </div>\n\n    <div class="span4 text-center">\n        <img src="img/blog.jpg" width="100"><br/><br/>\n        <p>Visit my blog<br/><a href="http://chridam.com/blog">http://chridam.com/blog</a></p>\n        <br/>\n    </div>\n</div>\n');
+      __out.push('\n\t\t\t\t\t</address>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t\t<div class="row clearfix">\n\t\t\t\t<div class="col-md-12 column">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\t\t<div class="col-md-4 column">\n\t\t</div>\n\t</div>\n</div>');
     
     }).call(this);
     

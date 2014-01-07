@@ -1,4 +1,5 @@
 ﻿
+using System.Data;
 using System.Runtime.Serialization;
 using Daylight.WebApi.Contracts.Entities;
 
@@ -30,5 +31,24 @@ namespace Daylight.WebApi.Mvc.Models
 
         [DataMember]
         public int? PreferenceOrder { get; set; }
+
+        public Telecom ToEntity(Telecom telecom)
+        {
+            // Create telecom if doesn't exist
+            if (telecom == null)
+            {
+                telecom = new Telecom { State = EntityState.Added };
+            }
+            else
+            {
+                telecom.State = EntityState.Modified;
+            }
+
+            telecom.TelecomType = TelecomType;
+            telecom.PreferenceOrder = (short?) PreferenceOrder;
+            telecom.Use = Use;
+            telecom.Value = Value;
+            return telecom;
+        }
     }
 }

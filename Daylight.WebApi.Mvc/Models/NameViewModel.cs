@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.Data;
 using System.Runtime.Serialization;
 using Daylight.WebApi.Contracts.Entities;
 
@@ -51,5 +52,27 @@ namespace Daylight.WebApi.Mvc.Models
 
         [DataMember]
         public string Degree { get; set; }
+
+        public Name ToEntity(Name name)
+        {
+            // Create name if doesn't exist
+            if (name == null)
+            {
+                name = new Name { State = EntityState.Added };
+            }
+            else
+            {
+                name.State = EntityState.Modified;
+            }
+
+            name.GivenName = GivenName;
+            name.FamilyName = FamilyName;
+            name.MiddleName = MiddleName;
+            name.Prefix = Prefix;
+            name.Suffix = Suffix;
+            name.Degree = Degree;
+            
+            return name;
+        }
     }
 }

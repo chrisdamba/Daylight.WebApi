@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Runtime.Serialization;
 using Daylight.WebApi.Contracts.Entities;
 
@@ -42,5 +43,28 @@ namespace Daylight.WebApi.Mvc.Models
 
         [DataMember]
         public DateTime Dob { get; set; }
+
+        public Relationship ToEntity(Relationship relationship)
+        {
+            // Create relationship if doesn't exist
+            if (relationship == null)
+            {
+                relationship = new Relationship { State = EntityState.Added };
+            }
+            else
+            {
+                relationship.State = EntityState.Modified;
+            }
+            
+            relationship.GivenName = GivenName;
+            relationship.FamilyName = FamilyName;
+            relationship.MiddleName = MiddleName;
+            relationship.Gender = Gender;
+            relationship.Type = Relationship;
+            relationship.Dependent = Dependent;
+            relationship.DateOfBirth = Dob;
+
+            return relationship;
+        }
     }
 }

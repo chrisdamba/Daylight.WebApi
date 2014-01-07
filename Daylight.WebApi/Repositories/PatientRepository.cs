@@ -24,6 +24,47 @@ namespace Daylight.WebApi.Repositories
                     patient.PatientId = Guid.NewGuid();
                 }
 
+                // Sets the primary and foreign keys for any associated entitys which are missing them
+                foreach (var address in patient.Addresses)
+                {
+                    address.AddressId = address.AddressId == Guid.Empty ? Guid.NewGuid() : address.AddressId;
+                    address.PatientId = patient.PatientId;
+                }
+
+                foreach (var name in patient.Names)
+                {
+                    name.Id = name.Id == Guid.Empty ? Guid.NewGuid() : name.Id;
+                    name.PatientId = patient.PatientId;
+                }
+
+                foreach (var relationship in patient.Relationships)
+                {
+                    relationship.Id = relationship.Id == Guid.Empty ? Guid.NewGuid() : relationship.Id;
+                    relationship.PatientId = patient.PatientId;
+                }
+
+                foreach (var telecom in patient.Telecoms)
+                {
+                    telecom.Id = telecom.Id == Guid.Empty ? Guid.NewGuid() : telecom.Id;
+                    telecom.PatientId = patient.PatientId;
+                }
+
+                // Updates the entities in the context
+                var entries = patient.Names.Cast<IStateEntity>()
+                                .Union(new IStateEntity[] { patient })
+                                .Union(patient.Addresses.Cast<IStateEntity>()
+                                        .Union(new IStateEntity[] { patient }))
+                                .Union(patient.Relationships.Cast<IStateEntity>()
+                                        .Union(new IStateEntity[] { patient }))
+                                .Union(patient.Telecoms.Cast<IStateEntity>()
+                                        .Union(new IStateEntity[] { patient }))
+                                .ToArray();
+
+                foreach (var entry in entries)
+                {
+                    context.Entry(entry).State = entry.State;
+                }
+
                 context.Patients.Add(patient);
                 context.SaveChanges();
             }
