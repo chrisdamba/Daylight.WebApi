@@ -237,7 +237,7 @@ public void BeginNamespace(CodeGenerationTools code)
     if (!String.IsNullOrEmpty(codeNamespace))
     {
 #>
-namespace namespace Daylight.WebApi.Contracts.Entities
+namespace Daylight.WebApi.Contracts.Entities
 {
 <#+
         PushIndent("    ");

@@ -36,10 +36,10 @@ namespace Daylight.WebApi.Services
                     break;
 
                 case PatientFilter.Inpatient:
-                    query = x => x.Names.SingleOrDefault().GivenName.Contains(search);
+                    query = x => x.FirstName.Contains(search);
                     break;
                 case PatientFilter.Outpatient:
-                    query = x => x.Names.SingleOrDefault().GivenName.Contains(search);
+                    query = x => x.LastName.Contains(search);
                     break;
                 default:
                     query = x => !x.IsDeleted;

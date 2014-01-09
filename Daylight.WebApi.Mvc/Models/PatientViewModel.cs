@@ -11,11 +11,6 @@ namespace Daylight.WebApi.Mvc.Models
     [DataContract]
     public class PatientViewModel
     {
-        private NameViewModel[] names;
-        private TelecomsViewModel[] telecoms;
-        private AddressViewModel[] addresses;
-        private RelationshipViewModel[] relationships;
-
         public PatientViewModel()
         {
         }
@@ -23,34 +18,19 @@ namespace Daylight.WebApi.Mvc.Models
         public PatientViewModel(Patient patient)
         {
             Id = patient.PatientId;
-            Dob = patient.DateOfBirth.ToString("D");
-            Username = patient.Username;
-            DateRegistered = patient.DateBecamePatient.ToString("D");
+            Dob = patient.DateOfBirth;
+            DateRegistered = patient.DateBecamePatient;
             RelationshipStatus = patient.RelationshipStatus;
-            var patientAddress = patient.Addresses.FirstOrDefault();
-            if (patientAddress != null)
-                Address = string.Format("{0}, {1}, {2}, {3}", patientAddress.Building, patientAddress.Street, patientAddress.AreaLocality, patientAddress.City);
-            var patientName = patient.Names.FirstOrDefault();
-            if (patientName != null)
-                Name = (patient.Names != null) ? string.Format("{0} {1}", patientName.GivenName,
-                                                                  patientName.FamilyName) : string.Empty;
-            Gender = (patient.Gender == "M") ? "Male" : "Female";
-            var patientPhone = patient.Telecoms.FirstOrDefault(x => x.TelecomType == "cellphone");
-            if (patientPhone != null) Phone = patientPhone.Value;
-
-            var patientEmail = patient.Telecoms.FirstOrDefault(x => x.TelecomType == "email");
-            if (patientEmail != null) Email = patientEmail.Value;
-            if (patient.Names != null) Names = patient.Names.Select(x => new NameViewModel(x)).ToArray();
-            if (patient.Addresses != null) Addresses = patient.Addresses.Select(x => new AddressViewModel(x)).ToArray();
-            if (patient.Telecoms != null) Telecoms = patient.Telecoms.Select(x => new TelecomsViewModel(x)).ToArray();
-            if (patient.Relationships != null) Relationships = patient.Relationships.Select(x => new RelationshipViewModel(x)).ToArray();
+            Gender = patient.Gender;
+            FirstName = patient.FirstName;
+            LastName = patient.LastName;
+            Address = patient.Address;
+            Phone = patient.Phone;
+            Email = patient.Email;
         }
 
         [DataMember]
         public Guid Id { get; set; }
-
-        [DataMember]
-        public string Username { get; set; }
 
         [DataMember]
         public string Gender { get; set; }
@@ -59,10 +39,10 @@ namespace Daylight.WebApi.Mvc.Models
         public string RelationshipStatus { get; set; }
 
         [DataMember]
-        public string Prefix { get; set; }
+        public string FirstName { get; set; }
 
         [DataMember]
-        public string Name { get; set; }
+        public string LastName { get; set; }
 
         [DataMember]
         public string Phone { get; set; }
@@ -71,53 +51,15 @@ namespace Daylight.WebApi.Mvc.Models
         public string Email { get; set; }
 
         [DataMember]
-        public string Dob { get; set; }
+        public DateTime Dob { get; set; }
 
         [DataMember]
         public string Address { get; set; }
 
         [DataMember]
-        public string DateRegistered { get; set; }
+        public DateTime DateRegistered { get; set; }
 
-        /// <summary>
-        /// Gets or sets an array of name models for the patient.
-        /// </summary>
-        [DataMember]
-        public NameViewModel[] Names
-        {
-            get { return names ?? new NameViewModel[0]; }
-            set { names = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets an array of telecoms models for the patient.
-        /// </summary>
-        [DataMember]
-        public TelecomsViewModel[] Telecoms
-        {
-            get { return telecoms ?? new TelecomsViewModel[0]; }
-            set { telecoms = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets an array of relationship models for the patient.
-        /// </summary>
-        [DataMember]
-        public RelationshipViewModel[] Relationships
-        {
-            get { return relationships ?? new RelationshipViewModel[0]; }
-            set { relationships = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets an array of address models for the patient.
-        /// </summary>
-        [DataMember]
-        public AddressViewModel[] Addresses
-        {
-            get { return addresses ?? new AddressViewModel[0]; }
-            set { addresses = value; }
-        }
+        
 
         public Patient ToEntity(Patient patient)
         {
@@ -129,14 +71,15 @@ namespace Daylight.WebApi.Mvc.Models
                 patient.State = EntityState.Modified;
 
             // Populate properties
-            patient.Username = Username;
             patient.Gender = Gender;
             patient.DateOfBirth = Convert.ToDateTime(Dob);
             patient.RelationshipStatus = RelationshipStatus;
             patient.DateBecamePatient = Convert.ToDateTime(DateRegistered);
-
-            patient.Names = Names.Select(x => x.ToEntity(patient.Names.SingleOrDefault(n => n.PatientId == x.Id))).ToList();
-           
+            patient.FirstName = FirstName;
+            patient.LastName = LastName;
+            patient.Phone = Phone;
+            patient.Email = Email;
+            patient.Address = Address;
             
             return patient;
         }

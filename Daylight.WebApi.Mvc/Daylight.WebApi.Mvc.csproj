@@ -164,11 +164,7 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\AddressViewModel.cs" />
-    <Compile Include="Models\NameViewModel.cs" />
     <Compile Include="Models\PatientViewModel.cs" />
-    <Compile Include="Models\RelationshipViewModel.cs" />
-    <Compile Include="Models\TelecomsViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

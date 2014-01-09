@@ -40,9 +40,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Entities\Address.cs">
-      <DependentUpon>Model.tt</DependentUpon>
-    </Compile>
     <Compile Include="Entities\Address.Local.cs" />
     <Compile Include="Entities\AuditAction.cs" />
     <Compile Include="Entities\DeathReport.cs">
@@ -50,27 +47,10 @@
     </Compile>
     <Compile Include="Entities\IStateEntity.cs" />
     <Compile Include="Entities\Model.cs" />
-    <Compile Include="Entities\Model1.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Model.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Entities\Name.cs">
-      <DependentUpon>Model.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Entities\Name.Local.cs" />
     <Compile Include="Entities\Patient.cs">
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="Entities\Patient.Local.cs" />
-    <Compile Include="Entities\Relationship.cs">
-      <DependentUpon>Model.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Entities\Relationship.Local.cs" />
-    <Compile Include="Entities\Telecom.cs">
-      <DependentUpon>Model.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Entities\Telecom.Local.cs" />
     <Compile Include="IConditionRepository.cs" />
     <Compile Include="IPatientRepository.cs" />
     <Compile Include="IPatientService.cs" />

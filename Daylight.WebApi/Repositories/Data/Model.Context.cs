@@ -7,7 +7,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Daylight.WebApi.Contracts.Entities
+using Daylight.WebApi.Contracts.Entities;
+
+namespace Daylight.WebApi.Repositories.Data
 {
     using System;
     using System.Data.Entity;
@@ -23,19 +25,15 @@ namespace Daylight.WebApi.Contracts.Entities
         public DaylightDataContext(string connectionString)
             : base(connectionString)
         {
-            Configuration.ProxyCreationEnabled = false;
+    		Configuration.ProxyCreationEnabled = false;
         }
-    
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             throw new UnintentionalCodeFirstException();
         }
     
-        public DbSet<Address> Addresses { get; set; }
         public DbSet<DeathReport> DeathReports { get; set; }
-        public DbSet<Name> Names { get; set; }
         public DbSet<Patient> Patients { get; set; }
-        public DbSet<Relationship> Relationships { get; set; }
-        public DbSet<Telecom> Telecoms { get; set; }
     }
 }

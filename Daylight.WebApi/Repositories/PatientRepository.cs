@@ -23,48 +23,7 @@ namespace Daylight.WebApi.Repositories
                 {
                     patient.PatientId = Guid.NewGuid();
                 }
-
-                // Sets the primary and foreign keys for any associated entitys which are missing them
-                foreach (var address in patient.Addresses)
-                {
-                    address.AddressId = address.AddressId == Guid.Empty ? Guid.NewGuid() : address.AddressId;
-                    address.PatientId = patient.PatientId;
-                }
-
-                foreach (var name in patient.Names)
-                {
-                    name.Id = name.Id == Guid.Empty ? Guid.NewGuid() : name.Id;
-                    name.PatientId = patient.PatientId;
-                }
-
-                foreach (var relationship in patient.Relationships)
-                {
-                    relationship.Id = relationship.Id == Guid.Empty ? Guid.NewGuid() : relationship.Id;
-                    relationship.PatientId = patient.PatientId;
-                }
-
-                foreach (var telecom in patient.Telecoms)
-                {
-                    telecom.Id = telecom.Id == Guid.Empty ? Guid.NewGuid() : telecom.Id;
-                    telecom.PatientId = patient.PatientId;
-                }
-
-                // Updates the entities in the context
-                var entries = patient.Names.Cast<IStateEntity>()
-                                .Union(new IStateEntity[] { patient })
-                                .Union(patient.Addresses.Cast<IStateEntity>()
-                                        .Union(new IStateEntity[] { patient }))
-                                .Union(patient.Relationships.Cast<IStateEntity>()
-                                        .Union(new IStateEntity[] { patient }))
-                                .Union(patient.Telecoms.Cast<IStateEntity>()
-                                        .Union(new IStateEntity[] { patient }))
-                                .ToArray();
-
-                foreach (var entry in entries)
-                {
-                    context.Entry(entry).State = entry.State;
-                }
-
+               
                 context.Patients.Add(patient);
                 context.SaveChanges();
             }
@@ -75,47 +34,6 @@ namespace Daylight.WebApi.Repositories
             using (var context = CreateContext)
             {
                 patient.State = EntityState.Modified;
-
-                // Sets the primary and foreign keys for any associated entitys which are missing them
-                foreach (var address in patient.Addresses)
-                {
-                    address.AddressId = address.AddressId == Guid.Empty ? Guid.NewGuid() : address.AddressId;
-                    address.PatientId = patient.PatientId;
-                }
-
-                foreach (var name in patient.Names)
-                {
-                    name.Id = name.Id == Guid.Empty ? Guid.NewGuid() : name.Id;
-                    name.PatientId = patient.PatientId;
-                }
-
-                foreach (var relationship in patient.Relationships)
-                {
-                    relationship.Id = relationship.Id == Guid.Empty ? Guid.NewGuid() : relationship.Id;
-                    relationship.PatientId = patient.PatientId;
-                }
-
-                foreach (var telecom in patient.Telecoms)
-                {
-                    telecom.Id = telecom.Id == Guid.Empty ? Guid.NewGuid() : telecom.Id;
-                    telecom.PatientId = patient.PatientId;
-                }
-
-                // Updates the entities in the context
-                var entries = patient.Names.Cast<IStateEntity>()
-                                .Union(new IStateEntity[] { patient })
-                                .Union(patient.Addresses.Cast<IStateEntity>()
-                                        .Union(new IStateEntity[] { patient }))
-                                .Union(patient.Relationships.Cast<IStateEntity>()
-                                        .Union(new IStateEntity[] { patient }))
-                                .Union(patient.Telecoms.Cast<IStateEntity>()
-                                        .Union(new IStateEntity[] { patient }))
-                                .ToArray();
-
-                foreach (var entry in entries)
-                {
-                    context.Entry(entry).State = entry.State;
-                }
                 context.SaveChanges();
             }
         }
@@ -124,12 +42,7 @@ namespace Daylight.WebApi.Repositories
         {
             using (var context = CreateContext)
             {
-                return context.Patients
-                    .Include(Lambda.Property<Patient>(x => x.Names))
-                    .Include(Lambda.Property<Patient>(x => x.Addresses))
-                    .Include(Lambda.Property<Patient>(x => x.Relationships))
-                    .Include(Lambda.Property<Patient>(x => x.Telecoms))
-                    .SingleOrDefault(x => x.PatientId == id);
+                return context.Patients.SingleOrDefault(x => x.PatientId == id);
             }
         }
 
@@ -137,12 +50,7 @@ namespace Daylight.WebApi.Repositories
         {
             using (var context = CreateContext)
             {
-                return context.Patients
-                    .Include(Lambda.Property<Patient>(x => x.Names))
-                    .Include(Lambda.Property<Patient>(x => x.Addresses))
-                    .Include(Lambda.Property<Patient>(x => x.Relationships))
-                    .Include(Lambda.Property<Patient>(x => x.Telecoms))
-                    .Where(x => ids.Contains(x.PatientId)).ToArray();
+                return context.Patients.Where(x => ids.Contains(x.PatientId) && !x.IsDeleted).ToArray();
             }
         }
 

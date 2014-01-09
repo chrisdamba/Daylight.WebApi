@@ -15,14 +15,6 @@ namespace Daylight.WebApi.Repositories.Data
     public interface IDataContext : IDisposable
     {
         IDbSet<Patient> Patients { get; }
-
-        IDbSet<Address> Addresses { get; }
-
-        IDbSet<Name> Names { get; }
-
-        IDbSet<Relationship> Relationships { get; }
-
-        IDbSet<Telecom> Telecoms { get; }
         
         DbEntityEntry Entry(object entity);
         

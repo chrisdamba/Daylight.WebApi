@@ -12,14 +12,11 @@ namespace Daylight.WebApi.Contracts.Entities
     using System;
     using System.Collections.Generic;
     
-    public partial class Patient : IStateEntity
+    public partial class Patient
     {
         public Patient()
         {
-            this.Addresses = new HashSet<Address>();
-            this.Names = new HashSet<Name>();
-            this.Relationships = new HashSet<Relationship>();
-            this.Telecoms = new HashSet<Telecom>();
+            this.DeathReports = new HashSet<DeathReport>();
         }
     
         public System.Guid PatientId { get; set; }
@@ -27,14 +24,13 @@ namespace Daylight.WebApi.Contracts.Entities
         public string Gender { get; set; }
         public string RelationshipStatus { get; set; }
         public System.DateTime DateOfBirth { get; set; }
-        public bool DateOfBirthEstimate { get; set; }
         public System.DateTime DateBecamePatient { get; set; }
-        public string Extention { get; set; }
-        public string Username { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
+        public string Address { get; set; }
     
-        public virtual ICollection<Address> Addresses { get; set; }
-        public virtual ICollection<Name> Names { get; set; }
-        public virtual ICollection<Relationship> Relationships { get; set; }
-        public virtual ICollection<Telecom> Telecoms { get; set; }
+        public virtual ICollection<DeathReport> DeathReports { get; set; }
     }
 }

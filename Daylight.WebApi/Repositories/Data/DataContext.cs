@@ -14,25 +14,5 @@ namespace Daylight.WebApi.Repositories.Data
         {
             get { return base.Patients; }
         }
-
-        public IDbSet<Address> Addresses
-        {
-            get { return base.Addresses; }
-        }
-
-        public IDbSet<Name> Names
-        {
-            get { return base.Names; }
-        }
-
-        public IDbSet<Relationship> Relationships
-        {
-            get { return base.Relationships; }
-        }
-
-        public IDbSet<Telecom> Telecoms
-        {
-            get { return base.Telecoms; }
-        }
     }
 }
