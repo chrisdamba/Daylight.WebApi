@@ -18,8 +18,8 @@ namespace Daylight.WebApi.Mvc.Models
         public PatientViewModel(Patient patient)
         {
             Id = patient.PatientId;
-            Dob = patient.DateOfBirth;
-            DateRegistered = patient.DateBecamePatient;
+            Dob = patient.DateOfBirth.ToLongDateString();
+            DateRegistered = patient.DateBecamePatient.ToString("f");
             RelationshipStatus = patient.RelationshipStatus;
             Gender = patient.Gender;
             FirstName = patient.FirstName;
@@ -27,10 +27,14 @@ namespace Daylight.WebApi.Mvc.Models
             Address = patient.Address;
             Phone = patient.Phone;
             Email = patient.Email;
+            Age = GetAge(patient.DateOfBirth);
         }
 
         [DataMember]
         public Guid Id { get; set; }
+
+        [DataMember]
+        public int Age { get; set; }
 
         [DataMember]
         public string Gender { get; set; }
@@ -51,13 +55,13 @@ namespace Daylight.WebApi.Mvc.Models
         public string Email { get; set; }
 
         [DataMember]
-        public DateTime Dob { get; set; }
+        public string Dob { get; set; }
 
         [DataMember]
         public string Address { get; set; }
 
         [DataMember]
-        public DateTime DateRegistered { get; set; }
+        public string DateRegistered { get; set; }
 
         
 
@@ -82,6 +86,14 @@ namespace Daylight.WebApi.Mvc.Models
             patient.Address = Address;
             
             return patient;
+        }
+
+        private int GetAge(DateTime dob)
+        {
+            DateTime today = DateTime.Today;
+            int age = today.Year - dob.Year;
+            if (dob > today.AddYears(-age)) age--;
+            return age;
         }
     }
 }

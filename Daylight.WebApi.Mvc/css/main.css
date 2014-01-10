@@ -36,6 +36,10 @@
 		display: inline-block;
 		vertical-align: 1px;
 	}
+    
+    .dashboard-panel-6 {
+   		width: 45%;
+	}
 
 	label {
 		font-weight:normal;
