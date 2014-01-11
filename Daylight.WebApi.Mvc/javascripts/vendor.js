@@ -18712,89 +18712,37 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
     __extends(ModalView, _super);
 
     function ModalView() {
-      this.onWindowResize = __bind(this.onWindowResize, this);
-      this.onCloseClick = __bind(this.onCloseClick, this);
+      this.render = __bind(this.render, this);
       _ref = ModalView.__super__.constructor.apply(this, arguments);
       return _ref;
     }
 
-    ModalView.prototype.modalTemplate = _.template('<div id="<%= cid %>" class="modal fade" role="dialog">\
-		<div class="modal-dialog">\
-			<div class="modal-container">\
-				<div class="modal-header">\
-					<button type="button" class="close" data-dismiss="modal">×</button>\
-				</div>\
-				<div class="modal-body">           \
-		        </div>\
-		        <div class="modal-footer">\
-		            <a href="#" class="btn btn-primary js-save-btn" data-dismiss="modal">Save changes</a> \
-	            	<a href="#" class="btn js-cancel-btn" data-dismiss="modal">Cancel</a>\
-		        </div>\
-		    </div>\
-	    </div>\
-	</div>');
+    ModalView.prototype.events = {
+      'hidden.bs.modal': 'teardown'
+    };
 
     ModalView.prototype.initialize = function(options) {
       ModalView.__super__.initialize.call(this, options);
-      this.$domEL = null;
-      if (options != null ? options.domEL : void 0) {
-        this.$domEL = options.domEL instanceof $ ? options.domEL : $(options.domEL);
-      } else {
-        this.$domEL = $('body');
-      }
-      this.$modalWrapper = $(this.modalTemplate({
-        cid: this.cid
-      }));
-      return this.$domEL.append(this.$modalWrapper);
+      _.bindAll(this, "render");
+      return this.render();
     };
 
-    ModalView.prototype.setElement = function(element, delegate) {
-      var $modalContent;
-      ModalView.__super__.setElement.call(this, element, delegate);
-      $modalContent = $('.modal-body', this.$modalWrapper);
-      $modalContent.html(this.el);
+    ModalView.prototype.render = function() {
+      this.$el.html(this.template(this.model.toJSON()));
       this.$el.modal({
         show: false
       });
+      this.delegateEvents(this.events);
       return this;
     };
 
-    ModalView.prototype.leave = function(removeFromDOM) {
-      var $modalContent;
-      if (removeFromDOM == null) {
-        removeFromDOM = true;
-      }
-      $(window).off("resize." + this.cid, this.onWindowResize);
-      $modalContent = $('.modal-body', this.$modalWrapper);
-      if (this.options.draggable && ($modalContent.data('draggable') || $modalContent.data('ui-draggable'))) {
-        $modalContent.draggable('destroy');
-      }
-      ModalView.__super__.leave.call(this, removeFromDOM);
-      if (removeFromDOM) {
-        return this.$modalWrapper.remove();
-      }
+    ModalView.prototype.show = function() {
+      return this.$el.modal("show");
     };
 
-    ModalView.prototype.close = function(leave) {
-      if (leave == null) {
-        leave = true;
-      }
-      this.trigger('close', {
-        target: this
-      });
-      if (leave) {
-        return this.leave();
-      }
-    };
-
-    ModalView.prototype.onCloseClick = function(e) {
-      e.preventDefault();
-      this.cancel();
-      return this.close();
-    };
-
-    ModalView.prototype.onWindowResize = function(e) {
-      return this.center();
+    ModalView.prototype.teardown = function() {
+      this.$el.data("modal", null);
+      return this.remove();
     };
 
     return ModalView;
