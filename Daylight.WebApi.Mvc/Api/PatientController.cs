@@ -28,6 +28,14 @@ namespace Daylight.WebApi.Mvc.Api
         }
         
         // GET api/patients
+        /// <summary>
+        /// Returns an enumerable of patients optionally with skip/take values.
+        /// </summary>
+        /// <param name="filter">The filter to apply.</param>
+        /// <param name="search">The search string to filter by.</param>
+        /// <param name="skip">The number to skip.</param>
+        /// <param name="take">The number to take.</param>
+        /// <returns>An enumerable of patients.</returns>
         public IEnumerable<PatientViewModel> Get(PatientFilter? filter, string search = null, int skip = 0, int take = int.MaxValue)
         {
             if (skip < 0)
@@ -43,9 +51,9 @@ namespace Daylight.WebApi.Mvc.Api
         }
 
         // GET api/patients
-        public IEnumerable<PatientViewModel> Get(int skip = 0, int take = int.MaxValue)
+        public IEnumerable<PatientViewModel> Get(string search = null, int skip = 0, int take = int.MaxValue)
         {
-            return Get(null, null, skip, take);
+            return Get(null, search, skip, take);
         }
 
          // GET api/patients/{patientId}

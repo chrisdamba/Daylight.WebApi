@@ -11,6 +11,8 @@ namespace Daylight.WebApi.Contracts
 
         Outpatient = 2,
 
-        Inpatient = 4
+        Inpatient = 4,
+
+        Removed = 8
     }
 }

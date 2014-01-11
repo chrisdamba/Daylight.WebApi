@@ -393,7 +393,7 @@ Application = (function(_super) {
       route = window.decache(this.router.addParamsToRoute(route, params));
     }
     collection = null;
-    delete window.App.currentPlaylist;
+    delete window.App.currentPatient;
     if (!(this.currentView instanceof PatientListView)) {
       collection = new PatientCollection;
       this.showView(new PatientListView({
@@ -507,6 +507,7 @@ PatientCollection = (function(_super) {
       cache: false,
       success: this.anyFetchSuccess
     });
+    console.log(options);
     return PatientCollection.__super__.fetch.call(this, options);
   };
 
@@ -639,7 +640,7 @@ PatientModel = (function(_super) {
   };
 
   PatientModel.prototype.urlRoot = function() {
-    return window.App.url(this._urlRoot);
+    return 'API/Patients';
   };
 
   PatientModel.prototype.initialize = function(options) {
@@ -724,8 +725,7 @@ PatientModel = (function(_super) {
   };
 
   PatientModel.prototype.editMode = function(mode) {
-    this.set('_editMode', mode);
-    return this.get('conditions').invoke('editMode', mode);
+    return this.set('_editMode', mode);
   };
 
   PatientModel.prototype.dispose = function() {
@@ -974,7 +974,7 @@ PatientCreateView = (function(_super) {
     street = this.$('#street').val();
     city = this.$('#city').val();
     province = this.$('#province').val();
-    address = building + ', ' + street + ', ' + areaLocality + ', ' + city + ', ' + province;
+    address = "" + building + ", " + street + ", " + areaLocality + ", " + city + ", " + province;
     collection = window.IoC.get('PatientCollection');
     this.model.collection = collection;
     this.model.set(this.model.parse({
@@ -1094,47 +1094,42 @@ PatientListItemView = (function(_super) {
     'click .smart-mod-del': 'onPatientDeleteClick'
   };
 
-  PatientListItemView.prototype._model = void 0;
-
-  PatientListItemView.prototype.dispose = function() {
-    PatientListItemView.__super__.dispose.apply(this, arguments);
-    return delete this._model;
-  };
-
   PatientListItemView.prototype.template = function(data) {
     return PatientListItemTemplate(data);
   };
 
   PatientListItemView.prototype.initialize = function(options) {
     PatientListItemView.__super__.initialize.call(this, options);
-    this._model = this.model;
     this.bindTo(this.model, 'change', this.render);
     return this.bindTo(this.model, 'destroy', this.onDestroy);
   };
 
   PatientListItemView.prototype.render = function() {
-    this._model = this.model;
     this.$el.html(this.template(this.model.toJSON()));
     return this;
   };
 
   PatientListItemView.prototype.onDestroy = function() {
+    this.$el.remove();
     return window.App.eventAggregator.trigger('navigate:patients');
   };
 
   PatientListItemView.prototype.onPatientDeleteClick = function(e) {
+    var _model, _name;
+    _model = this.model;
+    _name = this.model.get('firstName') + ' ' + this.model.get('lastName');
     $.SmartMessageBox({
       title: 'Daylight Surgery Patient Remove Alert!',
-      content: 'Are you sure you want to remove this patient?',
+      content: "Are you sure you want to remove this patient " + _name + "?",
       buttons: '[No][Yes]'
     }, function(ButtonPressed) {
-      var id;
       if (ButtonPressed === 'Yes') {
-        id = e.currentTarget.attributes[3].nodeValue;
-        console.log(JSON.stringify(this._model));
+        _model.destroy({
+          wait: true
+        });
         $.smallBox({
           title: 'Daylight Surgery Patient Remove',
-          content: "<i class='fa fa-clock-o'></i> <i>Patient successfully removed...</i>",
+          content: "<i class='fa fa-clock-o'></i> <i>Patient " + _name + " successfully removed...</i>",
           color: '#659265',
           iconSmall: 'fa fa-times fa-2x fadeInRight animated',
           timeout: 4000
@@ -1144,7 +1139,7 @@ PatientListItemView = (function(_super) {
       if (ButtonPressed === 'No') {
         return $.smallBox({
           title: 'Daylight Surgery Patient Remove',
-          content: "<i class='fa fa-clock-o'></i> <i>Patient has not been removed...</i>",
+          content: "<i class='fa fa-clock-o'></i> <i>Patient " + _name + " has not been removed...</i>",
           color: '#C46A69',
           iconSmall: 'fa fa-times fa-2x fadeInRight animated',
           timeout: 4000
@@ -1163,7 +1158,7 @@ module.exports = PatientListItemView;
 });
 
 ;require.register("daylight/views/patient_list_view", function(exports, require, module) {
-var PatientListItemView, PatientListTemplate, PatientListView, _ref,
+var PatientListItemView, PatientListTemplate, PatientListView, SearchView, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1172,12 +1167,15 @@ PatientListItemView = require('daylight/views/patient_list_item_view');
 
 PatientListTemplate = require('templates/patient_list_template');
 
+SearchView = require('daylight/views/search/search_view');
+
 PatientListView = (function(_super) {
   __extends(PatientListView, _super);
 
   function PatientListView() {
     this.onViewPatientClick = __bind(this.onViewPatientClick, this);
     this.showNoResults = __bind(this.showNoResults, this);
+    this.onDropdownToggle = __bind(this.onDropdownToggle, this);
     this.onCollectionOpen = __bind(this.onCollectionOpen, this);
     this.onCollectionEnd = __bind(this.onCollectionEnd, this);
     this.onLoadMore = __bind(this.onLoadMore, this);
@@ -1186,6 +1184,7 @@ PatientListView = (function(_super) {
     this.reset = __bind(this.reset, this);
     this.removePatient = __bind(this.removePatient, this);
     this.patientEvent = __bind(this.patientEvent, this);
+    this.renderSearch = __bind(this.renderSearch, this);
     this.renderPatient = __bind(this.renderPatient, this);
     this.render = __bind(this.render, this);
     this.dispose = __bind(this.dispose, this);
@@ -1196,7 +1195,8 @@ PatientListView = (function(_super) {
   PatientListView.prototype.template = PatientListTemplate;
 
   PatientListView.prototype.events = {
-    'click .js-patients-loadmore': 'onLoadMore'
+    'click .js-patients-loadmore': 'onLoadMore',
+    'click .dropdown-toggle': 'onDropdownToggle'
   };
 
   PatientListView.prototype.dispose = function() {
@@ -1225,6 +1225,7 @@ PatientListView = (function(_super) {
     PatientListView.__super__.render.apply(this, arguments);
     this.$el.empty();
     this.replaceElement(this.template());
+    this.renderSearch();
     this.collection.forEach(this.renderPatient, this);
     return this;
   };
@@ -1237,6 +1238,16 @@ PatientListView = (function(_super) {
     this.patientEvent('patientAdded', view);
     this.patientEvent('patientRendered', view);
     return this.$('.patient-grid').append(this.renderChild(view).el);
+  };
+
+  PatientListView.prototype.renderSearch = function() {
+    var searchView;
+    searchView = new SearchView({
+      el: this.$('.patient-search'),
+      collection: this.collection
+    });
+    this.renderChild(searchView);
+    return this;
   };
 
   PatientListView.prototype.patientEvent = function(type, patientView) {
@@ -1283,6 +1294,18 @@ PatientListView = (function(_super) {
     return this.$('#loader').html('<h3>Load more</h3>');
   };
 
+  PatientListView.prototype.onDropdownToggle = function(e) {
+    var $item;
+    e.preventDefault();
+    $item = $(this).parent();
+    $item.toggleClass('active');
+    if ($item.hasClass('active')) {
+      return $item.find('.submenu').slideDown('fast');
+    } else {
+      return $item.find('.submenu').slideUp('fast');
+    }
+  };
+
   PatientListView.prototype.showNoResults = function() {
     if (this.collection.length > 0) {
       return this.$('.no-results').hide();
@@ -1319,6 +1342,7 @@ PatientView = (function(_super) {
   __extends(PatientView, _super);
 
   function PatientView() {
+    this.onDeletePatientClick = __bind(this.onDeletePatientClick, this);
     this.onSaveSuccess = __bind(this.onSaveSuccess, this);
     this.onSaveStart = __bind(this.onSaveStart, this);
     this.onNavigate = __bind(this.onNavigate, this);
@@ -1328,6 +1352,10 @@ PatientView = (function(_super) {
     _ref = PatientView.__super__.constructor.apply(this, arguments);
     return _ref;
   }
+
+  PatientView.prototype.events = {
+    'click .js-delete': 'onDeletePatientClick'
+  };
 
   PatientView.prototype.template = function(data) {
     return PatientViewTemplate(data);
@@ -1366,6 +1394,40 @@ PatientView = (function(_super) {
     return alert('Saved');
   };
 
+  PatientView.prototype.onDeletePatientClick = function(e) {
+    var _model;
+    _model = this.model;
+    $.SmartMessageBox({
+      title: 'Daylight Surgery Patient Remove Alert!',
+      content: 'Are you sure you want to remove this patient?',
+      buttons: '[No][Yes]'
+    }, function(ButtonPressed) {
+      if (ButtonPressed === 'Yes') {
+        _model.destroy({
+          wait: true
+        });
+        $.smallBox({
+          title: 'Daylight Surgery Patient Remove',
+          content: "<i class='fa fa-clock-o'></i> <i>Patient successfully removed...</i>",
+          color: '#659265',
+          iconSmall: 'fa fa-times fa-2x fadeInRight animated',
+          timeout: 4000
+        });
+        window.App.eventAggregator.trigger('navigate:patients');
+      }
+      if (ButtonPressed === 'No') {
+        return $.smallBox({
+          title: 'Daylight Surgery Patient Remove',
+          content: "<i class='fa fa-clock-o'></i> <i>Patient has not been removed...</i>",
+          color: '#C46A69',
+          iconSmall: 'fa fa-times fa-2x fadeInRight animated',
+          timeout: 4000
+        });
+      }
+    });
+    return e.preventDefault();
+  };
+
   return PatientView;
 
 })(support.View);
@@ -1376,43 +1438,94 @@ if (typeof module !== "undefined" && module !== null) {
 
 });
 
-;require.register("daylight/views/patients_list_view", function(exports, require, module) {
-var PatientsListTemplate, PatientsListView, _ref,
+;require.register("daylight/views/search/search_view", function(exports, require, module) {
+var SearchTemplate, SearchView, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-PatientsListTemplate = require('templates/patients_list_template');
+SearchTemplate = require('templates/search/search_template');
 
-PatientsListView = (function(_super) {
-  __extends(PatientsListView, _super);
+SearchView = (function(_super) {
+  __extends(SearchView, _super);
 
-  function PatientsListView() {
+  function SearchView() {
+    this.onClearSearch = __bind(this.onClearSearch, this);
+    this.onSubmit = __bind(this.onSubmit, this);
+    this.onKeyUp = __bind(this.onKeyUp, this);
+    this.onKeyDown = __bind(this.onKeyDown, this);
     this.render = __bind(this.render, this);
-    this.template = __bind(this.template, this);
-    _ref = PatientsListView.__super__.constructor.apply(this, arguments);
+    _ref = SearchView.__super__.constructor.apply(this, arguments);
     return _ref;
   }
 
-  PatientsListView.prototype.template = function(data) {
-    return PatientsListTemplate(data);
+  SearchView.prototype.template = SearchTemplate;
+
+  SearchView.prototype.events = {
+    'click .js-submit': 'onSubmit',
+    'click .js-clear-search': 'onClearSearch',
+    'keyup .js-search-terms': 'onKeyUp',
+    'keydown .js-search-terms': 'onKeyDown',
+    'click .help': 'onHelpClick'
   };
 
-  PatientsListView.prototype.initialize = function(options) {
-    PatientsListView.__super__.initialize.call(this, options);
-    return this.listenTo(this.model, 'change', this.render, this);
+  SearchView.prototype.getTemplateAttrs = function() {
+    var params, rtn;
+    params = this.collection.getFilter();
+    return rtn = {
+      searchTerms: params && params.search ? params.search : ''
+    };
   };
 
-  PatientsListView.prototype.render = function() {
-    this.$el.html(this.template(this.model.toJSON()));
+  SearchView.prototype.render = function() {
+    this.$el.html(this.template(this.getTemplateAttrs()));
     return this;
   };
 
-  return PatientsListView;
+  SearchView.prototype.parseQuery = function(str) {
+    str = str.replace(/\x20+(?=\x20)/g, '');
+    return str = String.prototype.trim ? str.trim() : str;
+  };
+
+  SearchView.prototype.doSearch = function() {
+    var params, terms;
+    terms = this.$('input[name=SearchCriterion]').val();
+    params = _.extend({}, this.collection.getFilter(), {
+      search: this.parseQuery(terms)
+    });
+    return window.App.eventAggregator.trigger("navigate:patients", params);
+  };
+
+  SearchView.prototype.onKeyDown = function(e) {
+    if (e.which === 13) {
+      return e.preventDefault();
+    }
+  };
+
+  SearchView.prototype.onKeyUp = function(e) {
+    if (e.which === 13) {
+      e.preventDefault();
+      return this.doSearch();
+    }
+  };
+
+  SearchView.prototype.onSubmit = function(e) {
+    e.preventDefault();
+    return this.doSearch();
+  };
+
+  SearchView.prototype.onClearSearch = function(e) {
+    e.preventDefault();
+    return window.App.eventAggregator.trigger('navigate:patients', {
+      filter: null
+    });
+  };
+
+  return SearchView;
 
 })(support.View);
 
-module.exports = PatientsListView;
+module.exports = SearchView;
 
 });
 
@@ -1478,6 +1591,7 @@ Router = (function(_super) {
   }
 
   Router.prototype.routes = {
+    '?*query': 'patients',
     '': 'default',
     'addwidget': 'addWidget',
     'edit/patients/:id': 'editPatient',
@@ -1955,7 +2069,7 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('\t\t<div class="container-fluid">\n            <div id="pad-wrapper" class="users-list">\n                <div class="row-fluid header">\n                    <h3>My Patients</h3>\n                    <div class="span10">\n                        <a href="#create" class="btn btn-primary btn-lg" title="+ Add new patient">\n                            <span>\n                              <i class="fa fa-plus"></i>\n                            </span>\n\t\t\t\t\t\t\tNEW PATIENT\n                        </a>\t\t\t\t\t\t\n                    </div>\n                </div>\n\n                <!-- Patients table -->\n                <div class="row-fluid table">\n                    <table class="table table-hover">\n                        <thead>\n                            <tr>\n                                <th class="span4 sortable">\n                                    Name\n                                </th>\n                                <th class="span3 sortable">\n                                    <span class="line"></span>Age\n                                </th>\n                                <th class="span2 sortable">\n                                    <span class="line"></span>Address\n                                </th>\n                                 <th class="span3 sortable">\n                                    <span class="line"></span>Phone\n                                </th>\n                                <th class="span3 sortable align-right">\n                                    <span class="line"></span>Email\n                                </th>\n                                <th class="span3 sortable align-right">\n                                \t<span class="line"></span>Actions\n                                </th>  \n                            </tr>\n                        </thead>\n                        <tbody class="patient-grid">\n                            <p class="no-results" style="display:none;">No Results</p>\n                        </tbody>\n                    </table>\n                </div>\n                <!-- Load More "Link" -->  \n\t            <div class="load-more">\n\t                <a href="#" class="js-patients-loadmore">\n\t                    <button class="btn btn-primary btn-lg btn-block" type="button" id="loader">\n\t\t\t\t\t\t\tLoad More\n\t\t\t\t\t\t</button>\n\t                </a>\t                \n\t            </div>                  \n                <!-- end users table -->\n            </div>\n        </div>');
+      __out.push('\t\t<div class="container-fluid">\n            <div id="pad-wrapper" class="users-list">\n                <div class="row-fluid header">\n                    <div class="collapse navbar-collapse bg-color-white">\n                        <ul class="nav navbar-nav">                            \n                            <li class="dropdown">\n                                <a class="dropdown-toggle" data-toggle="dropdown" href="#"> Filter patients by <b class="caret"></b> </a>\n                                <ul class="dropdown-menu">\n                                    <li>\n                                        <a href="#?filter=adults">Adults (>18)</a>\n                                    </li>\n                                    <li>\n                                        <a href="#?filter=children">Children </a>\n                                    </li>\n                                    <li>\n                                        <a href="#?filter=removed">Removed</a>\n                                    </li>\n                                    <li>\n                                        <a href="#?filter=recent">Recently added</a>\n                                    </li>                                    \n                                </ul>\n                            </li>\n                        </ul>\n                        <div class="patient-search"></div>\n                        <ul class="nav navbar-nav navbar-right">\n                            <li>\n                                <a href="#create" class="btn btn-primary" title="+ Add new patient">\n                                    <span>\n                                        <i class="fa fa-plus"></i>\n                                    </span>                            \n                                </a>\n                            </li>                            \n                        </ul>            \n                    </div>\n\n                    <h2><strong>My Patients</strong></h2>                   \n                </div>\n\n                <!-- Patients table -->\n                <div class="row-fluid table">\n                    <table class="table table-hover">\n                        <thead>\n                            <tr>\n                                <th class="span4 sortable">\n                                    Name\n                                </th>\n                                <th class="span3 sortable">\n                                    <span class="line"></span>Age\n                                </th>\n                                <th class="span2 sortable">\n                                    <span class="line"></span>Address\n                                </th>\n                                 <th class="span3 sortable">\n                                    <span class="line"></span>Phone\n                                </th>\n                                <th class="span3 sortable align-right">\n                                    <span class="line"></span>Email\n                                </th>\n                                <th class="span3 sortable align-right">\n                                \t<span class="line"></span>Actions\n                                </th>  \n                            </tr>\n                        </thead>\n                        <tbody class="patient-grid">\n                            <p class="no-results" style="display:none;">No Results</p>\n                        </tbody>\n                    </table>\n                </div>\n                <!-- Load More "Link" -->  \n\t            <div class="load-more">\n\t                <a href="#" class="js-patients-loadmore">\n\t                    <button class="btn btn-primary btn-lg btn-block" type="button" id="loader">\n\t\t\t\t\t\t\tLoad More\n\t\t\t\t\t\t</button>\n\t                </a>\t                \n\t            </div>                  \n                <!-- end users table -->\n            </div>\n        </div>');
     
     }).call(this);
     
@@ -2005,7 +2119,7 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<div class="row">\n\t<div class="col-sm-12">\n\t\t<div class="row">\n\t\t\t<div class="col-md-6 dashboard-panel-6">\n\t\t\t\t<div class="page-header">\n\t\t\t\t\t<h1>\n\t\t\t\t\t\t');
+      __out.push('<div class="row">\n\t<div class="col-sm-12">\n\t\t<div class="row">\n\t\t\t<div class="col-md-6 dashboard-panel-6">\n\t\t\t\t<div class="jumbotron">\n\t\t\t\t\t<h1>\n\t\t\t\t\t\t');
     
       __out.push(__sanitize(this.firstName));
     
@@ -2013,15 +2127,81 @@ module.exports = function (__obj) {
     
       __out.push(__sanitize(this.lastName));
     
-      __out.push('\n\t\t\t\t\t</h1>\n\t\t\t\t</div> \n\t\t\t\t<address> ');
+      __out.push('\n\t\t\t\t\t</h1>\n\t\t\t\t\t<p>\n\t\t\t\t\t\t<strong>Age: </strong>');
+    
+      __out.push(__sanitize(this.age));
+    
+      __out.push('\n\t\t\t\t\t\t<address>\n\t\t\t\t\t\t\t<strong>Address: </strong> ');
     
       __out.push(__sanitize(this.address));
     
-      __out.push('<br /> \n\t\t\t\t\t<abbr title="Phone">Phone:</abbr> \n\t\t\t\t\t');
+      __out.push('<br /> \n\t\t\t\t\t\t\t<strong>Phone: </strong> ');
     
       __out.push(__sanitize(this.phone));
     
-      __out.push('\n\t\t\t\t</address>\n\t\t\t</div>\n\t\t\t<div class="col-md-6 pull-right">\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Allergies</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t<!-- This area used as dropdown edit box -->\n\t\t\t\t\t\t\t\t\t\t<input class="form-control" type="text">\n\t\t\t\t\t\t\t\t\t\t<span class="note"><i class="fa fa-check text-success"></i> Change title to update and save instantly!</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget content -->\t\n\t\t\t\t\t\t\t\t\t<div class="widget-footer">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tEdit\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Conditions</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t<!-- This area used as dropdown edit box -->\n\t\t\t\t\t\t\t\t\t\t<input class="form-control" type="text">\n\t\t\t\t\t\t\t\t\t\t<span class="note"><i class="fa fa-check text-success"></i> Change title to update and save instantly!</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-footer">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tEdit\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</article>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Medications</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t<!-- This area used as dropdown edit box -->\n\t\t\t\t\t\t\t\t\t\t<input class="form-control" type="text">\n\t\t\t\t\t\t\t\t\t\t<span class="note"><i class="fa fa-check text-success"></i> Change title to update and save instantly!</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget content -->\t\n\t\t\t\t\t\t\t\t\t<div class="widget-footer">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tEdit\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Visits</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t<!-- This area used as dropdown edit box -->\n\t\t\t\t\t\t\t\t\t\t<input class="form-control" type="text">\n\t\t\t\t\t\t\t\t\t\t<span class="note"><i class="fa fa-check text-success"></i> Change title to update and save instantly!</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-footer">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tEdit\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</article>\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\t\t\t</div>\n\t\t</div>\t\t\n\t</div>\t\n</div>\n');
+      __out.push('\n\t\t\t\t\t\t</address>\n\t\t\t\t\t</p>\n\t\t\t\t\t<p>\n\t\t\t\t\t\t<a href="#edit/');
+    
+      __out.push(__sanitize(this.id));
+    
+      __out.push('" class="btn btn-primary btn-lg" role="button">Edit Details</a>\n\t\t\t\t\t\t<a class="btn btn-primary btn-lg js-delete" role="button">Delete</a>\n\t\t\t\t\t</p>\n\t\t\t\t</div>\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-12 col-md-12 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-3" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Stats</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<div class="well well-lg">\n\t\t\t\t\t\t\t\t\tAge:\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</article>\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\n\t\t\t\n\t\t\t\t\n\t\t\t</div>\n\t\t\t<div class="col-md-6 pull-right">\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Allergies</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t<!-- This area used as dropdown edit box -->\n\t\t\t\t\t\t\t\t\t\t<input class="form-control" type="text">\n\t\t\t\t\t\t\t\t\t\t<span class="note"><i class="fa fa-check text-success"></i> Change title to update and save instantly!</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget content -->\t\n\t\t\t\t\t\t\t\t\t<div class="widget-footer">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tEdit\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Conditions</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t<!-- This area used as dropdown edit box -->\n\t\t\t\t\t\t\t\t\t\t<input class="form-control" type="text">\n\t\t\t\t\t\t\t\t\t\t<span class="note"><i class="fa fa-check text-success"></i> Change title to update and save instantly!</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-footer">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tEdit\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</article>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Medications</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t<!-- This area used as dropdown edit box -->\n\t\t\t\t\t\t\t\t\t\t<input class="form-control" type="text">\n\t\t\t\t\t\t\t\t\t\t<span class="note"><i class="fa fa-check text-success"></i> Change title to update and save instantly!</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget content -->\t\n\t\t\t\t\t\t\t\t\t<div class="widget-footer">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tEdit\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Visits</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t<!-- This area used as dropdown edit box -->\n\t\t\t\t\t\t\t\t\t\t<input class="form-control" type="text">\n\t\t\t\t\t\t\t\t\t\t<span class="note"><i class="fa fa-check text-success"></i> Change title to update and save instantly!</span>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-footer">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tEdit\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</article>\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\t\t\t</div>\n\t\t</div>\t\t\n\t</div>\t\n</div>\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("templates/search/search_template", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      __out.push('<form class="navbar-form navbar-left" role="search" action="" id="searchForm" method="post" name="search">\n\t<div class="form-group">\n\t\t<input id="SearchCriterion" name="SearchCriterion" class="form-control js-search-terms" type="text" id="glyph-search" placeholder="Search Patients" ');
+    
+      if (this.searchTerms) {
+        __out.push('value="');
+        __out.push(__sanitize(this.searchTerms));
+        __out.push('"');
+      }
+    
+      __out.push('>\n\t</div>\n\t<button class="btn btn-default btn-primary js-submit" type="submit">\n\t\t<i class="fa fa-fw fa-lg fa-search"></i>Search\n\t</button>\n</form>');
     
     }).call(this);
     

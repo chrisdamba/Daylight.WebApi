@@ -18345,6 +18345,20 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 }(jQuery);
 
 ;(function() {
+  (function() {
+    return window.decache = function(uri, stamp) {
+      var seperator;
+      if (!stamp) {
+        stamp = new Date().getTime();
+      }
+      seperator = uri.indexOf('?') > -1 ? '&' : '?';
+      return uri.concat(seperator, stamp);
+    };
+  })();
+
+}).call(this);
+
+;(function() {
   jQuery.fn.serializeObject = function() {
     var arrayData, objectData;
     arrayData = this.serializeArray();

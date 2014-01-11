@@ -29,23 +29,27 @@ namespace Daylight.WebApi.Services
 
             Expression<Func<Patient, bool>> query = null;
 
+
             switch (filter)
             {
                 case PatientFilter.Deceased:
                     query = x => x.IsDeleted;
                     break;
-
+                case PatientFilter.Removed:
+                    query = x => x.IsDeleted;
+                    break;
                 case PatientFilter.Inpatient:
-                    query = x => x.FirstName.Contains(search);
+                    query = x => (x.FirstName.Contains(search) || x.LastName.Contains(search) || x.Address.Contains(search) || x.Email.Contains(search));
                     break;
                 case PatientFilter.Outpatient:
-                    query = x => x.LastName.Contains(search);
+                    query = x => (x.FirstName.Contains(search) || x.LastName.Contains(search) || x.Address.Contains(search) || x.Email.Contains(search));
                     break;
                 default:
                     query = x => !x.IsDeleted;
                     break;
             }
-
+            if (!string.IsNullOrEmpty(search))
+                query = x => (x.FirstName.Contains(search) || x.LastName.Contains(search) || x.Address.Contains(search) || x.Email.Contains(search) && !x.IsDeleted);
             var results = patientRepository.List(out totalCount, query, page, take);
             return totalCount == 0 ? new Patient[0] : Get(results);
         }

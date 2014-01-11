@@ -34,6 +34,7 @@ namespace Daylight.WebApi.Repositories
             using (var context = CreateContext)
             {
                 patient.State = EntityState.Modified;
+                context.Entry(patient).State = patient.State;
                 context.SaveChanges();
             }
         }
@@ -62,7 +63,7 @@ namespace Daylight.WebApi.Repositories
                 if (criteria == null) criteria = a => true;
 
                 // Establish a LINQ to SQL Query
-                var query = context.Patients.Where(a => !a.IsDeleted).Where(criteria).OrderBy(a => a.DateBecamePatient);
+                var query = context.Patients.Where(a => !a.IsDeleted).Where(criteria).OrderByDescending(a => a.DateBecamePatient);
 
                 // Execute for Total Count
                 totalCount = query.Count();
