@@ -1821,7 +1821,7 @@ Router = (function(_super) {
     'view/patients/:id': 'patient',
     ':id/condition:index.:subIndex': 'patient',
     ':id/condition:index': 'patient',
-    'patients?*query': 'default',
+    'patients?*query': 'patients',
     'patients': 'patients',
     'patients/:id': 'patient',
     ':id': 'patient'
@@ -2317,11 +2317,7 @@ module.exports = function (__obj) {
     
       __out.push(__sanitize(this.id));
     
-      __out.push('" rel="tooltip" title="View">\n        <i class="fa fa-user"></i> \n    </a>&nbsp;&nbsp;&nbsp;\n\t<a href="#" rel="tooltip" class="js-edit" rel="tooltip" title="Edit">\n\t   <i class="fa fa-pencil"></i>\n    </a>&nbsp;&nbsp;&nbsp;\n\t<a href="#" rel="tooltip" class="smart-mod-del" id="');
-    
-      __out.push(__sanitize(this.id));
-    
-      __out.push('" title="Delete">\n\t   <i class="fa fa-trash-o"></i>\n\t</a>&nbsp;&nbsp;&nbsp;\n</td>');
+      __out.push('" rel="tooltip" title="View">\n        <i class="fa fa-user"></i> \n    </a>&nbsp;&nbsp;&nbsp;\n\t<a href="#" rel="tooltip" class="js-edit" title="Edit">\n\t   <i class="fa fa-pencil"></i>\n    </a>&nbsp;&nbsp;&nbsp;\n\t<a href="#" rel="tooltip" class="smart-mod-del" title="Delete">\n\t   <i class="fa fa-trash-o"></i>\n\t</a>&nbsp;&nbsp;&nbsp;\n</td>');
     
     }).call(this);
     

@@ -5,14 +5,16 @@ namespace Daylight.WebApi.Contracts
     [Flags]
     public enum PatientFilter
     {
-        Default = Outpatient | Inpatient,
+        Default = Adults | Children,
 
         Deceased = 1,
 
-        Outpatient = 2,
+        Adults = 2,
 
-        Inpatient = 4,
+        Children = 4,
 
-        Removed = 8
+        Removed = 8,
+
+        Recent = 16
     }
 }

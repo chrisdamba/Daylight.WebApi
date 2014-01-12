@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Objects.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
 using Daylight.WebApi.Contracts;
@@ -29,7 +30,7 @@ namespace Daylight.WebApi.Services
 
             Expression<Func<Patient, bool>> query = null;
 
-
+            var today = DateTime.Now;
             switch (filter)
             {
                 case PatientFilter.Deceased:
@@ -38,11 +39,14 @@ namespace Daylight.WebApi.Services
                 case PatientFilter.Removed:
                     query = x => x.IsDeleted;
                     break;
-                case PatientFilter.Inpatient:
-                    query = x => (x.FirstName.Contains(search) || x.LastName.Contains(search) || x.Address.Contains(search) || x.Email.Contains(search));
+                case PatientFilter.Recent:
+                    query = x => SqlFunctions.DateAdd("day", 7, x.DateBecamePatient) > today;
                     break;
-                case PatientFilter.Outpatient:
-                    query = x => (x.FirstName.Contains(search) || x.LastName.Contains(search) || x.Address.Contains(search) || x.Email.Contains(search));
+                case PatientFilter.Adults:
+                    query = x => SqlFunctions.DateAdd("year", 18, x.DateOfBirth) < today;
+                    break;
+                case PatientFilter.Children:
+                    query = x => SqlFunctions.DateAdd("year", 18, x.DateOfBirth) > today;
                     break;
                 default:
                     query = x => !x.IsDeleted;
