@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
 using Daylight.WebApi.Contracts.Entities;
@@ -76,7 +77,7 @@ namespace Daylight.WebApi.Mvc.Models
 
             // Populate properties
             patient.Gender = Gender;
-            patient.DateOfBirth = Convert.ToDateTime(Dob);
+            patient.DateOfBirth = DateTime.ParseExact(Dob, "d/M/yyyy", CultureInfo.InvariantCulture);
             patient.RelationshipStatus = RelationshipStatus;
             patient.DateBecamePatient = Convert.ToDateTime(DateRegistered);
             patient.FirstName = FirstName;
