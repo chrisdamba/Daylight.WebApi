@@ -16,7 +16,7 @@ namespace Daylight.WebApi.Contracts.Entities
     {
         public Patient()
         {
-            this.DeathReports = new HashSet<DeathReport>();
+            this.Conditions = new HashSet<Condition>();
         }
     
         public System.Guid PatientId { get; set; }
@@ -31,6 +31,6 @@ namespace Daylight.WebApi.Contracts.Entities
         public string Email { get; set; }
         public string Address { get; set; }
     
-        public virtual ICollection<DeathReport> DeathReports { get; set; }
+        public virtual ICollection<Condition> Conditions { get; set; }
     }
 }

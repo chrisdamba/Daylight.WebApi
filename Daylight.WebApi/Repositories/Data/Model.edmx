@@ -6,21 +6,23 @@
     <edmx:StorageModels>
     <Schema Namespace="DaylightModel.Store" Alias="Self" Provider="System.Data.SqlClient" ProviderManifestToken="2008" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityContainer Name="DaylightModelStoreContainer">
-          <EntitySet Name="DeathReport" EntityType="DaylightModel.Store.DeathReport" store:Type="Tables" Schema="dbo" />
+          <EntitySet Name="Condition" EntityType="DaylightModel.Store.Condition" store:Type="Tables" Schema="dbo" />
           <EntitySet Name="Patient" EntityType="DaylightModel.Store.Patient" store:Type="Tables" Schema="dbo" />
-          <AssociationSet Name="FK_DeathReport_Patient" Association="DaylightModel.Store.FK_DeathReport_Patient">
+          <AssociationSet Name="FK_Condition_Patient" Association="DaylightModel.Store.FK_Condition_Patient">
             <End Role="Patient" EntitySet="Patient" />
-            <End Role="DeathReport" EntitySet="DeathReport" />
+            <End Role="Condition" EntitySet="Condition" />
           </AssociationSet>
         </EntityContainer>
-        <EntityType Name="DeathReport">
+        <EntityType Name="Condition">
           <Key>
-            <PropertyRef Name="Id" />
+            <PropertyRef Name="ConditionId" />
           </Key>
-          <Property Name="Id" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="ConditionId" Type="uniqueidentifier" Nullable="false" />
           <Property Name="PatientId" Type="uniqueidentifier" Nullable="false" />
-          <Property Name="DateOfDeath" Type="datetime" />
-          <Property Name="Report" Type="varchar(max)" />
+          <Property Name="StartedAt" Type="datetime" Nullable="false" />
+          <Property Name="ConceptId" Type="int" Nullable="false" />
+          <Property Name="FinishedAt" Type="datetime" />
+          <Property Name="Name" Type="varchar" MaxLength="255" />
         </EntityType>
         <EntityType Name="Patient">
           <Key>
@@ -38,14 +40,14 @@
           <Property Name="Email" Type="varchar" MaxLength="150" />
           <Property Name="Address" Type="varchar" MaxLength="255" />
         </EntityType>
-        <Association Name="FK_DeathReport_Patient">
+        <Association Name="FK_Condition_Patient">
           <End Role="Patient" Type="DaylightModel.Store.Patient" Multiplicity="1" />
-          <End Role="DeathReport" Type="DaylightModel.Store.DeathReport" Multiplicity="*" />
+          <End Role="Condition" Type="DaylightModel.Store.Condition" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Patient">
               <PropertyRef Name="PatientId" />
             </Principal>
-            <Dependent Role="DeathReport">
+            <Dependent Role="Condition">
               <PropertyRef Name="PatientId" />
             </Dependent>
           </ReferentialConstraint>
@@ -55,23 +57,13 @@
     <edmx:ConceptualModels>
       <Schema Namespace="DaylightModel" Alias="Self" p1:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:p1="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
         <EntityContainer Name="DaylightDataContext" p1:LazyLoadingEnabled="true">
-          <EntitySet Name="DeathReports" EntityType="DaylightModel.DeathReport" />
           <EntitySet Name="Patients" EntityType="DaylightModel.Patient" />
-          <AssociationSet Name="FK_DeathReport_Patient" Association="DaylightModel.FK_DeathReport_Patient">
+          <EntitySet Name="Conditions" EntityType="DaylightModel.Condition" />
+          <AssociationSet Name="FK_Condition_Patient" Association="DaylightModel.FK_Condition_Patient">
             <End Role="Patient" EntitySet="Patients" />
-            <End Role="DeathReport" EntitySet="DeathReports" />
+            <End Role="Condition" EntitySet="Conditions" />
           </AssociationSet>
         </EntityContainer>
-        <EntityType Name="DeathReport">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Type="Guid" Name="Id" Nullable="false" />
-          <Property Type="DateTime" Name="DateOfDeath" Precision="3" />
-          <Property Type="String" Name="Report" MaxLength="Max" FixedLength="false" Unicode="false" />
-          <Property Type="Guid" Name="PatientId" Nullable="false" />
-          <NavigationProperty Name="Patient" Relationship="DaylightModel.FK_DeathReport_Patient" FromRole="DeathReport" ToRole="Patient" />
-        </EntityType>
         <EntityType Name="Patient">
           <Key>
             <PropertyRef Name="PatientId" />
@@ -87,16 +79,28 @@
           <Property Type="String" Name="Phone" MaxLength="15" FixedLength="false" Unicode="false" />
           <Property Type="String" Name="Email" MaxLength="150" FixedLength="false" Unicode="false" />
           <Property Type="String" Name="Address" MaxLength="255" FixedLength="false" Unicode="false" />
-          <NavigationProperty Name="DeathReports" Relationship="DaylightModel.FK_DeathReport_Patient" FromRole="Patient" ToRole="DeathReport" />
+          <NavigationProperty Name="Conditions" Relationship="DaylightModel.FK_Condition_Patient" FromRole="Patient" ToRole="Condition" />
         </EntityType>
-        <Association Name="FK_DeathReport_Patient">
+        <EntityType Name="Condition">
+          <Key>
+            <PropertyRef Name="ConditionId" />
+          </Key>
+          <Property Type="Guid" Name="ConditionId" Nullable="false" />
+          <Property Type="Guid" Name="PatientId" Nullable="false" />
+          <Property Type="DateTime" Name="StartedAt" Nullable="false" Precision="3" />
+          <Property Type="Int32" Name="ConceptId" Nullable="false" />
+          <Property Type="DateTime" Name="FinishedAt" Precision="3" />
+          <Property Type="String" Name="Name" MaxLength="255" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="Patient" Relationship="DaylightModel.FK_Condition_Patient" FromRole="Condition" ToRole="Patient" />
+        </EntityType>
+        <Association Name="FK_Condition_Patient">
           <End Type="DaylightModel.Patient" Role="Patient" Multiplicity="1" />
-          <End Type="DaylightModel.DeathReport" Role="DeathReport" Multiplicity="*" />
+          <End Type="DaylightModel.Condition" Role="Condition" Multiplicity="*" />
           <ReferentialConstraint>
             <Principal Role="Patient">
               <PropertyRef Name="PatientId" />
             </Principal>
-            <Dependent Role="DeathReport">
+            <Dependent Role="Condition">
               <PropertyRef Name="PatientId" />
             </Dependent>
           </ReferentialConstraint>
@@ -107,16 +111,6 @@
     <edmx:Mappings>
       <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
         <EntityContainerMapping StorageEntityContainer="DaylightModelStoreContainer" CdmEntityContainer="DaylightDataContext">
-          <EntitySetMapping Name="DeathReports">
-            <EntityTypeMapping TypeName="DaylightModel.DeathReport">
-              <MappingFragment StoreEntitySet="DeathReport">
-                <ScalarProperty Name="PatientId" ColumnName="PatientId" />
-                <ScalarProperty Name="Report" ColumnName="Report" />
-                <ScalarProperty Name="DateOfDeath" ColumnName="DateOfDeath" />
-                <ScalarProperty Name="Id" ColumnName="Id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="Patients">
             <EntityTypeMapping TypeName="DaylightModel.Patient">
               <MappingFragment StoreEntitySet="Patient">
@@ -131,6 +125,18 @@
                 <ScalarProperty Name="Gender" ColumnName="Gender" />
                 <ScalarProperty Name="IsDeleted" ColumnName="IsDeleted" />
                 <ScalarProperty Name="PatientId" ColumnName="PatientId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Conditions">
+            <EntityTypeMapping TypeName="DaylightModel.Condition">
+              <MappingFragment StoreEntitySet="Condition">
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="FinishedAt" ColumnName="FinishedAt" />
+                <ScalarProperty Name="ConceptId" ColumnName="ConceptId" />
+                <ScalarProperty Name="StartedAt" ColumnName="StartedAt" />
+                <ScalarProperty Name="PatientId" ColumnName="PatientId" />
+                <ScalarProperty Name="ConditionId" ColumnName="ConditionId" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

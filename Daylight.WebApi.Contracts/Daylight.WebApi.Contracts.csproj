@@ -42,9 +42,8 @@
   <ItemGroup>
     <Compile Include="Entities\Address.Local.cs" />
     <Compile Include="Entities\AuditAction.cs" />
-    <Compile Include="Entities\DeathReport.cs">
-      <DependentUpon>Model.tt</DependentUpon>
-    </Compile>
+    <Compile Include="Entities\Condition.cs" />
+    <Compile Include="Entities\Condition.Local.cs" />
     <Compile Include="Entities\IStateEntity.cs" />
     <Compile Include="Entities\Model.cs" />
     <Compile Include="Entities\Patient.cs">

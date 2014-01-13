@@ -33,7 +33,7 @@ namespace Daylight.WebApi.Repositories.Data
             throw new UnintentionalCodeFirstException();
         }
     
-        public DbSet<DeathReport> DeathReports { get; set; }
         public DbSet<Patient> Patients { get; set; }
+        public DbSet<Condition> Conditions { get; set; }
     }
 }

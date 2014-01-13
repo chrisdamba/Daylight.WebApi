@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Contracts.Entities;
-using Daylight.WebApi.Core.Linq;
 using Daylight.WebApi.Repositories.Data;
 
 namespace Daylight.WebApi.Repositories

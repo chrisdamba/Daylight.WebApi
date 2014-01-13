@@ -12,12 +12,14 @@ namespace Daylight.WebApi.Contracts.Entities
     using System;
     using System.Collections.Generic;
     
-    public partial class DeathReport
+    public partial class Condition
     {
-        public System.Guid Id { get; set; }
-        public Nullable<System.DateTime> DateOfDeath { get; set; }
-        public string Report { get; set; }
+        public System.Guid ConditionId { get; set; }
         public System.Guid PatientId { get; set; }
+        public System.DateTime StartedAt { get; set; }
+        public int ConceptId { get; set; }
+        public Nullable<System.DateTime> FinishedAt { get; set; }
+        public string Name { get; set; }
     
         public virtual Patient Patient { get; set; }
     }
