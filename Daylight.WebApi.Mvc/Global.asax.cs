@@ -32,6 +32,7 @@ namespace Daylight.WebApi.Mvc
             var corsConfig = new WebApiCorsConfiguration();
             corsConfig.RegisterGlobal(GlobalConfiguration.Configuration);
             corsConfig.ForResources("Attachment").ForAllOrigins().AllowAll();
+            corsConfig.ForResources("Condition").ForAllOrigins().AllowAll();
             corsConfig.ForResources("Patient").ForAllOrigins().AllowAll();
             corsConfig.ForResources("Thumbnail").ForAllOrigins().AllowAll();
             corsConfig.ForResources("File").ForAllOrigins().AllowAll();

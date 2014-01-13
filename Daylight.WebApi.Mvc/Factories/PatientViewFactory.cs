@@ -36,5 +36,15 @@ namespace Daylight.WebApi.Mvc.Factories
 
             return new PatientViewModel(patient);
         }
+
+        public virtual ConditionViewModel GetCondition(Guid conditionId, Guid patientId)
+        {
+            var condition = GetPatient(patientId).Conditions.SingleOrDefault(x => x.Id == conditionId);
+            if (condition == null)
+            {
+                throw new UnavailableItemException("Condition not found");
+            }
+            return condition;
+        }
     }
 }

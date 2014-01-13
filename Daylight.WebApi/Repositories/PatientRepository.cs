@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Contracts.Entities;
+using Daylight.WebApi.Core.Linq;
 using Daylight.WebApi.Repositories.Data;
 
 namespace Daylight.WebApi.Repositories
@@ -21,7 +23,14 @@ namespace Daylight.WebApi.Repositories
                 {
                     patient.PatientId = Guid.NewGuid();
                 }
-               
+
+                // Assign condition id, as it will be empty
+                foreach (var condition in patient.Conditions)
+                {
+                    condition.ConditionId = Guid.NewGuid();
+                    condition.PatientId = patient.PatientId;
+                }
+
                 context.Patients.Add(patient);
                 context.SaveChanges();
             }
@@ -32,7 +41,23 @@ namespace Daylight.WebApi.Repositories
             using (var context = CreateContext)
             {
                 patient.State = EntityState.Modified;
-                context.Entry(patient).State = patient.State;
+
+                // Assign condition id, as it will be empty
+                foreach (var condition in patient.Conditions)
+                {
+                    condition.ConditionId = condition.ConditionId == Guid.Empty ? Guid.NewGuid() : condition.ConditionId;
+                    condition.PatientId = patient.PatientId;
+                }
+                
+                // Update the entities in the context
+                var entries = patient.Conditions.Cast<IStateEntity>()
+                                     .Union(new IStateEntity[] { patient })
+                                     .ToArray();
+                foreach (var entry in entries)
+                {
+                    context.Entry(entry).State = entry.State;
+                }
+                
                 context.SaveChanges();
             }
         }
@@ -41,7 +66,9 @@ namespace Daylight.WebApi.Repositories
         {
             using (var context = CreateContext)
             {
-                return context.Patients.SingleOrDefault(x => x.PatientId == id);
+                return context.Patients
+                    .Include(Lambda.Property<Patient>(x => x.Conditions))    
+                    .SingleOrDefault(x => x.PatientId == id);
             }
         }
 
@@ -49,7 +76,9 @@ namespace Daylight.WebApi.Repositories
         {
             using (var context = CreateContext)
             {
-                return context.Patients.Where(x => ids.Contains(x.PatientId) && !x.IsDeleted).ToArray();
+                return context.Patients
+                    .Include(Lambda.Property<Patient>(x => x.Conditions))    
+                    .Where(x => ids.Contains(x.PatientId) && !x.IsDeleted).ToArray();
             }
         }
 

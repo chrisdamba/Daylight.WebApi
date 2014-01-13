@@ -11,8 +11,9 @@ namespace Daylight.WebApi.Contracts.Entities
 {
     using System;
     using System.Collections.Generic;
-    
-    public partial class Patient
+
+    [Serializable]
+    public partial class Patient : IStateEntity
     {
         public Patient()
         {

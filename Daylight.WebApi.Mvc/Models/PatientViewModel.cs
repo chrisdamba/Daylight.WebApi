@@ -12,6 +12,9 @@ namespace Daylight.WebApi.Mvc.Models
     [DataContract]
     public class PatientViewModel
     {
+        private int? conditionsCount;
+        private ConditionViewModel[] conditions;
+        
         public PatientViewModel()
         {
         }
@@ -29,6 +32,23 @@ namespace Daylight.WebApi.Mvc.Models
             Phone = patient.Phone;
             Email = patient.Email;
             Age = GetAge(patient.DateOfBirth);
+            Conditions = patient.Conditions.Select(x => new ConditionViewModel(x)).ToArray();
+        }
+        [DataMember]
+        public ConditionViewModel[] Conditions
+        {
+            get { return conditions ?? new ConditionViewModel[0]; }
+            set { conditions = value; }
+        }
+
+        [DataMember]
+        public int ConditionsCount
+        {
+            get { return conditionsCount ?? Conditions.Length; } 
+            set
+            {
+                // HACK to prevent Newtonsoft Deserialization exceptions from bad JSON blobs
+            }
         }
 
         [DataMember]
@@ -89,10 +109,10 @@ namespace Daylight.WebApi.Mvc.Models
             return patient;
         }
 
-        private int GetAge(DateTime dob)
+        private static int GetAge(DateTime dob)
         {
-            DateTime today = DateTime.Today;
-            int age = today.Year - dob.Year;
+            var today = DateTime.Today;
+            var age = today.Year - dob.Year;
             if (dob > today.AddYears(-age)) age--;
             return age;
         }

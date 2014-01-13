@@ -14,5 +14,7 @@ namespace Daylight.WebApi.Mvc.Factories
 
         IEnumerable<PatientViewModel> List(PatientFilter filter, string search = null, int skip = 0,
                                            int take = int.MaxValue);
+
+        ConditionViewModel GetCondition(Guid conditionId, Guid patientId);
     }
 }
