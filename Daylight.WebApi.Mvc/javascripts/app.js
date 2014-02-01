@@ -536,8 +536,6 @@ ConditionSearchCollection = (function(_super) {
 
   ConditionSearchCollection.prototype.model = ConditionSearchModel;
 
-  ConditionSearchCollection.prototype.url = 'https://api.howareyou.com/conditions/search.json';
-
   ConditionSearchCollection.prototype.sync = function(method, model, options) {
     var params, query;
     query = $('input[name=condition]').val();
@@ -1094,8 +1092,7 @@ ConditionSearchView = (function(_super) {
   ConditionSearchView.prototype.className = 'condition-search';
 
   ConditionSearchView.prototype.events = {
-    'focus #c2_condition': 'conditionsAutoComplete',
-    'keydown #c2_condition': 'invokeFetch'
+    'focus #c2_condition': 'conditionsAutoComplete'
   };
 
   ConditionSearchView.prototype.initialize = function(options) {
@@ -1222,7 +1219,11 @@ ConditionsView = (function(_super) {
   };
 
   ConditionsView.prototype.initialize = function(options) {
+    var _this = this;
     ConditionsView.__super__.initialize.call(this, options);
+    window.App.eventAggregator.on('click:addcondition', function(e) {
+      return _this.model.set(e.toJSON());
+    });
     this.listenTo(this.model, 'change', this.render);
     _.bindAll(this, "render");
     this.render();
@@ -1239,20 +1240,7 @@ ConditionsView = (function(_super) {
   };
 
   ConditionsView.prototype.save = function() {
-    var collection, conceptId, form, name, synonyms,
-      _this = this;
-    form = this.$("form").serializeObject();
-    name = this.$('#c2_condition').val();
-    conceptId = this.$('#c2_conceptId').val();
-    synonyms = this.$('#c2_synonyms').val();
-    collection = window.IoC.get('ConditionCollection');
-    this.model.collection = collection;
-    this.model.set(this.model.parse({
-      id: this.model.id,
-      conceptId: conceptId,
-      name: name,
-      synonyms: synonyms
-    }));
+    var _this = this;
     return this.model.save(null, {
       wait: true,
       success: function(model, response, options) {
@@ -1305,16 +1293,8 @@ ConditionsView = (function(_super) {
   };
 
   ConditionsView.prototype.onSaveClick = function(e) {
-    var $valid, $validator;
     e.preventDefault();
-    $validator = $("#newpatient").validate(this.validationOptions);
-    $valid = $('#newpatient').valid();
-    if (!$valid) {
-      $validator.focusInvalid();
-      return false;
-    } else {
-      return this.save();
-    }
+    return this.save();
   };
 
   ConditionsView.prototype.onCancelClick = function(e) {
@@ -2283,10 +2263,10 @@ AutocompleteItemView = (function(_super) {
 
   AutocompleteItemView.prototype.tagName = 'li';
 
-  AutocompleteItemView.prototype.template = "<a href=\"#\"><%= label %></a>";
+  AutocompleteItemView.prototype.template = "<a class='select-item'><%= label %></a>";
 
   AutocompleteItemView.prototype.events = {
-    click: 'select'
+    'click .select-item': 'select'
   };
 
   AutocompleteItemView.prototype.render = function() {
@@ -2296,8 +2276,10 @@ AutocompleteItemView = (function(_super) {
     return this;
   };
 
-  AutocompleteItemView.prototype.select = function() {
-    this.options.parent.hide().select(this.model);
+  AutocompleteItemView.prototype.select = function(e) {
+    App.eventAggregator.trigger('click:addcondition', this.model);
+    this.$el.hide();
+    e.preventDefault();
     return false;
   };
 
@@ -2336,9 +2318,15 @@ AutocompleteView = (function(_super) {
 
   AutocompleteView.prototype.currentText = '';
 
+  AutocompleteView.prototype.events = {
+    'keyup #c2_condition': 'keyup',
+    'keydown #c2_condition': 'keydown'
+  };
+
   AutocompleteView.prototype.initialize = function(options) {
     _.extend(this, options);
-    return this.filter = _.debounce(this.filter, this.wait);
+    this.filter = _.debounce(this.filter, this.wait);
+    return this._myArray = [];
   };
 
   AutocompleteView.prototype.render = function() {
@@ -2376,20 +2364,24 @@ AutocompleteView = (function(_super) {
   };
 
   AutocompleteView.prototype.filter = function(A) {
-    /*if @model.url
-    			B = {}
-    			B[@queryParameter] = A
-    			@model.fetch
-    				success: -> @loadResult @model.models, A
-    				.bind(this)
-    				data: B
-    		else
-    			@loadResult @model.filter((C) -> C.label().indexOf(A) > -1), A
-    */
-
-    return this.loadResult(this.model.filter(function(C) {
-      return C.label().indexOf(A) > -1;
-    }), A);
+    var B, items, self, url;
+    self = this;
+    url = "https://api.howareyou.com/conditions/search.json?term=" + A;
+    $.getJSON(url, function(data) {
+      var condition;
+      condition = {};
+      return $.map(data, function(item) {
+        condition.conceptId = item.snomed_concept_id;
+        condition.name = item.term;
+        condition.synonyms = item.synonyms;
+        return self._myArray.push(condition);
+      });
+    });
+    items = this.unique(self._myArray);
+    this.model.reset(items);
+    B = {};
+    B[this.queryParameter] = A;
+    return this.loadResult(this.model.models, A);
   };
 
   AutocompleteView.prototype.isValid = function(A) {
@@ -2419,8 +2411,6 @@ AutocompleteView = (function(_super) {
 
   AutocompleteView.prototype.loadResult = function(B, A) {
     this.currentText = A;
-    console.log(this.currentText);
-    console.log(B);
     this.show().reset;
     if (B.length) {
       _.forEach(B, this.addItem, this);
@@ -2457,6 +2447,34 @@ AutocompleteView = (function(_super) {
   AutocompleteView.prototype.show = function() {
     this.$el.show();
     return this;
+  };
+
+  AutocompleteView.prototype.unique = function(objArray) {
+    var results, valMatch;
+    results = [];
+    valMatch = function(seen, obj) {
+      var key, match, other, val, _i, _len;
+      for (_i = 0, _len = seen.length; _i < _len; _i++) {
+        other = seen[_i];
+        match = true;
+        for (key in obj) {
+          val = obj[key];
+          if (other[key] !== val) {
+            match = false;
+          }
+        }
+        if (match) {
+          return true;
+        }
+      }
+      return false;
+    };
+    objArray.forEach(function(item) {
+      if (!valMatch(results, item)) {
+        return results.push(item);
+      }
+    });
+    return results;
   };
 
   return AutocompleteView;
@@ -2917,11 +2935,11 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<div class="bbf-editor">\n\t<input class="form-control input-lg js-search-terms" type="text" name="condition" id="c2_condition" value="');
+      __out.push('<div class="bbf-editor">\n\t<input class="form-control input-lg js-search-terms" autocomplete="off" placeholder="Search for condition" type="text" name="condition" id="c2_condition" value="');
     
       __out.push(__sanitize(this.name));
     
-      __out.push('">\n\t<span class="input-group-addon">\n\t\t<i class="fa fa-search fa-lg fa-fw"></i>\n\t</span>\n\t<input type="hidden" name="consynonyms" id="c2_synonyms" value="');
+      __out.push('">\n\t\n\t<input type="hidden" name="consynonyms" id="c2_synonyms" value="');
     
       __out.push(__sanitize(this.synonyms));
     
@@ -2981,25 +2999,25 @@ module.exports = function (__obj) {
     (function() {
       var synonym, _i, _len, _ref, _ref1;
     
-      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Add Condition</h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<div class="row">\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t<div class="input-group">\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<div id="search_container"></div>\n\t\t\t\t\t\t</div>\t\t\t\t\t\t\n\t\t\t\t\t</div>\t\t\t\t\t\t\n\t\t\t\t</div>\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t<div class="col-xs-12 col-sm-12 col-md-12">\n\t\t\t\t\t\t<div class="panel panel-success pricing-big">    \t\n\t\t\t\t\t\t    <div class="panel-heading">\n\t\t\t\t\t\t        <h3 class="panel-title">\n\t\t\t\t\t\t            Conditions</h3>\n\t\t\t\t\t\t    </div>\n\t\t\t\t\t\t    <div class="panel-body no-padding text-align-center">            \n\t\t\t\t\t\t\t\t<div class="price-features">\t\t\t\t\n\t\t\t\t\t\t\t\t\t<ul class="list-unstyled text-left">\t\n\t\t\t\t\t\t\t\t\t\t<li><strong>');
+      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Add Condition</h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<div class="row">\t\t\t\t\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t<div id="search_container"></div>\t\n\t\t\t\t\t<div class="panel-body no-padding text-align-center">            \n\t\t\t\t\t\t<strong>');
     
       __out.push(__sanitize(this.name));
     
-      __out.push('</strong> <i class="fa fa-times text-danger"></i> </li>\t          \n\t\t\t\t\t\t\t\t        ');
+      __out.push('</strong> \n\t\t\t\t\t\t\t<!-- <ul class="list-unstyled text-left">        \n\t\t\t\t\t        ');
     
       if ((_ref = this.synonyms) != null ? _ref.length : void 0) {
-        __out.push('\n\t\t\t\t\t\t\t\t\t\t\t\t');
+        __out.push('\n\t\t\t\t\t\t\t\t\t');
         _ref1 = this.synonyms;
         for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
           synonym = _ref1[_i];
-          __out.push('\n\t\t\t\t\t\t\t\t\t\t\t\t\t<li><strong>');
+          __out.push('\n\t\t\t\t\t\t\t\t\t\t<li><strong>');
           __out.push(__sanitize(synonym));
-          __out.push('</strong> <i class="fa fa-times text-danger"></i> </li>\n\t\t\t\t\t\t\t\t\t\t\t');
+          __out.push('</strong> <i class="fa fa-times text-danger"></i> </li>\n\t\t\t\t\t\t\t\t');
         }
-        __out.push('\n\t\t\t\t\t\t\t\t\t\t');
+        __out.push('\n\t\t\t\t\t\t\t');
       }
     
-      __out.push('\t\t\t          \n\t\t\t\t\t\t\t        </ul>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t    </div>        \n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\t\t\t\t\n\n\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t<button type="button" class="btn btn-primary" data-dismiss="modal">\n\t\t\t\tCancel\n\t\t\t</button>\n\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\tSave Changes\n\t\t\t</button>\n\t\t</div>\t\t\t\n\t</div>\n</div>\t');
+      __out.push('\t -->\t\t\t\t\t\t\n\t\t\t\t    </div> \n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\t\t\t\t\n\n\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t<button type="button" class="btn btn-primary" data-dismiss="modal">\n\t\t\t\tCancel\n\t\t\t</button>\n\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\tAdd\n\t\t\t</button>\n\t\t</div>\t\t\t\n\t</div>\n</div>\t');
     
     }).call(this);
     
