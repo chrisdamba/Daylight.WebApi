@@ -225,6 +225,7 @@
     <Content Include="Content\themes\base\minified\jquery.ui.tabs.min.css" />
     <Content Include="Content\themes\base\minified\jquery.ui.theme.min.css" />
     <Content Include="css\animated.css" />
+    <Content Include="css\backbone.autocomplete.css" />
     <Content Include="css\bootstrap-markdown.css" />
     <Content Include="css\bootstrap-slider.css" />
     <Content Include="css\bootstrap-tagsinput.css" />

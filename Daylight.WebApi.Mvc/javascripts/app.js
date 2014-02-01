@@ -228,12 +228,15 @@ module.exports = {
     },
     ConditionsCollection: {
       type: 'daylight/collections/condition_collection',
-      lifestyle: 'transient'
+      lifestyle: 'transient',
+      properties: {
+        url: 'https://api.howareyou.com/conditions/'
+      }
     },
     ConditionModel: {
       type: 'daylight/models/condition_model',
       properties: {
-        _urlRoot: '/API/Patients/{0}/conditions'
+        _urlRoot: 'https://api.howareyou.com/conditions/'
       }
     }
   },
@@ -474,7 +477,7 @@ ConditionCollection = (function(_super) {
 
   ConditionCollection.prototype.url = function() {
     if (this.patient) {
-      return "" + (this.patient.url()) + "/steps";
+      return "" + (this.patient.url()) + "/conditions";
     } else {
       return '';
     }
@@ -512,7 +515,69 @@ ConditionCollection = (function(_super) {
 
 })(support.Collection);
 
-module.exports = StepCollection;
+module.exports = ConditionCollection;
+
+});
+
+;require.register("daylight/collections/condition_search_collection", function(exports, require, module) {
+var ConditionSearchCollection, ConditionSearchModel, _ref,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+ConditionSearchModel = require('daylight/models/condition_search_model');
+
+ConditionSearchCollection = (function(_super) {
+  __extends(ConditionSearchCollection, _super);
+
+  function ConditionSearchCollection() {
+    _ref = ConditionSearchCollection.__super__.constructor.apply(this, arguments);
+    return _ref;
+  }
+
+  ConditionSearchCollection.prototype.model = ConditionSearchModel;
+
+  ConditionSearchCollection.prototype.url = 'https://api.howareyou.com/conditions/search.json';
+
+  ConditionSearchCollection.prototype.sync = function(method, model, options) {
+    var params, query;
+    query = $('input[name=condition]').val();
+    params = _.extend({
+      url: this.url,
+      type: 'GET',
+      dataType: 'jsonp',
+      data: {
+        term: query
+      }
+    }, options);
+    return $.ajax(params);
+  };
+
+  ConditionSearchCollection.prototype.initialize = function(models, options) {
+    return ConditionSearchCollection.__super__.initialize.call(this, models, options);
+  };
+
+  ConditionSearchCollection.prototype.parse = function(response) {
+    var condition, self;
+    condition = {};
+    self = this;
+    $.map(response, function(item) {
+      condition.conceptId = item.snomed_concept_id;
+      condition.name = item.term;
+      condition.synonyms = item.synonyms;
+      return self.push(condition);
+    });
+    return this.models;
+  };
+
+  ConditionSearchCollection.prototype.addPartial = function(data) {
+    return this.parse(data);
+  };
+
+  return ConditionSearchCollection;
+
+})(support.Collection);
+
+module.exports = ConditionSearchCollection;
 
 });
 
@@ -674,6 +739,7 @@ ConditionModel = (function(_super) {
     conceptId = void 0;
     return {
       name: void 0,
+      synonyms: void 0,
       startedAt: void 0,
       finishedAt: void 0
     };
@@ -691,9 +757,57 @@ ConditionModel = (function(_super) {
 
   return ConditionModel;
 
-})(support.ConditionModel);
+})(support.Model);
 
 module.exports = ConditionModel;
+
+});
+
+;require.register("daylight/models/condition_search_model", function(exports, require, module) {
+var ConditionSearchModel, _ref,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+ConditionSearchModel = (function(_super) {
+  __extends(ConditionSearchModel, _super);
+
+  function ConditionSearchModel() {
+    _ref = ConditionSearchModel.__super__.constructor.apply(this, arguments);
+    return _ref;
+  }
+
+  ConditionSearchModel.prototype.idAttribute = 'id';
+
+  ConditionSearchModel.prototype.defaults = function() {
+    var conceptId;
+    conceptId = '';
+    return {
+      name: '',
+      synonyms: void 0
+    };
+  };
+
+  ConditionSearchModel.prototype.conceptId = function() {
+    return this.get('conceptId');
+  };
+
+  ConditionSearchModel.prototype.value = function() {
+    return this.get('id');
+  };
+
+  ConditionSearchModel.prototype.label = function() {
+    return this.get('name');
+  };
+
+  ConditionSearchModel.prototype.synonyms = function() {
+    return this.get('synonyms');
+  };
+
+  return ConditionSearchModel;
+
+})(support.Model);
+
+module.exports = ConditionSearchModel;
 
 });
 
@@ -915,21 +1029,178 @@ module.exports = AddWidgetModalView;
 
 });
 
+;require.register("daylight/views/condition/condition_detail_view", function(exports, require, module) {
+var ConditionDetailTemplate, ConditionDetailView, _ref,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+ConditionDetailTemplate = require('templates/condition/condition_detail_template');
+
+ConditionDetailView = (function(_super) {
+  __extends(ConditionDetailView, _super);
+
+  function ConditionDetailView() {
+    this.render = __bind(this.render, this);
+    _ref = ConditionDetailView.__super__.constructor.apply(this, arguments);
+    return _ref;
+  }
+
+  ConditionDetailView.prototype.template = ConditionDetailTemplate;
+
+  ConditionDetailView.prototype.className = 'condition';
+
+  ConditionDetailView.prototype.initialize = function(options) {
+    ConditionDetailView.__super__.initialize.call(this, options);
+    return this.listenTo(this.model, 'sync', this.render);
+  };
+
+  ConditionDetailView.prototype.render = function() {
+    this.$el.html(this.template(this.model.toJSON()));
+    return this;
+  };
+
+  return ConditionDetailView;
+
+})(support.View);
+
+module.exports = ConditionDetailView;
+
+});
+
+;require.register("daylight/views/condition/condition_search_view", function(exports, require, module) {
+var AutocompleteView, ConditionSearchCollection, ConditionSearchTemplate, ConditionSearchView, _ref,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+ConditionSearchCollection = require('daylight/collections/condition_search_collection');
+
+ConditionSearchTemplate = require('templates/condition/condition_search_template');
+
+AutocompleteView = require('daylight/views/search/autocomplete_view');
+
+ConditionSearchView = (function(_super) {
+  __extends(ConditionSearchView, _super);
+
+  function ConditionSearchView() {
+    this.render = __bind(this.render, this);
+    _ref = ConditionSearchView.__super__.constructor.apply(this, arguments);
+    return _ref;
+  }
+
+  ConditionSearchView.prototype.template = ConditionSearchTemplate;
+
+  ConditionSearchView.prototype.className = 'condition-search';
+
+  ConditionSearchView.prototype.events = {
+    'focus #c2_condition': 'conditionsAutoComplete',
+    'keydown #c2_condition': 'invokeFetch'
+  };
+
+  ConditionSearchView.prototype.initialize = function(options) {
+    ConditionSearchView.__super__.initialize.call(this, options);
+    this._myArray = [];
+    this._collection = new ConditionSearchCollection();
+    _.bindAll(this, 'render');
+    return this.render();
+  };
+
+  ConditionSearchView.prototype.render = function() {
+    this.$el.html(this.template(this.model.toJSON()));
+    return this;
+  };
+
+  ConditionSearchView.prototype.invokeFetch = function() {
+    var items, query, self, url;
+    self = this;
+    query = $('input[name=condition]').val();
+    url = "https://api.howareyou.com/conditions/search.json?term=" + query;
+    $.getJSON(url, function(data) {
+      var condition;
+      condition = {};
+      return $.map(data, function(item) {
+        condition.conceptId = item.snomed_concept_id;
+        condition.name = item.term;
+        condition.synonyms = item.synonyms;
+        return self._myArray.push(condition);
+      });
+    });
+    items = this.unique(self._myArray);
+    self._collection.reset(items);
+    return $("#c2_condition").unbind('keydown', this.invokeFetch);
+  };
+
+  ConditionSearchView.prototype.conditionsAutoComplete = function() {
+    return new AutocompleteView({
+      input: $("#c2_condition"),
+      model: this._collection
+    }).render();
+  };
+
+  ConditionSearchView.prototype.autocompleteSelect = function(model) {
+    $("#c2_condition").val(model.label());
+    $("#c2_synonyms").val(model.synonyms());
+    return $("#c2_conceptId").val(model.conceptId());
+  };
+
+  ConditionSearchView.prototype.unique = function(objArray) {
+    var results, valMatch;
+    results = [];
+    valMatch = function(seen, obj) {
+      var key, match, other, val, _i, _len;
+      for (_i = 0, _len = seen.length; _i < _len; _i++) {
+        other = seen[_i];
+        match = true;
+        for (key in obj) {
+          val = obj[key];
+          if (other[key] !== val) {
+            match = false;
+          }
+        }
+        if (match) {
+          return true;
+        }
+      }
+      return false;
+    };
+    objArray.forEach(function(item) {
+      if (!valMatch(results, item)) {
+        return results.push(item);
+      }
+    });
+    return results;
+  };
+
+  return ConditionSearchView;
+
+})(support.View);
+
+module.exports = ConditionSearchView;
+
+});
+
 ;require.register("daylight/views/condition/conditions_view", function(exports, require, module) {
-var ConditionsTemplate, ConditionsView, _ref,
+var ConditionCollection, ConditionModel, ConditionSearchView, ConditionsTemplate, ConditionsView, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 ConditionsTemplate = require('templates/condition/conditions_template');
 
+ConditionCollection = require('daylight/collections/condition_collection');
+
+ConditionModel = require('daylight/models/condition_model');
+
+ConditionSearchView = require('daylight/views/condition/condition_search_view');
+
 ConditionsView = (function(_super) {
   __extends(ConditionsView, _super);
 
   function ConditionsView() {
+    this.initializeAutoComplete = __bind(this.initializeAutoComplete, this);
     this.onClearSearch = __bind(this.onClearSearch, this);
     this.onSubmit = __bind(this.onSubmit, this);
-    this.onKeyUp = __bind(this.onKeyUp, this);
     this.onKeyDown = __bind(this.onKeyDown, this);
     this.save = __bind(this.save, this);
     this.render = __bind(this.render, this);
@@ -939,21 +1210,23 @@ ConditionsView = (function(_super) {
 
   ConditionsView.prototype.id = "conditions-add";
 
+  ConditionsView.prototype._query = void 0;
+
   ConditionsView.prototype.className = "modal fade";
 
   ConditionsView.prototype.template = ConditionsTemplate;
 
   ConditionsView.prototype.events = {
     'click .js-submit': 'onSubmit',
-    'click .js-clear-search': 'onClearSearch',
-    'keyup .js-search-terms': 'onKeyUp',
-    'keydown .js-search-terms': 'onKeyDown'
+    'click .js-save-btn': 'onSaveClick'
   };
 
   ConditionsView.prototype.initialize = function(options) {
     ConditionsView.__super__.initialize.call(this, options);
+    this.listenTo(this.model, 'change', this.render);
     _.bindAll(this, "render");
-    return this.render();
+    this.render();
+    return this.initializeAutoComplete();
   };
 
   ConditionsView.prototype.render = function() {
@@ -966,17 +1239,19 @@ ConditionsView = (function(_super) {
   };
 
   ConditionsView.prototype.save = function() {
-    var collection, conceptId, form, name,
+    var collection, conceptId, form, name, synonyms,
       _this = this;
     form = this.$("form").serializeObject();
-    name = this.$('#c-name').val();
-    conceptId = this.$('#c-conceptid').val();
+    name = this.$('#c2_condition').val();
+    conceptId = this.$('#c2_conceptId').val();
+    synonyms = this.$('#c2_synonyms').val();
     collection = window.IoC.get('ConditionCollection');
     this.model.collection = collection;
     this.model.set(this.model.parse({
       id: this.model.id,
-      gender: gender,
-      relationshipStatus: rstatus
+      conceptId: conceptId,
+      name: name,
+      synonyms: synonyms
     }));
     return this.model.save(null, {
       wait: true,
@@ -1000,12 +1275,24 @@ ConditionsView = (function(_super) {
   };
 
   ConditionsView.prototype.doSearch = function() {
-    var params, terms;
-    terms = this.$('input[name=search]').val();
-    params = _.extend({}, this.collection.getFilter(), {
-      search: this.parseQuery(terms)
+    var query, self, url;
+    self = this;
+    query = $('input[name=condition]').val();
+    url = "https://api.howareyou.com/conditions/search.json?term=" + query;
+    $.getJSON(url, function(data) {
+      var condition;
+      condition = {};
+      return $.map(data, function(item) {
+        condition.conceptId = item.snomed_concept_id;
+        condition.name = item.term;
+        condition.synonyms = item.synonyms;
+        if ($.inArray(condition, self._myArray) !== -1) {
+          return self._myArray.push(condition);
+        }
+      });
     });
-    return window.App.eventAggregator.trigger("navigate:patients", params);
+    console.log(JSON.stringify(self._myArray));
+    return $('.js-search-terms').unbind('keydown', this.doSearch);
   };
 
   ConditionsView.prototype.show = function() {
@@ -1037,20 +1324,13 @@ ConditionsView = (function(_super) {
 
   ConditionsView.prototype.onKeyDown = function(e) {
     if (e.which === 13) {
-      return e.preventDefault();
-    }
-  };
-
-  ConditionsView.prototype.onKeyUp = function(e) {
-    if (e.which === 13) {
       e.preventDefault();
-      return this.doSearch();
     }
+    return this.doSearch();
   };
 
   ConditionsView.prototype.onSubmit = function(e) {
-    e.preventDefault();
-    return this.doSearch();
+    return e.preventDefault();
   };
 
   ConditionsView.prototype.onClearSearch = function(e) {
@@ -1058,6 +1338,16 @@ ConditionsView = (function(_super) {
     return window.App.eventAggregator.trigger('navigate:patients', {
       filter: null
     });
+  };
+
+  ConditionsView.prototype.initializeAutoComplete = function() {
+    var model, selector, view;
+    model = new ConditionModel;
+    view = new ConditionSearchView({
+      model: model
+    });
+    selector = this.$el.find('#search_container');
+    return selector.html(view.el);
   };
 
   return ConditionsView;
@@ -1805,7 +2095,7 @@ if (typeof module !== "undefined" && module !== null) {
 });
 
 ;require.register("daylight/views/patient_view", function(exports, require, module) {
-var ConditionsView, PatientEditView, PatientView, PatientViewTemplate, _ref,
+var ConditionModel, ConditionsView, PatientEditView, PatientView, PatientViewTemplate, _ref,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1815,6 +2105,8 @@ PatientViewTemplate = require('templates/patient_view_template');
 PatientEditView = require('daylight/views/patient_edit_view');
 
 ConditionsView = require('daylight/views/condition/conditions_view');
+
+ConditionModel = require('daylight/models/condition_model');
 
 PatientView = (function(_super) {
   __extends(PatientView, _super);
@@ -1883,10 +2175,11 @@ PatientView = (function(_super) {
   };
 
   PatientView.prototype.onAddConditionClick = function(e) {
-    var view;
+    var cmodel, view;
     e.preventDefault();
+    cmodel = new ConditionModel;
     view = new ConditionsView({
-      model: this.model
+      model: cmodel
     });
     return view.show();
   };
@@ -1972,6 +2265,205 @@ PatientsListView = (function(_super) {
 })(support.View);
 
 module.exports = PatientsListView;
+
+});
+
+;require.register("daylight/views/search/autocomplete_item_view", function(exports, require, module) {
+var AutocompleteItemView, _ref,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+AutocompleteItemView = (function(_super) {
+  __extends(AutocompleteItemView, _super);
+
+  function AutocompleteItemView() {
+    _ref = AutocompleteItemView.__super__.constructor.apply(this, arguments);
+    return _ref;
+  }
+
+  AutocompleteItemView.prototype.tagName = 'li';
+
+  AutocompleteItemView.prototype.template = "<a href=\"#\"><%= label %></a>";
+
+  AutocompleteItemView.prototype.events = {
+    click: 'select'
+  };
+
+  AutocompleteItemView.prototype.render = function() {
+    this.$el.html(_.template(this.template, {
+      label: this.model.label()
+    }));
+    return this;
+  };
+
+  AutocompleteItemView.prototype.select = function() {
+    this.options.parent.hide().select(this.model);
+    return false;
+  };
+
+  return AutocompleteItemView;
+
+})(support.View);
+
+module.exports = AutocompleteItemView;
+
+});
+
+;require.register("daylight/views/search/autocomplete_view", function(exports, require, module) {
+var AutocompleteItemView, AutocompleteView, _ref,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+AutocompleteItemView = require('daylight/views/search/autocomplete_item_view');
+
+AutocompleteView = (function(_super) {
+  __extends(AutocompleteView, _super);
+
+  function AutocompleteView() {
+    _ref = AutocompleteView.__super__.constructor.apply(this, arguments);
+    return _ref;
+  }
+
+  AutocompleteView.prototype.tagName = 'ul';
+
+  AutocompleteView.prototype.itemView = AutocompleteItemView;
+
+  AutocompleteView.prototype.className = 'autocomplete';
+
+  AutocompleteView.prototype.wait = 300;
+
+  AutocompleteView.prototype.queryParameter = 'term';
+
+  AutocompleteView.prototype.currentText = '';
+
+  AutocompleteView.prototype.initialize = function(options) {
+    _.extend(this, options);
+    return this.filter = _.debounce(this.filter, this.wait);
+  };
+
+  AutocompleteView.prototype.render = function() {
+    this.input.attr('autocomplete', 'off');
+    this.$el.width(this.input.outerWidth());
+    this.input.keyup(this.keyup.bind(this)).keydown(this.keydown.bind(this)).after(this.$el);
+    return this;
+  };
+
+  AutocompleteView.prototype.keydown = function() {
+    if (event.keyCode === 38) {
+      return this.move(-1);
+    }
+    if (event.keyCode === 40) {
+      return this.move(+1);
+    }
+    if (event.keyCode === 13) {
+      return this.onEnter();
+    }
+    if (event.keyCode === 27) {
+      return this.hide();
+    }
+  };
+
+  AutocompleteView.prototype.keyup = function() {
+    var A;
+    A = this.input.val();
+    if (this.isChanged(A)) {
+      if (this.isValid(A)) {
+        return this.filter(A);
+      } else {
+        return this.hide();
+      }
+    }
+  };
+
+  AutocompleteView.prototype.filter = function(A) {
+    /*if @model.url
+    			B = {}
+    			B[@queryParameter] = A
+    			@model.fetch
+    				success: -> @loadResult @model.models, A
+    				.bind(this)
+    				data: B
+    		else
+    			@loadResult @model.filter((C) -> C.label().indexOf(A) > -1), A
+    */
+
+    return this.loadResult(this.model.filter(function(C) {
+      return C.label().indexOf(A) > -1;
+    }), A);
+  };
+
+  AutocompleteView.prototype.isValid = function(A) {
+    return A.length > 2;
+  };
+
+  AutocompleteView.prototype.isChanged = function(A) {
+    return this.currentText !== A;
+  };
+
+  AutocompleteView.prototype.move = function(A) {
+    var B, C, D;
+    C = this.$el.children('.active');
+    D = this.$el.children();
+    B = C.index() + A;
+    if (D.eq(B).length) {
+      C.removeClass('active');
+      D.eq(B).addClass('active');
+    }
+    return false;
+  };
+
+  AutocompleteView.prototype.onEnter = function() {
+    this.$el.children('.active').click();
+    return false;
+  };
+
+  AutocompleteView.prototype.loadResult = function(B, A) {
+    this.currentText = A;
+    console.log(this.currentText);
+    console.log(B);
+    this.show().reset;
+    if (B.length) {
+      _.forEach(B, this.addItem, this);
+      return this.show();
+    } else {
+      return this.hide();
+    }
+  };
+
+  AutocompleteView.prototype.addItem = function(A) {
+    return this.$el.append(new this.itemView({
+      model: A,
+      parent: this
+    }).render().$el);
+  };
+
+  AutocompleteView.prototype.select = function(B) {
+    var A;
+    A = B.label();
+    this.input.val(A);
+    return this.currentText = A;
+  };
+
+  AutocompleteView.prototype.reset = function() {
+    this.$el.empty();
+    return this;
+  };
+
+  AutocompleteView.prototype.hide = function() {
+    this.$el.hide();
+    return this;
+  };
+
+  AutocompleteView.prototype.show = function() {
+    this.$el.show();
+    return this;
+  };
+
+  return AutocompleteView;
+
+})(support.View);
+
+module.exports = AutocompleteView;
 
 });
 
@@ -2315,6 +2807,138 @@ module.exports = function (__obj) {
 }
 });
 
+;require.register("templates/condition/condition_detail_template", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      var synonym, _i, _len, _ref, _ref1;
+    
+      __out.push('<div class="col-xs-12 col-sm-6 col-md-3">\n    <div class="panel panel-success pricing-big">    \t\n        <div class="panel-heading">\n            <h3 class="panel-title">\n                Conditions</h3>\n        </div>\n        <div class="panel-body no-padding text-align-center">            \n\t\t\t<div class="the-price">\n                <h1>\n                    <strong>');
+    
+      __out.push(__sanitize(this.name));
+    
+      __out.push('</strong>\n                </h1>\n            </div>\n\t\t\t<div class="price-features">\t\t\t\t\n\t\t\t\t<ul class="list-unstyled text-left">\t\t          \n\t\t\t        ');
+    
+      if ((_ref = this.synonyms) != null ? _ref.length : void 0) {
+        __out.push('\n\t\t\t\t\t\t\t');
+        _ref1 = this.synonyms;
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          synonym = _ref1[_i];
+          __out.push('\n\t\t\t\t\t\t\t\t<li><strong>');
+          __out.push(__sanitize(synonym));
+          __out.push('</strong> <i class="fa fa-times text-danger"></i> </li>\n\t\t\t\t\t\t');
+        }
+        __out.push('\n\t\t\t\t\t');
+      }
+    
+      __out.push('\t\t\t          \n\t\t        </ul>\n\t\t\t</div>\n        </div>        \n    </div>\n</div>');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("templates/condition/condition_search_template", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      __out.push('<div class="bbf-editor">\n\t<input class="form-control input-lg js-search-terms" type="text" name="condition" id="c2_condition" value="');
+    
+      __out.push(__sanitize(this.name));
+    
+      __out.push('">\n\t<span class="input-group-addon">\n\t\t<i class="fa fa-search fa-lg fa-fw"></i>\n\t</span>\n\t<input type="hidden" name="consynonyms" id="c2_synonyms" value="');
+    
+      __out.push(__sanitize(this.synonyms));
+    
+      __out.push('">\n\t<input type="hidden" name="conceptId" id="c2_conceptId" value="');
+    
+      __out.push(__sanitize(this.conceptId));
+    
+      __out.push('">\n</div>\n<div class="bbf-help"></div>\n<div class="bbf-error"></div>');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
 ;require.register("templates/condition/conditions_template", function(exports, require, module) {
 module.exports = function (__obj) {
   if (!__obj) __obj = {};
@@ -2355,57 +2979,27 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Add Condition</h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<div class="row">\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t<form id="autocomplete-conditions">\n\t\t\t\t  \t\t\t\t<input name="search" autocomplete="off" style="width: 200px">\n\t\t\t\t\t\t\t</form>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\t\t\t\t\n\t\t\t\t</div>\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\t\t\t\t\n\n\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t<button type="button" class="btn btn-primary" data-dismiss="modal">\n\t\t\t\tCancel\n\t\t\t</button>\n\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\tSave Changes\n\t\t\t</button>\n\t\t</div>\t\t\t\n\t</div>\n</div>\t');
+      var synonym, _i, _len, _ref, _ref1;
     
-    }).call(this);
+      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Add Condition</h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<div class="row">\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t<div class="input-group">\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<div id="search_container"></div>\n\t\t\t\t\t\t</div>\t\t\t\t\t\t\n\t\t\t\t\t</div>\t\t\t\t\t\t\n\t\t\t\t</div>\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t<div class="col-xs-12 col-sm-12 col-md-12">\n\t\t\t\t\t\t<div class="panel panel-success pricing-big">    \t\n\t\t\t\t\t\t    <div class="panel-heading">\n\t\t\t\t\t\t        <h3 class="panel-title">\n\t\t\t\t\t\t            Conditions</h3>\n\t\t\t\t\t\t    </div>\n\t\t\t\t\t\t    <div class="panel-body no-padding text-align-center">            \n\t\t\t\t\t\t\t\t<div class="price-features">\t\t\t\t\n\t\t\t\t\t\t\t\t\t<ul class="list-unstyled text-left">\t\n\t\t\t\t\t\t\t\t\t\t<li><strong>');
     
-  }).call(__obj);
-  __obj.safe = __objSafe, __obj.escape = __escape;
-  return __out.join('');
-}
-});
-
-;require.register("templates/conditions_template", function(exports, require, module) {
-module.exports = function (__obj) {
-  if (!__obj) __obj = {};
-  var __out = [], __capture = function(callback) {
-    var out = __out, result;
-    __out = [];
-    callback.call(this);
-    result = __out.join('');
-    __out = out;
-    return __safe(result);
-  }, __sanitize = function(value) {
-    if (value && value.ecoSafe) {
-      return value;
-    } else if (typeof value !== 'undefined' && value != null) {
-      return __escape(value);
-    } else {
-      return '';
-    }
-  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
-  __safe = __obj.safe = function(value) {
-    if (value && value.ecoSafe) {
-      return value;
-    } else {
-      if (!(typeof value !== 'undefined' && value != null)) value = '';
-      var result = new String(value);
-      result.ecoSafe = true;
-      return result;
-    }
-  };
-  if (!__escape) {
-    __escape = __obj.escape = function(value) {
-      return ('' + value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    };
-  }
-  (function() {
-    (function() {
-      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Add Condition</h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<div class="row">\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t<form id="autocomplete-conditions">\n\t\t\t\t  \t\t\t\t<input name="search" autocomplete="off" style="width: 200px">\n\t\t\t\t\t\t\t</form>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\t\t\t\t\n\t\t\t\t</div>\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\t\t\t\t\n\n\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t<button type="button" class="btn btn-primary" data-dismiss="modal">\n\t\t\t\tCancel\n\t\t\t</button>\n\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\tSave Changes\n\t\t\t</button>\n\t\t</div>\t\t\t\n\t</div>\n</div>\t');
+      __out.push(__sanitize(this.name));
+    
+      __out.push('</strong> <i class="fa fa-times text-danger"></i> </li>\t          \n\t\t\t\t\t\t\t\t        ');
+    
+      if ((_ref = this.synonyms) != null ? _ref.length : void 0) {
+        __out.push('\n\t\t\t\t\t\t\t\t\t\t\t\t');
+        _ref1 = this.synonyms;
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          synonym = _ref1[_i];
+          __out.push('\n\t\t\t\t\t\t\t\t\t\t\t\t\t<li><strong>');
+          __out.push(__sanitize(synonym));
+          __out.push('</strong> <i class="fa fa-times text-danger"></i> </li>\n\t\t\t\t\t\t\t\t\t\t\t');
+        }
+        __out.push('\n\t\t\t\t\t\t\t\t\t\t');
+      }
+    
+      __out.push('\t\t\t          \n\t\t\t\t\t\t\t        </ul>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t    </div>        \n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\t\t\t\t\n\n\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t<button type="button" class="btn btn-primary" data-dismiss="modal">\n\t\t\t\tCancel\n\t\t\t</button>\n\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\tSave Changes\n\t\t\t</button>\n\t\t</div>\t\t\t\n\t</div>\n</div>\t');
     
     }).call(this);
     
