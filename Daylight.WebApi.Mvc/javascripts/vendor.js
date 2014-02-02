@@ -18401,7 +18401,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
         _ref.leave();
       }
       this.currentView = view;
-      return this.$el.append(this.currentView.render().el);
+      return this.$el.html(this.currentView.render().el);
     };
 
     return Application;

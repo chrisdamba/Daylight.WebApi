@@ -420,6 +420,7 @@ Application = (function(_super) {
         parse: true
       });
       window.App.currentPatient = this.currentPatient = patientModel;
+      console.log(this.currentPatient);
       this.currentPatient.on('navigate', this.onPatientPageChanged);
       return this.currentPatient.fetch({
         success: function(model, response, options) {
@@ -1197,6 +1198,7 @@ ConditionsView = (function(_super) {
     this.initializeAutoComplete = __bind(this.initializeAutoComplete, this);
     this.onClearSearch = __bind(this.onClearSearch, this);
     this.onSubmit = __bind(this.onSubmit, this);
+    this.onSaveSuccess = __bind(this.onSaveSuccess, this);
     this.onKeyDown = __bind(this.onKeyDown, this);
     this.save = __bind(this.save, this);
     this.render = __bind(this.render, this);
@@ -1223,6 +1225,7 @@ ConditionsView = (function(_super) {
     window.App.eventAggregator.on('click:addcondition', function(e) {
       return _this.model.set(e.toJSON());
     });
+    this.bindTo(this.model, 'save:success', this.onSaveSuccess);
     this.listenTo(this.model, 'change', this.render);
     _.bindAll(this, "render");
     this.render();
@@ -1240,7 +1243,7 @@ ConditionsView = (function(_super) {
 
   ConditionsView.prototype.save = function() {
     var _this = this;
-    return this.model.save(null, {
+    this.model.save(null, {
       wait: true,
       success: function(model, response, options) {
         return $.smallBox({
@@ -1251,9 +1254,8 @@ ConditionsView = (function(_super) {
           timeout: 4000
         });
       }
-    }, this.teardown(), window.App.eventAggregator.trigger('navigate:patient', {
-      id: this.model.patientId
-    }));
+    });
+    return this.teardown();
   };
 
   ConditionsView.prototype.parseQuery = function(str) {
@@ -1287,9 +1289,7 @@ ConditionsView = (function(_super) {
   };
 
   ConditionsView.prototype.teardown = function() {
-    this.$el.data("modal", null);
-    this.$el.modal("hide");
-    return this.remove();
+    return this.$el.modal("hide");
   };
 
   ConditionsView.prototype.onSaveClick = function(e) {
@@ -1307,6 +1307,12 @@ ConditionsView = (function(_super) {
       e.preventDefault();
     }
     return this.doSearch();
+  };
+
+  ConditionsView.prototype.onSaveSuccess = function() {
+    return window.App.eventAggregator.trigger('navigate:patients', {
+      filter: null
+    });
   };
 
   ConditionsView.prototype.onSubmit = function(e) {
