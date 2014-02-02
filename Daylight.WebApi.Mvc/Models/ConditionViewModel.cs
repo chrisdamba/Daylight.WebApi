@@ -23,6 +23,7 @@ namespace Daylight.WebApi.Mvc.Models
         public ConditionViewModel(Condition condition)
         {
             this.Id = condition.ConditionId;
+            this.PatientId = condition.PatientId;
             this.ConceptId = condition.ConceptId;
             this.Name = condition.Name;
             this.StartedAt = condition.StartedAt;
@@ -34,6 +35,12 @@ namespace Daylight.WebApi.Mvc.Models
         /// </summary>
         [DataMember]
         public Guid Id { get; set; }
+
+        /// <summary>
+        /// Gets or sets the patient id.
+        /// </summary>
+        [DataMember]
+        public Guid PatientId { get; set; }
 
         /// <summary>
         /// Gets or sets the patient condition SNOMED concept id.
@@ -63,15 +70,18 @@ namespace Daylight.WebApi.Mvc.Models
         {
             if (condition == null)
             {
-                condition = new Condition { State = EntityState.Added };
+                condition = new Condition {State = EntityState.Added, StartedAt = DateTime.Now};
             }
             else
-                condition.State = EntityState.Added;
+            {
+                condition.State = EntityState.Modified;
+                condition.StartedAt = StartedAt;
+            }
 
             // Populate properties
             condition.ConceptId = ConceptId;
+            condition.PatientId = PatientId;
             condition.Name = Name;
-            condition.StartedAt = StartedAt;
             condition.FinishedAt = FinishedAt;
 
             return condition;

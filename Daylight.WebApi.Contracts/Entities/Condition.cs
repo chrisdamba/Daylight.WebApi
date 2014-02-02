@@ -12,7 +12,7 @@ namespace Daylight.WebApi.Contracts.Entities
     using System;
     using System.Collections.Generic;
     
-    public partial class Condition
+    public partial class Condition : IStateEntity
     {
         public System.Guid ConditionId { get; set; }
         public System.Guid PatientId { get; set; }

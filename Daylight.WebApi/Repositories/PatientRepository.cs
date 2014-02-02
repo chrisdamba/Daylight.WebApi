@@ -28,7 +28,7 @@ namespace Daylight.WebApi.Repositories
                 foreach (var condition in patient.Conditions)
                 {
                     condition.ConditionId = Guid.NewGuid();
-                    condition.PatientId = patient.PatientId;
+                    condition.StartedAt = DateTime.Now;
                 }
 
                 context.Patients.Add(patient);
@@ -46,7 +46,6 @@ namespace Daylight.WebApi.Repositories
                 foreach (var condition in patient.Conditions)
                 {
                     condition.ConditionId = condition.ConditionId == Guid.Empty ? Guid.NewGuid() : condition.ConditionId;
-                    condition.PatientId = patient.PatientId;
                 }
                 
                 // Update the entities in the context

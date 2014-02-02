@@ -230,13 +230,13 @@ module.exports = {
       type: 'daylight/collections/condition_collection',
       lifestyle: 'transient',
       properties: {
-        url: 'https://api.howareyou.com/conditions/'
+        url: '/API/Patients/:id/Conditions'
       }
     },
     ConditionModel: {
       type: 'daylight/models/condition_model',
       properties: {
-        _urlRoot: 'https://api.howareyou.com/conditions/'
+        _urlRoot: '/API/Patients/:id/Conditions'
       }
     }
   },
@@ -733,9 +733,8 @@ ConditionModel = (function(_super) {
   }
 
   ConditionModel.prototype.defaults = function() {
-    var conceptId;
-    conceptId = void 0;
     return {
+      conceptId: void 0,
       name: void 0,
       synonyms: void 0,
       startedAt: void 0,
@@ -744,7 +743,7 @@ ConditionModel = (function(_super) {
   };
 
   ConditionModel.prototype.urlRoot = function() {
-    return '/API/Patients/{0}/conditions';
+    return "/API/Patients/" + (this.get('patientId')) + "/Conditions";
   };
 
   ConditionModel.prototype.toJSON = function() {
@@ -1289,6 +1288,7 @@ ConditionsView = (function(_super) {
 
   ConditionsView.prototype.teardown = function() {
     this.$el.data("modal", null);
+    this.$el.modal("hide");
     return this.remove();
   };
 
@@ -2158,6 +2158,9 @@ PatientView = (function(_super) {
     var cmodel, view;
     e.preventDefault();
     cmodel = new ConditionModel;
+    cmodel.set({
+      patientId: this.model.id
+    });
     view = new ConditionsView({
       model: cmodel
     });
@@ -2999,7 +3002,7 @@ module.exports = function (__obj) {
     (function() {
       var synonym, _i, _len, _ref, _ref1;
     
-      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Add Condition</h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<div class="row">\t\t\t\t\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t<div id="search_container"></div>\t\n\t\t\t\t\t<div class="panel-body no-padding text-align-center">            \n\t\t\t\t\t\t<strong>');
+      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Add Condition</h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<div class="row">\t\t\t\t\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t<div id="search_container"></div>\t\n\t\t\t\t\t<div class="panel-body no-padding">            \n\t\t\t\t\t\t<strong>');
     
       __out.push(__sanitize(this.name));
     

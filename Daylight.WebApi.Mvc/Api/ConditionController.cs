@@ -22,19 +22,19 @@ namespace Daylight.WebApi.Mvc.Api
         /// <summary>
         /// Initializes a new instance of the <see cref="ConditionController"/> class.
         /// </summary>
-        /// <param name="patientViewFactory">The playlist view model factory.</param>
-        /// <param name="domainFacade">The playlists domain facade.</param>
-        public ConditionController(IViewFactory patientViewFactory, IItemFactory itemFactory)
+        /// <param name="viewFactory">The patient view model factory.</param>
+        /// <param name="itemFactory">The patient item factory.</param>
+        public ConditionController(IViewFactory viewFactory, IItemFactory itemFactory)
         {
             this.viewFactory = viewFactory;
             this.itemFactory = itemFactory;
         }
 
         /// <summary>
-        /// Returns an enumerable of steps for the provided playlist id.
+        /// Returns an enumerable of steps for the provided patientId id.
         /// </summary>
-        /// <param name="playlistId">The playlist id.</param>
-        /// <returns>All steps on the playlist.</returns>
+        /// <param name="patientId">The patient id.</param>
+        /// <returns>All conditions on the patient.</returns>
         [System.Web.Http.AllowAnonymous]
         public IEnumerable<ConditionViewModel> Get(Guid patientId)
         {
@@ -67,7 +67,8 @@ namespace Daylight.WebApi.Mvc.Api
             }
 
             var condition = itemFactory.Save(model, patientId);
-            return viewFactory.GetCondition(condition.ConditionId, patientId);
+            var cmodel = viewFactory.GetCondition(condition.ConditionId, patientId);
+            return cmodel;
         }
 
         /// <summary>
