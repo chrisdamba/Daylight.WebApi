@@ -91,7 +91,7 @@
   globals.require.brunch = true;
 })();
 require.register("components/library_view", function(exports, require, module) {
-var LibraryView, _ref,
+var LibraryView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -101,8 +101,7 @@ module.exports = LibraryView = (function(_super) {
 
   function LibraryView() {
     this.render = __bind(this.render, this);
-    _ref = LibraryView.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return LibraryView.__super__.constructor.apply(this, arguments);
   }
 
   LibraryView.prototype.tagName = 'ul';
@@ -119,7 +118,6 @@ module.exports = LibraryView = (function(_super) {
   };
 
   LibraryView.prototype.initialize = function(options) {
-    var _this = this;
     LibraryView.__super__.initialize.apply(this, arguments);
     this._itemView = options.itemView;
     this._itemViews = [];
@@ -129,15 +127,21 @@ module.exports = LibraryView = (function(_super) {
     if (!this._itemView) {
       throw new Error('ERROR: LibraryView.initialize() - itemView option must be specified');
     }
-    this.listenTo(this.collection, 'add', function(model, collection, options) {
-      return _this._renderItem(model);
-    });
-    this.listenTo(this.collection, 'remove', function(model, collection, options) {
-      return _this._removeItem(model);
-    });
-    return this.listenTo(this.collection, 'reset', function(collection, options) {
-      return _this._reset();
-    });
+    this.listenTo(this.collection, 'add', (function(_this) {
+      return function(model, collection, options) {
+        return _this._renderItem(model);
+      };
+    })(this));
+    this.listenTo(this.collection, 'remove', (function(_this) {
+      return function(model, collection, options) {
+        return _this._removeItem(model);
+      };
+    })(this));
+    return this.listenTo(this.collection, 'reset', (function(_this) {
+      return function(collection, options) {
+        return _this._reset();
+      };
+    })(this));
   };
 
   LibraryView.prototype.render = function() {
@@ -175,11 +179,11 @@ module.exports = LibraryView = (function(_super) {
   };
 
   LibraryView.prototype._removeItem = function(model) {
-    var i, view, _i, _len, _ref1, _results;
-    _ref1 = this._itemViews;
+    var i, view, _i, _len, _ref, _results;
+    _ref = this._itemViews;
     _results = [];
-    for (i = _i = 0, _len = _ref1.length; _i < _len; i = ++_i) {
-      view = _ref1[i];
+    for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+      view = _ref[i];
       if (view.model.id === model.id) {
         this._itemViews.splice(i, 1);
         view.leave();
@@ -193,10 +197,10 @@ module.exports = LibraryView = (function(_super) {
   };
 
   LibraryView.prototype._reset = function() {
-    var view, _i, _len, _ref1;
-    _ref1 = this._itemViews;
-    for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-      view = _ref1[_i];
+    var view, _i, _len, _ref;
+    _ref = this._itemViews;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      view = _ref[_i];
       view.leave();
     }
     this._itemViews = [];
@@ -299,31 +303,42 @@ Application = (function(_super) {
   __extends(Application, _super);
 
   function Application($el) {
-    var _this = this;
     this.$el = $el;
     this.onPatientPageChanged = __bind(this.onPatientPageChanged, this);
     this.showPatientCreate = __bind(this.showPatientCreate, this);
     this.showDefault = __bind(this.showDefault, this);
     Application.__super__.constructor.call(this, this.$el);
     this.router = new Router();
-    window.App.eventAggregator.on('navigate:home', function(e) {
-      return _this.showDefault(e || {});
-    });
-    window.App.eventAggregator.on('navigate:addwidget', function(e) {
-      return _this.showAddWidgetModal(e || {});
-    });
-    window.App.eventAggregator.on('navigate:patients', function(e) {
-      return _this.showPatientsList(e || {});
-    });
-    window.App.eventAggregator.on('navigate:addpatient', function(e) {
-      return _this.showPatientCreate(e || {});
-    });
-    window.App.eventAggregator.on('navigate:patient', function(e) {
-      return _this.showPatient(e.id, e.index, e.subIndex, e.editMode);
-    });
-    window.App.eventAggregator.on('navigate:pageCondition', function(e) {
-      return _this.showPatient(_this.currentPatient.id, _this.currentPatient.get('_index'), e.subPageIndex, _this.currentPatient.get('_editMode'));
-    });
+    window.App.eventAggregator.on('navigate:home', (function(_this) {
+      return function(e) {
+        return _this.showDefault(e || {});
+      };
+    })(this));
+    window.App.eventAggregator.on('navigate:addwidget', (function(_this) {
+      return function(e) {
+        return _this.showAddWidgetModal(e || {});
+      };
+    })(this));
+    window.App.eventAggregator.on('navigate:patients', (function(_this) {
+      return function(e) {
+        return _this.showPatientsList(e || {});
+      };
+    })(this));
+    window.App.eventAggregator.on('navigate:addpatient', (function(_this) {
+      return function(e) {
+        return _this.showPatientCreate(e || {});
+      };
+    })(this));
+    window.App.eventAggregator.on('navigate:patient', (function(_this) {
+      return function(e) {
+        return _this.showPatient(e.id, e.index, e.subIndex, e.editMode);
+      };
+    })(this));
+    window.App.eventAggregator.on('navigate:pageCondition', (function(_this) {
+      return function(e) {
+        return _this.showPatient(_this.currentPatient.id, _this.currentPatient.get('_index'), e.subPageIndex, _this.currentPatient.get('_editMode'));
+      };
+    })(this));
     this.appModel = new ApplicationModel;
     Backbone.history.start();
   }
@@ -403,8 +418,7 @@ Application = (function(_super) {
   };
 
   Application.prototype.showPatient = function(id, index, subIndex, editMode) {
-    var patientModel, _ref,
-      _this = this;
+    var patientModel, _ref;
     if (index == null) {
       index = 0;
     }
@@ -425,17 +439,21 @@ Application = (function(_super) {
       window.App.currentPatient = this.currentPatient = patientModel;
       this.currentPatient.on('navigate', this.onPatientPageChanged);
       return this.currentPatient.fetch({
-        success: function(model, response, options) {
-          model.navigate(index, subIndex, editMode);
-          return _this.showView(new PatientView({
-            model: model
-          }));
-        },
-        error: function(model, response, options) {
-          if (response.status = 403) {
-            return window.location = '/Error/Access';
-          }
-        }
+        success: (function(_this) {
+          return function(model, response, options) {
+            model.navigate(index, subIndex, editMode);
+            return _this.showView(new PatientView({
+              model: model
+            }));
+          };
+        })(this),
+        error: (function(_this) {
+          return function(model, response, options) {
+            if (response.status = 403) {
+              return window.location = '/Error/Access';
+            }
+          };
+        })(this)
       });
     }
   };
@@ -458,7 +476,7 @@ module.exports = Application;
 });
 
 ;require.register("daylight/collections/condition_collection", function(exports, require, module) {
-var ConditionCollection, ConditionModel, _ref,
+var ConditionCollection, ConditionModel,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -468,8 +486,7 @@ ConditionCollection = (function(_super) {
   __extends(ConditionCollection, _super);
 
   function ConditionCollection() {
-    _ref = ConditionCollection.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return ConditionCollection.__super__.constructor.apply(this, arguments);
   }
 
   ConditionCollection.prototype.model = function(attrs, options) {
@@ -523,7 +540,7 @@ module.exports = ConditionCollection;
 });
 
 ;require.register("daylight/collections/condition_search_collection", function(exports, require, module) {
-var ConditionSearchCollection, ConditionSearchModel, _ref,
+var ConditionSearchCollection, ConditionSearchModel,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -533,8 +550,7 @@ ConditionSearchCollection = (function(_super) {
   __extends(ConditionSearchCollection, _super);
 
   function ConditionSearchCollection() {
-    _ref = ConditionSearchCollection.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return ConditionSearchCollection.__super__.constructor.apply(this, arguments);
   }
 
   ConditionSearchCollection.prototype.model = ConditionSearchModel;
@@ -583,7 +599,7 @@ module.exports = ConditionSearchCollection;
 });
 
 ;require.register("daylight/collections/patient_collection", function(exports, require, module) {
-var PatientCollection, PatientModel, _ref,
+var PatientCollection, PatientModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -595,8 +611,7 @@ PatientCollection = (function(_super) {
 
   function PatientCollection() {
     this.anyFetchSuccess = __bind(this.anyFetchSuccess, this);
-    _ref = PatientCollection.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return PatientCollection.__super__.constructor.apply(this, arguments);
   }
 
   PatientCollection.prototype._skip = 0;
@@ -691,7 +706,7 @@ module.exports = ConfigMerger;
 });
 
 ;require.register("daylight/models/application_model", function(exports, require, module) {
-var ApplicationModel, _ref,
+var ApplicationModel,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -699,8 +714,7 @@ ApplicationModel = (function(_super) {
   __extends(ApplicationModel, _super);
 
   function ApplicationModel() {
-    _ref = ApplicationModel.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return ApplicationModel.__super__.constructor.apply(this, arguments);
   }
 
   ApplicationModel.prototype.defaults = {
@@ -721,7 +735,7 @@ module.exports = ApplicationModel;
 });
 
 ;require.register("daylight/models/condition_model", function(exports, require, module) {
-var ConditionModel, _ref,
+var ConditionModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -731,8 +745,7 @@ ConditionModel = (function(_super) {
 
   function ConditionModel() {
     this.urlRoot = __bind(this.urlRoot, this);
-    _ref = ConditionModel.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return ConditionModel.__super__.constructor.apply(this, arguments);
   }
 
   ConditionModel.prototype.defaults = function() {
@@ -764,7 +777,7 @@ module.exports = ConditionModel;
 });
 
 ;require.register("daylight/models/condition_search_model", function(exports, require, module) {
-var ConditionSearchModel, _ref,
+var ConditionSearchModel,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -772,8 +785,7 @@ ConditionSearchModel = (function(_super) {
   __extends(ConditionSearchModel, _super);
 
   function ConditionSearchModel() {
-    _ref = ConditionSearchModel.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return ConditionSearchModel.__super__.constructor.apply(this, arguments);
   }
 
   ConditionSearchModel.prototype.idAttribute = 'id';
@@ -812,7 +824,7 @@ module.exports = ConditionSearchModel;
 });
 
 ;require.register("daylight/models/patient_model", function(exports, require, module) {
-var PatientModel, _ref,
+var PatientModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -823,8 +835,7 @@ PatientModel = (function(_super) {
   function PatientModel() {
     this.onRequestSave = __bind(this.onRequestSave, this);
     this.initialize = __bind(this.initialize, this);
-    _ref = PatientModel.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return PatientModel.__super__.constructor.apply(this, arguments);
   }
 
   PatientModel.prototype.defaults = {
@@ -854,18 +865,21 @@ PatientModel = (function(_super) {
   };
 
   PatientModel.prototype.initialize = function(options) {
-    var _this = this;
     PatientModel.__super__.initialize.call(this, options);
-    this.throttledSave = _.throttle(function() {
-      return _this.save();
-    }, 1000, true);
-    return this.on('change:_editMode', function(model, value, options) {
-      if (value) {
-        return window.App.eventAggregator.on('request:savePatient', _this.onRequestSave);
-      } else {
-        return window.App.eventAggregator.off('request:savePatient', _this.onRequestSave);
-      }
-    });
+    this.throttledSave = _.throttle((function(_this) {
+      return function() {
+        return _this.save();
+      };
+    })(this), 1000, true);
+    return this.on('change:_editMode', (function(_this) {
+      return function(model, value, options) {
+        if (value) {
+          return window.App.eventAggregator.on('request:savePatient', _this.onRequestSave);
+        } else {
+          return window.App.eventAggregator.off('request:savePatient', _this.onRequestSave);
+        }
+      };
+    })(this));
   };
 
   PatientModel.prototype.onRequestSave = function() {
@@ -951,7 +965,7 @@ module.exports = PatientModel;
 });
 
 ;require.register("daylight/views/add_widget_view", function(exports, require, module) {
-var AddWidgetModalView, AddWidgetTemplate, _ref,
+var AddWidgetModalView, AddWidgetTemplate,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -968,8 +982,7 @@ AddWidgetModalView = (function(_super) {
     this.complete = __bind(this.complete, this);
     this.initialize = __bind(this.initialize, this);
     this.render = __bind(this.render, this);
-    _ref = AddWidgetModalView.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return AddWidgetModalView.__super__.constructor.apply(this, arguments);
   }
 
   AddWidgetModalView.prototype.events = {
@@ -1030,7 +1043,7 @@ module.exports = AddWidgetModalView;
 });
 
 ;require.register("daylight/views/condition/condition_detail_view", function(exports, require, module) {
-var ConditionDetailTemplate, ConditionDetailView, _ref,
+var ConditionDetailTemplate, ConditionDetailView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1042,8 +1055,7 @@ ConditionDetailView = (function(_super) {
 
   function ConditionDetailView() {
     this.render = __bind(this.render, this);
-    _ref = ConditionDetailView.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return ConditionDetailView.__super__.constructor.apply(this, arguments);
   }
 
   ConditionDetailView.prototype.template = ConditionDetailTemplate;
@@ -1069,7 +1081,7 @@ module.exports = ConditionDetailView;
 });
 
 ;require.register("daylight/views/condition/condition_search_view", function(exports, require, module) {
-var AutocompleteView, ConditionSearchCollection, ConditionSearchTemplate, ConditionSearchView, _ref,
+var AutocompleteView, ConditionSearchCollection, ConditionSearchTemplate, ConditionSearchView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1085,8 +1097,7 @@ ConditionSearchView = (function(_super) {
 
   function ConditionSearchView() {
     this.render = __bind(this.render, this);
-    _ref = ConditionSearchView.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return ConditionSearchView.__super__.constructor.apply(this, arguments);
   }
 
   ConditionSearchView.prototype.template = ConditionSearchTemplate;
@@ -1180,7 +1191,7 @@ module.exports = ConditionSearchView;
 });
 
 ;require.register("daylight/views/condition/conditions_view", function(exports, require, module) {
-var ConditionCollection, ConditionModel, ConditionSearchView, ConditionsTemplate, ConditionsView, _ref,
+var ConditionCollection, ConditionModel, ConditionSearchView, ConditionsTemplate, ConditionsView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1205,8 +1216,7 @@ ConditionsView = (function(_super) {
     this.onKeyDown = __bind(this.onKeyDown, this);
     this.save = __bind(this.save, this);
     this.render = __bind(this.render, this);
-    _ref = ConditionsView.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return ConditionsView.__super__.constructor.apply(this, arguments);
   }
 
   ConditionsView.prototype.id = "conditions-add";
@@ -1223,11 +1233,12 @@ ConditionsView = (function(_super) {
   };
 
   ConditionsView.prototype.initialize = function(options) {
-    var _this = this;
     ConditionsView.__super__.initialize.call(this, options);
-    window.App.eventAggregator.on('click:addcondition', function(e) {
-      return _this.model.set(e.toJSON());
-    });
+    window.App.eventAggregator.on('click:addcondition', (function(_this) {
+      return function(e) {
+        return _this.model.set(e.toJSON());
+      };
+    })(this));
     this.bindTo(this.model, 'navigate', this.onNavigate);
     this.listenTo(this.model, 'change', this.render);
     _.bindAll(this, "render");
@@ -1245,18 +1256,19 @@ ConditionsView = (function(_super) {
   };
 
   ConditionsView.prototype.save = function() {
-    var _this = this;
     this.model.save(null, {
       wait: true,
-      success: function(model, response, options) {
-        return $.smallBox({
-          title: "Condition has been successfully added!",
-          content: "<i class='fa fa-clock-o'></i> <i>3 seconds ago...</i>",
-          color: '#5F895F',
-          iconSmall: 'fa fa-check bounce animated',
-          timeout: 4000
-        });
-      }
+      success: (function(_this) {
+        return function(model, response, options) {
+          return $.smallBox({
+            title: "Condition has been successfully added!",
+            content: "<i class='fa fa-clock-o'></i> <i>3 seconds ago...</i>",
+            color: '#5F895F',
+            iconSmall: 'fa fa-check bounce animated',
+            timeout: 4000
+          });
+        };
+      })(this)
     });
     this.teardown();
     return window.App.eventAggregator.trigger('navigate:pageCondition', {
@@ -1355,7 +1367,7 @@ module.exports = ConditionsView;
 });
 
 ;require.register("daylight/views/dashboard_view", function(exports, require, module) {
-var DashboardTemplate, DashboardView, _ref,
+var DashboardTemplate, DashboardView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1367,8 +1379,7 @@ DashboardView = (function(_super) {
 
   function DashboardView() {
     this.render = __bind(this.render, this);
-    _ref = DashboardView.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return DashboardView.__super__.constructor.apply(this, arguments);
   }
 
   DashboardView.prototype.template = DashboardTemplate;
@@ -1389,7 +1400,7 @@ if (typeof module !== "undefined" && module !== null) {
 });
 
 ;require.register("daylight/views/patient_create_view", function(exports, require, module) {
-var PatientCreateTemplate, PatientCreateView, PatientModel, _ref,
+var PatientCreateTemplate, PatientCreateView, PatientModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1406,8 +1417,7 @@ PatientCreateView = (function(_super) {
     this.createDatePicker = __bind(this.createDatePicker, this);
     this.save = __bind(this.save, this);
     this.render = __bind(this.render, this);
-    _ref = PatientCreateView.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return PatientCreateView.__super__.constructor.apply(this, arguments);
   }
 
   PatientCreateView.prototype.id = "create";
@@ -1494,8 +1504,7 @@ PatientCreateView = (function(_super) {
   };
 
   PatientCreateView.prototype.save = function() {
-    var address, areaLocality, building, city, collection, dob, email, fname, form, gender, lname, phone, prefix, province, rstatus, street,
-      _this = this;
+    var address, areaLocality, building, city, collection, dob, email, fname, form, gender, lname, phone, prefix, province, rstatus, street;
     form = this.$("form").serializeObject();
     prefix = this.$("input:radio[name ='salutation']:checked").val();
     fname = this.$('#fname').val();
@@ -1525,19 +1534,21 @@ PatientCreateView = (function(_super) {
     }));
     return this.model.save(null, {
       wait: true,
-      success: function(model, response, options) {
-        $.smallBox({
-          title: "Patient " + (_this.model.get('firstName' + _this.model.get('lastName'))) + " details have been successfully saved!",
-          content: "<i class='fa fa-clock-o'></i> <i>3 seconds ago...</i>",
-          color: '#5F895F',
-          iconSmall: 'fa fa-check bounce animated',
-          timeout: 4000
-        });
-        _this.teardown();
-        return window.App.eventAggregator.trigger('navigate:patient', {
-          id: _this.model.id
-        });
-      }
+      success: (function(_this) {
+        return function(model, response, options) {
+          $.smallBox({
+            title: "Patient " + (_this.model.get('firstName' + _this.model.get('lastName'))) + " details have been successfully saved!",
+            content: "<i class='fa fa-clock-o'></i> <i>3 seconds ago...</i>",
+            color: '#5F895F',
+            iconSmall: 'fa fa-check bounce animated',
+            timeout: 4000
+          });
+          _this.teardown();
+          return window.App.eventAggregator.trigger('navigate:patient', {
+            id: _this.model.id
+          });
+        };
+      })(this)
     });
   };
 
@@ -1602,7 +1613,7 @@ module.exports = PatientCreateView;
 });
 
 ;require.register("daylight/views/patient_edit_view", function(exports, require, module) {
-var PatientEditTemplate, PatientEditView, PatientModel, _ref,
+var PatientEditTemplate, PatientEditView, PatientModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1618,8 +1629,7 @@ PatientEditView = (function(_super) {
     this.onKeyDown = __bind(this.onKeyDown, this);
     this.save = __bind(this.save, this);
     this.render = __bind(this.render, this);
-    _ref = PatientEditView.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return PatientEditView.__super__.constructor.apply(this, arguments);
   }
 
   PatientEditView.prototype.id = "edit";
@@ -1709,8 +1719,7 @@ PatientEditView = (function(_super) {
   };
 
   PatientEditView.prototype.save = function() {
-    var address, areaLocality, building, city, collection, dob, email, fname, form, gender, lname, phone, prefix, province, rstatus, street,
-      _this = this;
+    var address, areaLocality, building, city, collection, dob, email, fname, form, gender, lname, phone, prefix, province, rstatus, street;
     form = this.$("form").serializeObject();
     prefix = this.$("input:radio[name ='salutation']:checked").val();
     fname = this.$('#fname').val();
@@ -1741,15 +1750,17 @@ PatientEditView = (function(_super) {
     }));
     return this.model.save(null, {
       wait: true,
-      success: function(model, response, options) {
-        return $.smallBox({
-          title: "Patient " + (model.get('firstName' + model.get('lastName'))) + " has been successfully edited!",
-          content: "<i class='fa fa-clock-o'></i> <i>3 seconds ago...</i>",
-          color: '#5F895F',
-          iconSmall: 'fa fa-check bounce animated',
-          timeout: 4000
-        });
-      }
+      success: (function(_this) {
+        return function(model, response, options) {
+          return $.smallBox({
+            title: "Patient " + (model.get('firstName' + model.get('lastName'))) + " has been successfully edited!",
+            content: "<i class='fa fa-clock-o'></i> <i>3 seconds ago...</i>",
+            color: '#5F895F',
+            iconSmall: 'fa fa-check bounce animated',
+            timeout: 4000
+          });
+        };
+      })(this)
     }, this.teardown(), window.App.eventAggregator.trigger('navigate:patient', {
       id: this.model.id
     }));
@@ -1816,7 +1827,7 @@ module.exports = PatientEditView;
 });
 
 ;require.register("daylight/views/patient_list_item_view", function(exports, require, module) {
-var PatientCollection, PatientEditView, PatientListItemTemplate, PatientListItemView, _ref,
+var PatientCollection, PatientEditView, PatientListItemTemplate, PatientListItemView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1836,8 +1847,7 @@ PatientListItemView = (function(_super) {
     this.onDestroy = __bind(this.onDestroy, this);
     this.render = __bind(this.render, this);
     this.template = __bind(this.template, this);
-    _ref = PatientListItemView.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return PatientListItemView.__super__.constructor.apply(this, arguments);
   }
 
   PatientListItemView.prototype.tagName = 'tr';
@@ -1920,7 +1930,7 @@ module.exports = PatientListItemView;
 });
 
 ;require.register("daylight/views/patient_list_view", function(exports, require, module) {
-var PatientListItemView, PatientListTemplate, PatientListView, SearchView, _ref,
+var PatientListItemView, PatientListTemplate, PatientListView, SearchView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1950,8 +1960,7 @@ PatientListView = (function(_super) {
     this.renderPatient = __bind(this.renderPatient, this);
     this.render = __bind(this.render, this);
     this.dispose = __bind(this.dispose, this);
-    _ref = PatientListView.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return PatientListView.__super__.constructor.apply(this, arguments);
   }
 
   PatientListView.prototype.template = PatientListTemplate;
@@ -1967,15 +1976,18 @@ PatientListView = (function(_super) {
   };
 
   PatientListView.prototype.initialize = function(options) {
-    var _this = this;
     PatientListView.__super__.initialize.call(this, options);
     this.listenTo(this.collection, 'add', this.renderPatient);
-    this.listenTo(this.collection, 'remove', function(model, collection, options) {
-      return _this.removePatient(model);
-    });
-    this.listenTo(this.collection, 'reset', function(collection, options) {
-      return _this.reset();
-    });
+    this.listenTo(this.collection, 'remove', (function(_this) {
+      return function(model, collection, options) {
+        return _this.removePatient(model);
+      };
+    })(this));
+    this.listenTo(this.collection, 'reset', (function(_this) {
+      return function(collection, options) {
+        return _this.reset();
+      };
+    })(this));
     this.listenTo(this.collection, 'fetch:start', this.onFetchStart);
     this.listenTo(this.collection, 'fetch:end', this.onFetchEnd);
     this.listenTo(this.collection, 'end', this.onCollectionEnd);
@@ -2093,7 +2105,7 @@ if (typeof module !== "undefined" && module !== null) {
 });
 
 ;require.register("daylight/views/patient_view", function(exports, require, module) {
-var ConditionModel, ConditionsView, PatientEditView, PatientView, PatientViewTemplate, _ref,
+var ConditionModel, ConditionsView, PatientEditView, PatientView, PatientViewTemplate,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2119,8 +2131,7 @@ PatientView = (function(_super) {
     this.onDestroy = __bind(this.onDestroy, this);
     this.render = __bind(this.render, this);
     this.template = __bind(this.template, this);
-    _ref = PatientView.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return PatientView.__super__.constructor.apply(this, arguments);
   }
 
   PatientView.prototype.events = {
@@ -2230,7 +2241,7 @@ if (typeof module !== "undefined" && module !== null) {
 });
 
 ;require.register("daylight/views/patients_list_view", function(exports, require, module) {
-var PatientsListTemplate, PatientsListView, _ref,
+var PatientsListTemplate, PatientsListView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2243,8 +2254,7 @@ PatientsListView = (function(_super) {
   function PatientsListView() {
     this.render = __bind(this.render, this);
     this.template = __bind(this.template, this);
-    _ref = PatientsListView.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return PatientsListView.__super__.constructor.apply(this, arguments);
   }
 
   PatientsListView.prototype.template = function(data) {
@@ -2270,7 +2280,7 @@ module.exports = PatientsListView;
 });
 
 ;require.register("daylight/views/search/autocomplete_item_view", function(exports, require, module) {
-var AutocompleteItemView, _ref,
+var AutocompleteItemView,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -2278,8 +2288,7 @@ AutocompleteItemView = (function(_super) {
   __extends(AutocompleteItemView, _super);
 
   function AutocompleteItemView() {
-    _ref = AutocompleteItemView.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return AutocompleteItemView.__super__.constructor.apply(this, arguments);
   }
 
   AutocompleteItemView.prototype.tagName = 'li';
@@ -2313,7 +2322,7 @@ module.exports = AutocompleteItemView;
 });
 
 ;require.register("daylight/views/search/autocomplete_view", function(exports, require, module) {
-var AutocompleteItemView, AutocompleteView, _ref,
+var AutocompleteItemView, AutocompleteView,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -2323,8 +2332,7 @@ AutocompleteView = (function(_super) {
   __extends(AutocompleteView, _super);
 
   function AutocompleteView() {
-    _ref = AutocompleteView.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return AutocompleteView.__super__.constructor.apply(this, arguments);
   }
 
   AutocompleteView.prototype.tagName = 'ul';
@@ -2342,8 +2350,7 @@ AutocompleteView = (function(_super) {
   AutocompleteView.prototype.minKeywordLength = 2;
 
   AutocompleteView.prototype.events = {
-    'keyup #c2_condition': 'keyup',
-    'keydown #c2_condition': 'keydown'
+    'keyup #c2_condition': 'keyup'
   };
 
   AutocompleteView.prototype.initialize = function(options) {
@@ -2355,7 +2362,7 @@ AutocompleteView = (function(_super) {
   AutocompleteView.prototype.render = function() {
     this.input.attr('autocomplete', 'off');
     this.$el.width(this.input.outerWidth());
-    this.input.keyup(this.keyup.bind(this)).keydown(this.keydown.bind(this)).after(this.$el);
+    this.input.keyup(this.keyup.bind(this)).after(this.$el);
     return this;
   };
 
@@ -2388,24 +2395,49 @@ AutocompleteView = (function(_super) {
   };
 
   AutocompleteView.prototype.filter = function(keyword) {
-    var items, self, url;
+    var items, loadSearch, n, self, url;
     keyword = keyword.toLowerCase();
     self = this;
     url = "https://api.howareyou.com/conditions/search.json?term=" + keyword;
-    $.getJSON(url, function(data) {
-      var condition;
-      condition = {};
-      return $.map(data, function(item) {
-        condition.conceptId = item.snomed_concept_id;
-        condition.name = item.term;
-        condition.synonyms = item.synonyms;
-        return self._myArray.push(condition);
+    n = $(self).data("searching");
+    clearTimeout(n);
+    this.model.reset({});
+    loadSearch = function() {
+      return $.ajax({
+        url: url
+      }).success(function(data) {
+        var condition;
+        $("search-items").data("searching", null);
+        condition = {};
+        return $.map(data, function(item) {
+          condition.conceptId = item.snomed_concept_id;
+          condition.name = item.term;
+          condition.synonyms = item.synonyms;
+          return self._myArray.push(condition);
+        });
       });
-    });
+    };
     items = this.unique(self._myArray);
     this.model.reset(items);
     this.currentText = keyword;
-    return this.loadResult(this.model.models);
+    this.loadResult(this.model.models);
+    n = setTimeout(loadSearch, 100);
+    return $(self).data("searching", n);
+
+    /*$.getJSON url, (data) ->									
+    			condition = {}			
+    			$.map data, (item) ->
+    				condition.conceptId = item.snomed_concept_id
+    				condition.name = item.term
+    				condition.synonyms = item.synonyms
+    				self._myArray.push condition					
+    								
+    		items = @unique self._myArray
+    		@model.reset items
+    		@currentText = keyword
+    		@loadResult @model.models
+    		 *@loadResult @model.filter((C) -> C.label().indexOf(A) > -1), A
+     */
   };
 
   AutocompleteView.prototype.isValid = function(keyword) {
@@ -2443,7 +2475,6 @@ AutocompleteView = (function(_super) {
   };
 
   AutocompleteView.prototype.addItem = function(model) {
-    console.log(model);
     return this.$el.append(new this.itemView({
       model: model,
       parent: this
@@ -2459,7 +2490,7 @@ AutocompleteView = (function(_super) {
   };
 
   AutocompleteView.prototype.reset = function() {
-    this.$el.empty();
+    $('.search-items li').remove();
     return this;
   };
 
@@ -2512,7 +2543,7 @@ module.exports = AutocompleteView;
 });
 
 ;require.register("daylight/views/search/search_view", function(exports, require, module) {
-var SearchTemplate, SearchView, _ref,
+var SearchTemplate, SearchView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2528,8 +2559,7 @@ SearchView = (function(_super) {
     this.onKeyUp = __bind(this.onKeyUp, this);
     this.onKeyDown = __bind(this.onKeyDown, this);
     this.render = __bind(this.render, this);
-    _ref = SearchView.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return SearchView.__super__.constructor.apply(this, arguments);
   }
 
   SearchView.prototype.template = SearchTemplate;
@@ -2650,7 +2680,7 @@ $(function() {
 });
 
 ;require.register("router/router", function(exports, require, module) {
-var Router, _ref,
+var Router,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -2658,8 +2688,7 @@ Router = (function(_super) {
   __extends(Router, _super);
 
   function Router() {
-    _ref = Router.__super__.constructor.apply(this, arguments);
-    return _ref;
+    return Router.__super__.constructor.apply(this, arguments);
   }
 
   Router.prototype.routes = {
@@ -2726,38 +2755,40 @@ Router = (function(_super) {
   };
 
   Router.prototype.getParams = function(str) {
-    var params, rtn,
-      _this = this;
+    var params, rtn;
     if (!str) {
       return null;
     }
     params = str.replace(/\?/, '');
     params = params.split('&');
     rtn = {};
-    _.each(params, function(param) {
-      param = param.split('=');
-      return rtn[param[0]] = _this._decodeValue(param[1]);
-    });
+    _.each(params, (function(_this) {
+      return function(param) {
+        param = param.split('=');
+        return rtn[param[0]] = _this._decodeValue(param[1]);
+      };
+    })(this));
     return rtn;
   };
 
   Router.prototype.addParamsToRoute = function(route, params) {
-    var iterator,
-      _this = this;
+    var iterator;
     route = route || '';
-    iterator = function(memo, value, key) {
-      var isFirst;
-      if (!value) {
-        return memo;
-      }
-      isFirst = memo === route;
-      value = _this._encodeValue(value);
-      if (isFirst) {
-        return "" + memo + "?" + key + "=" + value;
-      } else {
-        return "" + memo + "&" + key + "=" + value;
-      }
-    };
+    iterator = (function(_this) {
+      return function(memo, value, key) {
+        var isFirst;
+        if (!value) {
+          return memo;
+        }
+        isFirst = memo === route;
+        value = _this._encodeValue(value);
+        if (isFirst) {
+          return "" + memo + "?" + key + "=" + value;
+        } else {
+          return "" + memo + "&" + key + "=" + value;
+        }
+      };
+    })(this);
     return _.reduce(params, iterator, route);
   };
 
@@ -2971,7 +3002,7 @@ module.exports = function (__obj) {
     
       __out.push(__sanitize(this.conceptId));
     
-      __out.push('">\n</div>\n<div class="bbf-help"></div>\n<div class="bbf-error"></div>');
+      __out.push('">\n\t<ul class="search-items">\n\t</ul>\n</div>\n<div class="bbf-help"></div>\n<div class="bbf-error"></div>');
     
     }).call(this);
     
@@ -3042,6 +3073,56 @@ module.exports = function (__obj) {
       }
     
       __out.push('\t -->\t\t\t\t\t\t\n\t\t\t\t    </div> \n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\t\t\t\t\n\n\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t<button type="button" class="btn btn-primary" data-dismiss="modal">\n\t\t\t\tCancel\n\t\t\t</button>\n\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\tAdd\n\t\t\t</button>\n\t\t</div>\t\t\t\n\t</div>\n</div>\t');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("templates/conditions_template", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Add Condition</h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<div class="row">\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t<form id="autocomplete-conditions">\n\t\t\t\t  \t\t\t\t<input name="search" autocomplete="off" style="width: 200px">\n\t\t\t\t\t\t\t</form>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\t\t\t\t\n\t\t\t\t</div>\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\t\t\t\t\n\n\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t<button type="button" class="btn btn-primary" data-dismiss="modal">\n\t\t\t\tCancel\n\t\t\t</button>\n\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\tSave Changes\n\t\t\t</button>\n\t\t</div>\t\t\t\n\t</div>\n</div>\t');
     
     }).call(this);
     
@@ -3505,7 +3586,7 @@ module.exports = function (__obj) {
         __out.push('"');
       }
     
-      __out.push('>\n\t</div>\n\t<button class="btn btn-default btn-primary js-submit" type="submit">\n\t\t<i class="fa fa-fw fa-lg fa-search"></i>Search\n\t</button>\n</form>');
+      __out.push('>\n\t</div>\n\t\n\t<button class="btn btn-default btn-primary js-submit" type="submit">\n\t\t<i class="fa fa-fw fa-lg fa-search"></i>Search\n\t</button>\n</form>');
     
     }).call(this);
     

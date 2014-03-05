@@ -14164,8 +14164,7 @@ maxTime:24})})(jQuery);
 var lunr=function(e){var t=new lunr.Index;return t.pipeline.add(lunr.stopWordFilter,lunr.stemmer),e&&e.call(t,t),t};lunr.version="0.3.0","undefined"!=typeof module&&(module.exports=lunr),lunr.tokenizer=function(e){if(Array.isArray(e))return e;for(var e=e.replace(/^\s+/,""),t=e.length-1;t>=0;t--)if(/\S/.test(e.charAt(t))){e=e.substring(0,t+1);break}return e.split(/\s+/).map(function(e){return e.replace(/^\W+/,"").replace(/\W+$/,"").toLowerCase()})},lunr.Pipeline=function(){this._stack=[]},lunr.Pipeline.registeredFunctions={},lunr.Pipeline.registerFunction=function(e,t){console&&console.warn&&t in this.registeredFunctions&&console.warn("Overwriting existing registered function: "+t),e.label=t,lunr.Pipeline.registeredFunctions[e.label]=e},lunr.Pipeline.warnIfFunctionNotRegistered=function(e){var t=e.label&&e.label in this.registeredFunctions;!t&&console&&console.warn&&console.warn("Function is not registered with pipeline. This may cause problems when serialising the index.\n",e)},lunr.Pipeline.load=function(e){var t=new lunr.Pipeline;return e.forEach(function(e){var n=lunr.Pipeline.registeredFunctions[e];if(!n)throw Error("Cannot load un-registered function: "+e);t.add(n)}),t},lunr.Pipeline.prototype.add=function(){var e=Array.prototype.slice.call(arguments);e.forEach(function(e){lunr.Pipeline.warnIfFunctionNotRegistered(e),this._stack.push(e)},this)},lunr.Pipeline.prototype.after=function(e,t){lunr.Pipeline.warnIfFunctionNotRegistered(t);var n=this._stack.indexOf(e)+1;this._stack.splice(n,0,t)},lunr.Pipeline.prototype.before=function(e,t){lunr.Pipeline.warnIfFunctionNotRegistered(t);var n=this._stack.indexOf(e);this._stack.splice(n,0,t)},lunr.Pipeline.prototype.remove=function(e){var t=this._stack.indexOf(e);this._stack.splice(t,1)},lunr.Pipeline.prototype.run=function(e){for(var t=[],n=e.length,r=this._stack.length,o=0;n>o;o++){for(var i=e[o],s=0;r>s&&(i=this._stack[s](i,o,e),void 0!==i);s++);void 0!==i&&t.push(i)}return t},lunr.Pipeline.prototype.toJSON=function(){return this._stack.map(function(e){return lunr.Pipeline.warnIfFunctionNotRegistered(e),e.label})},lunr.Vector=function(e){this.elements=e;for(var t=0;e.length>t;t++)t in this.elements||(this.elements[t]=0)},lunr.Vector.prototype.magnitude=function(){if(this._magnitude)return this._magnitude;for(var e,t=0,n=this.elements,r=n.length,o=0;r>o;o++)e=n[o],t+=e*e;return this._magnitude=Math.sqrt(t)},lunr.Vector.prototype.dot=function(e){for(var t=this.elements,n=e.elements,r=t.length,o=0,i=0;r>i;i++)o+=t[i]*n[i];return o},lunr.Vector.prototype.similarity=function(e){return this.dot(e)/(this.magnitude()*e.magnitude())},lunr.Vector.prototype.toArray=function(){return this.elements},lunr.SortedSet=function(){this.length=0,this.elements=[]},lunr.SortedSet.load=function(e){var t=new this;return t.elements=e,t.length=e.length,t},lunr.SortedSet.prototype.add=function(){Array.prototype.slice.call(arguments).forEach(function(e){~this.indexOf(e)||this.elements.splice(this.locationFor(e),0,e)},this),this.length=this.elements.length},lunr.SortedSet.prototype.toArray=function(){return this.elements.slice()},lunr.SortedSet.prototype.map=function(e,t){return this.elements.map(e,t)},lunr.SortedSet.prototype.forEach=function(e,t){return this.elements.forEach(e,t)},lunr.SortedSet.prototype.indexOf=function(e,t,n){var t=t||0,n=n||this.elements.length,r=n-t,o=t+Math.floor(r/2),i=this.elements[o];return 1>=r?i===e?o:-1:e>i?this.indexOf(e,o,n):i>e?this.indexOf(e,t,o):i===e?o:void 0},lunr.SortedSet.prototype.locationFor=function(e,t,n){var t=t||0,n=n||this.elements.length,r=n-t,o=t+Math.floor(r/2),i=this.elements[o];if(1>=r){if(i>e)return o;if(e>i)return o+1}return e>i?this.locationFor(e,o,n):i>e?this.locationFor(e,t,o):void 0},lunr.SortedSet.prototype.intersect=function(e){for(var t=new lunr.SortedSet,n=0,r=0,o=this.length,i=e.length,s=this.elements,l=e.elements;;){if(n>o-1||r>i-1)break;s[n]!==l[r]?s[n]<l[r]?n++:s[n]>l[r]&&r++:(t.add(s[n]),n++,r++)}return t},lunr.SortedSet.prototype.clone=function(){var e=new lunr.SortedSet;return e.elements=this.toArray(),e.length=e.elements.length,e},lunr.SortedSet.prototype.union=function(e){var t,n,r;return this.length>=e.length?(t=this,n=e):(t=e,n=this),r=t.clone(),r.add.apply(r,n.toArray()),r},lunr.SortedSet.prototype.toJSON=function(){return this.toArray()},lunr.Index=function(){this._fields=[],this._ref="id",this.pipeline=new lunr.Pipeline,this.documentStore=new lunr.Store,this.tokenStore=new lunr.TokenStore,this.corpusTokens=new lunr.SortedSet},lunr.Index.load=function(e){e.version!==lunr.version&&console&&console.warn&&console.warn("version mismatch: current "+lunr.version+" importing "+e.version);var t=new this;return t._fields=e.fields,t._ref=e.ref,t.documentStore=lunr.Store.load(e.documentStore),t.tokenStore=lunr.TokenStore.load(e.tokenStore),t.corpusTokens=lunr.SortedSet.load(e.corpusTokens),t.pipeline=lunr.Pipeline.load(e.pipeline),t},lunr.Index.prototype.field=function(e,t){var t=t||{},n={name:e,boost:t.boost||1};return this._fields.push(n),this},lunr.Index.prototype.ref=function(e){return this._ref=e,this},lunr.Index.prototype.add=function(e){var t={},n=new lunr.SortedSet,r=e[this._ref];this._fields.forEach(function(r){var o=this.pipeline.run(lunr.tokenizer(e[r.name]));t[r.name]=o,lunr.SortedSet.prototype.add.apply(n,o)},this),this.documentStore.set(r,n),lunr.SortedSet.prototype.add.apply(this.corpusTokens,n.toArray());for(var o=0;n.length>o;o++){var i=n.elements[o],s=this._fields.reduce(function(e,n){var r=t[n.name].filter(function(e){return e===i}).length,o=t[n.name].length;return e+r/o*n.boost},0);this.tokenStore.add(i,{ref:r,tf:s})}},lunr.Index.prototype.remove=function(e){var t=e[this._ref],n=this.documentStore.get(t);this.documentStore.remove(t),n.forEach(function(e){this.tokenStore.remove(e,t)},this)},lunr.Index.prototype.update=function(e){this.remove(e),this.add(e)},lunr.Index.prototype.idf=function(e){var t=Object.keys(this.tokenStore.get(e)).length;return 0===t?1:1+Math.log(this.tokenStore.length/t)},lunr.Index.prototype.search=function(e){var t=this.pipeline.run(lunr.tokenizer(e)),n=Array(this.corpusTokens.length),r=[],o=this._fields.reduce(function(e,t){return e+t.boost},0),i=t.some(function(e){return this.tokenStore.has(e)},this);if(!i)return[];t.forEach(function(e,t,i){var s=1/i.length*this._fields.length*o,l=this,u=this.tokenStore.expand(e).reduce(function(t,r){var o=l.corpusTokens.indexOf(r),i=l.idf(r),u=r===e?10:1,a=new lunr.SortedSet;return o>-1&&(n[o]=s*i*u),Object.keys(l.tokenStore.get(r)).forEach(function(e){a.add(e)}),t.union(a)},new lunr.SortedSet);r.push(u)},this);var s=r.reduce(function(e,t){return e.intersect(t)}),l=new lunr.Vector(n);return s.map(function(e){return{ref:e,score:l.similarity(this.documentVector(e))}},this).sort(function(e,t){return t.score-e.score})},lunr.Index.prototype.documentVector=function(e){for(var t=this.documentStore.get(e),n=t.length,r=Array(this.corpusTokens.length),o=0;n>o;o++){var i=t.elements[o],s=this.tokenStore.get(i)[e].tf,l=this.idf(i);r[this.corpusTokens.indexOf(i)]=s*l}return new lunr.Vector(r)},lunr.Index.prototype.toJSON=function(){return{version:lunr.version,fields:this._fields,ref:this._ref,documentStore:this.documentStore.toJSON(),tokenStore:this.tokenStore.toJSON(),corpusTokens:this.corpusTokens.toJSON(),pipeline:this.pipeline.toJSON()}},lunr.Store=function(){this.store={},this.length=0},lunr.Store.load=function(e){var t=new this;return t.length=e.length,t.store=Object.keys(e.store).reduce(function(t,n){return t[n]=lunr.SortedSet.load(e.store[n]),t},{}),t},lunr.Store.prototype.set=function(e,t){this.store[e]=t,this.length=Object.keys(this.store).length},lunr.Store.prototype.get=function(e){return this.store[e]},lunr.Store.prototype.has=function(e){return e in this.store},lunr.Store.prototype.remove=function(e){this.has(e)&&(delete this.store[e],this.length--)},lunr.Store.prototype.toJSON=function(){return{store:this.store,length:this.length}},lunr.stemmer=function(){var e={ational:"ate",tional:"tion",enci:"ence",anci:"ance",izer:"ize",bli:"ble",alli:"al",entli:"ent",eli:"e",ousli:"ous",ization:"ize",ation:"ate",ator:"ate",alism:"al",iveness:"ive",fulness:"ful",ousness:"ous",aliti:"al",iviti:"ive",biliti:"ble",logi:"log"},t={icate:"ic",ative:"",alize:"al",iciti:"ic",ical:"ic",ful:"",ness:""},n="[^aeiou]",r="[aeiouy]",o=n+"[^aeiouy]*",i=r+"[aeiou]*",s="^("+o+")?"+i+o,l="^("+o+")?"+i+o+"("+i+")?$",u="^("+o+")?"+i+o+i+o,a="^("+o+")?"+r;return function(n){var i,h,c,p,d,f,g;if(3>n.length)return n;if(c=n.substr(0,1),"y"==c&&(n=c.toUpperCase()+n.substr(1)),p=/^(.+?)(ss|i)es$/,d=/^(.+?)([^s])s$/,p.test(n)?n=n.replace(p,"$1$2"):d.test(n)&&(n=n.replace(d,"$1$2")),p=/^(.+?)eed$/,d=/^(.+?)(ed|ing)$/,p.test(n)){var m=p.exec(n);p=RegExp(s),p.test(m[1])&&(p=/.$/,n=n.replace(p,""))}else if(d.test(n)){var m=d.exec(n);i=m[1],d=RegExp(a),d.test(i)&&(n=i,d=/(at|bl|iz)$/,f=RegExp("([^aeiouylsz])\\1$"),g=RegExp("^"+o+r+"[^aeiouwxy]$"),d.test(n)?n+="e":f.test(n)?(p=/.$/,n=n.replace(p,"")):g.test(n)&&(n+="e"))}if(p=/^(.+?)y$/,p.test(n)){var m=p.exec(n);i=m[1],p=RegExp(a),p.test(i)&&(n=i+"i")}if(p=/^(.+?)(ational|tional|enci|anci|izer|bli|alli|entli|eli|ousli|ization|ation|ator|alism|iveness|fulness|ousness|aliti|iviti|biliti|logi)$/,p.test(n)){var m=p.exec(n);i=m[1],h=m[2],p=RegExp(s),p.test(i)&&(n=i+e[h])}if(p=/^(.+?)(icate|ative|alize|iciti|ical|ful|ness)$/,p.test(n)){var m=p.exec(n);i=m[1],h=m[2],p=RegExp(s),p.test(i)&&(n=i+t[h])}if(p=/^(.+?)(al|ance|ence|er|ic|able|ible|ant|ement|ment|ent|ou|ism|ate|iti|ous|ive|ize)$/,d=/^(.+?)(s|t)(ion)$/,p.test(n)){var m=p.exec(n);i=m[1],p=RegExp(u),p.test(i)&&(n=i)}else if(d.test(n)){var m=d.exec(n);i=m[1]+m[2],d=RegExp(u),d.test(i)&&(n=i)}if(p=/^(.+?)e$/,p.test(n)){var m=p.exec(n);i=m[1],p=RegExp(u),d=RegExp(l),f=RegExp("^"+o+r+"[^aeiouwxy]$"),(p.test(i)||d.test(i)&&!f.test(i))&&(n=i)}return p=/ll$/,d=RegExp(u),p.test(n)&&d.test(n)&&(p=/.$/,n=n.replace(p,"")),"y"==c&&(n=c.toLowerCase()+n.substr(1)),n}}(),lunr.Pipeline.registerFunction(lunr.stemmer,"stemmer"),lunr.stopWordFilter=function(e){return-1===lunr.stopWordFilter.stopWords.indexOf(e)?e:void 0},lunr.stopWordFilter.stopWords=new lunr.SortedSet,lunr.stopWordFilter.stopWords.length=119,lunr.stopWordFilter.stopWords.elements=["a","able","about","across","after","all","almost","also","am","among","an","and","any","are","as","at","be","because","been","but","by","can","cannot","could","dear","did","do","does","either","else","ever","every","for","from","get","got","had","has","have","he","her","hers","him","his","how","however","i","if","in","into","is","it","its","just","least","let","like","likely","may","me","might","most","must","my","neither","no","nor","not","of","off","often","on","only","or","other","our","own","rather","said","say","says","she","should","since","so","some","than","that","the","their","them","then","there","these","they","this","tis","to","too","twas","us","wants","was","we","were","what","when","where","which","while","who","whom","why","will","with","would","yet","you","your"],lunr.Pipeline.registerFunction(lunr.stopWordFilter,"stopWordFilter"),lunr.TokenStore=function(){this.root={docs:{}},this.length=0},lunr.TokenStore.load=function(e){var t=new this;return t.root=e.root,t.length=e.length,t},lunr.TokenStore.prototype.add=function(e,t,n){var n=n||this.root,r=e[0],o=e.slice(1);return r in n||(n[r]={docs:{}}),0===o.length?(n[r].docs[t.ref]=t,this.length+=1,void 0):this.add(o,t,n[r])},lunr.TokenStore.prototype.has=function(e,t){var t=t||this.root,n=e[0],r=e.slice(1);return n in t?0===r.length?!0:this.has(r,t[n]):!1},lunr.TokenStore.prototype.getNode=function(e,t){var t=t||this.root,n=e[0],r=e.slice(1);return n in t?0===r.length?t[n]:this.getNode(r,t[n]):{}},lunr.TokenStore.prototype.get=function(e,t){return this.getNode(e,t).docs||{}},lunr.TokenStore.prototype.remove=function(e,t,n){var n=n||this.root,r=e[0],o=e.slice(1);if(r in n)return 0!==o.length?this.remove(o,t,n[r]):(delete n[r].docs[t],void 0)},lunr.TokenStore.prototype.expand=function(e,t){var n=this.getNode(e),r=n.docs||{},t=t||[];return Object.keys(r).length&&t.push(e),Object.keys(n).forEach(function(n){"docs"!==n&&t.concat(this.expand(e+n,t))},this),t},lunr.TokenStore.prototype.toJSON=function(){return{root:this.root,length:this.length}};
 ;$(document).ready(function(){$("body").append("<div id='divSmallBoxes'></div>");$("body").append("<div id='divMiniIcons'></div><div id='divbigBoxes'></div>")});function SmartUnLoading(){$(".divMessageBox").fadeOut(300,function(){$(this).remove()});$(".LoadingBoxContainer").fadeOut(300,function(){$(this).remove()})}var ExistMsg=0,SmartMSGboxCount=0,PrevTop=0;(function($){$.SmartMessageBox=function(settings,callback){var SmartMSG,Content;settings=$.extend({title:"",content:"",NormalButton:undefined,ActiveButton:undefined,buttons:undefined,input:undefined,placeholder:"",options:undefined},settings);var PlaySound=0;PlaySound=1;if(isIE8orlower()==0){var audioElement=document.createElement("audio");audioElement.setAttribute("src","sound/messagebox.mp3");$.get();audioElement.addEventListener("load",function(){audioElement.play()},true);audioElement.pause();audioElement.play()}SmartMSGboxCount=SmartMSGboxCount+1;if(ExistMsg==0){ExistMsg=1;SmartMSG="<div class='divMessageBox animated fadeIn fast' id='MsgBoxBack'></div>";$("body").append(SmartMSG);if(isIE8orlower()==1){$("#MsgBoxBack").addClass("MessageIE")}}var InputType="";var HasInput=0;if(settings.input!=undefined){HasInput=1;settings.input=settings.input.toLowerCase();switch(settings.input){case"text":InputType="<input class='form-control' type='"+settings.input+"' id='txt"+SmartMSGboxCount+"' placeholder='"+settings.placeholder+"'/><br/><br/>";break;case"password":InputType="<input class='form-control' type='"+settings.input+"' id='txt"+SmartMSGboxCount+"' placeholder='"+settings.placeholder+"'/><br/><br/>";break;case"select":if(settings.options==undefined){alert("For this type of input, the options parameter is required.")}else{InputType="<select class='form-control' id='txt"+SmartMSGboxCount+"'>";for(var i=0;i<=settings.options.length-1;i++){if(settings.options[i]=="["){Name=""}else{if(settings.options[i]=="]"){NumBottons=NumBottons+1;Name="<option>"+Name+"</option>";InputType+=Name}else{Name+=settings.options[i]}}}InputType+="</select>"}break;default:alert("That type of input is not handled yet")}}Content="<div class='MessageBoxContainer animated fadeIn fast' id='Msg"+SmartMSGboxCount+"'>";Content+="<div class='MessageBoxMiddle'>";Content+="<span class='MsgTitle'>"+settings.title+"</span class='MsgTitle'>";Content+="<p class='pText'>"+settings.content+"</p>";Content+=InputType;Content+="<div class='MessageBoxButtonSection'>";if(settings.buttons==undefined){settings.buttons="[Accept]"}settings.buttons=$.trim(settings.buttons);settings.buttons=settings.buttons.split("");var Name="";var NumBottons=0;if(settings.NormalButton==undefined){settings.NormalButton="#232323"}if(settings.ActiveButton==undefined){settings.ActiveButton="#ed145b"}for(var i=0;i<=settings.buttons.length-1;i++){if(settings.buttons[i]=="["){Name=""}else{if(settings.buttons[i]=="]"){NumBottons=NumBottons+1;Name="<button id='bot"+NumBottons+"-Msg"+SmartMSGboxCount+"' class='btn btn-default btn-sm botTempo'> "+Name+"</button>";Content+=Name}else{Name+=settings.buttons[i]}}}Content+="</div>";Content+="</div>";Content+="</div>";if(SmartMSGboxCount>1){$(".MessageBoxContainer").hide();$(".MessageBoxContainer").css("z-index",99999)}$(".divMessageBox").append(Content);if(HasInput==1){$("#txt"+SmartMSGboxCount).focus()}$(".botTempo").hover(function(){var ThisID=$(this).attr("id")},function(){var ThisID=$(this).attr("id")});$(".botTempo").click(function(){var ThisID=$(this).attr("id");var MsgBoxID=ThisID.substr(ThisID.indexOf("-")+1);var Press=$.trim($(this).text());if(HasInput==1){if(typeof callback=="function"){var IDNumber=MsgBoxID.replace("Msg","");var Value=$("#txt"+IDNumber).val();if(callback){callback(Press,Value)}}}else{if(typeof callback=="function"){if(callback){callback(Press)}}}$("#"+MsgBoxID).addClass("animated fadeOut fast");SmartMSGboxCount=SmartMSGboxCount-1;if(SmartMSGboxCount==0){$("#MsgBoxBack").removeClass("fadeIn").addClass("fadeOut").delay(300).queue(function(){ExistMsg=0;$(this).remove()})}})}})(jQuery);var BigBoxes=0;(function($){$.bigBox=function(settings,callback){var boxBig,content;settings=$.extend({title:"",content:"",icon:undefined,number:undefined,color:undefined,sound:true,timeout:undefined,colortime:1500,colors:undefined},settings);if(settings.sound===true){if(isIE8orlower()==0){var audioElement=document.createElement("audio");if(navigator.userAgent.match("Firefox/")){audioElement.setAttribute("src","sound/bigbox.ogg")}else{audioElement.setAttribute("src","sound/bigbox.mp3")}$.get();audioElement.addEventListener("load",function(){audioElement.play()},true);audioElement.pause();audioElement.play()}}BigBoxes=BigBoxes+1;boxBig="<div id='bigBox"+BigBoxes+"' class='bigBox animated fadeIn fast'><div id='bigBoxColor"+BigBoxes+"'><i class='botClose fa fa-times' id='botClose"+BigBoxes+"'></i>";boxBig+="<span>"+settings.title+"</span>";boxBig+="<p>"+settings.content+"</p>";boxBig+="<div class='bigboxicon'>";if(settings.icon==undefined){settings.icon="fa fa-cloud"}boxBig+="<i class='"+settings.icon+"'></i>";boxBig+="</div>";boxBig+="<div class='bigboxnumber'>";if(settings.number!=undefined){boxBig+=settings.number}boxBig+="</div></div>";boxBig+="</div>";$("#divbigBoxes").append(boxBig);if(settings.color==undefined){settings.color="#004d60"}$("#bigBox"+BigBoxes).css("background-color",settings.color);$("#divMiniIcons").append("<div id='miniIcon"+BigBoxes+"' class='cajita animated fadeIn' style='background-color: "+settings.color+";'><i class='"+settings.icon+"'/></i></div>");$("#miniIcon"+BigBoxes).bind("click",function(){var FrontBox=$(this).attr("id");var FrontBigBox=FrontBox.replace("miniIcon","bigBox");var FronBigBoxColor=FrontBox.replace("miniIcon","bigBoxColor");$(".cajita").each(function(index){var BackBox=$(this).attr("id");var BigBoxID=BackBox.replace("miniIcon","bigBox");$("#"+BigBoxID).css("z-index",9998)});$("#"+FrontBigBox).css("z-index",9999);$("#"+FronBigBoxColor).removeClass("animated fadeIn").delay(1).queue(function(){$(this).show();$(this).addClass("animated fadeIn");$(this).clearQueue()})});var ThisBigBoxCloseCross=$("#botClose"+BigBoxes);var ThisBigBox=$("#bigBox"+BigBoxes);var ThisMiniIcon=$("#miniIcon"+BigBoxes);var ColorTimeInterval;if(settings.colors!=undefined&&settings.colors.length>0){ThisBigBoxCloseCross.attr("colorcount","0");ColorTimeInterval=setInterval(function(){var ColorIndex=ThisBigBoxCloseCross.attr("colorcount");ThisBigBoxCloseCross.animate({backgroundColor:settings.colors[ColorIndex].color});ThisBigBox.animate({backgroundColor:settings.colors[ColorIndex].color});ThisMiniIcon.animate({backgroundColor:settings.colors[ColorIndex].color});if(ColorIndex<settings.colors.length-1){ThisBigBoxCloseCross.attr("colorcount",((ColorIndex*1)+1))}else{ThisBigBoxCloseCross.attr("colorcount",0)}},settings.colortime)}ThisBigBoxCloseCross.bind("click",function(){clearInterval(ColorTimeInterval);if(typeof callback=="function"){if(callback){callback()}}var FrontBox=$(this).attr("id");var FrontBigBox=FrontBox.replace("botClose","bigBox");var miniIcon=FrontBox.replace("botClose","miniIcon");$("#"+FrontBigBox).removeClass("fadeIn fast");$("#"+FrontBigBox).addClass("fadeOut fast").delay(300).queue(function(){$(this).clearQueue();$(this).remove()});$("#"+miniIcon).removeClass("fadeIn fast");$("#"+miniIcon).addClass("fadeOut fast").delay(300).queue(function(){$(this).clearQueue();$(this).remove()})});if(settings.timeout!=undefined){var TimedID=BigBoxes;setTimeout(function(){clearInterval(ColorTimeInterval);$("#bigBox"+TimedID).removeClass("fadeIn fast");$("#bigBox"+TimedID).addClass("fadeOut fast").delay(300).queue(function(){$(this).clearQueue();$(this).remove()});$("#miniIcon"+TimedID).removeClass("fadeIn fast");$("#miniIcon"+TimedID).addClass("fadeOut fast").delay(300).queue(function(){$(this).clearQueue();$(this).remove()})},settings.timeout)}}})(jQuery);var SmallBoxes=0,SmallCount=0,SmallBoxesAnchos=0;(function($){$.smallBox=function(settings,callback){var BoxSmall,content;settings=$.extend({title:"",content:"",icon:undefined,iconSmall:undefined,sound:true,color:undefined,timeout:undefined,colortime:1500,colors:undefined},settings);if(settings.sound===true){if(isIE8orlower()==0){var audioElement=document.createElement("audio");if(navigator.userAgent.match("Firefox/")){audioElement.setAttribute("src","sound/smallbox.ogg")}else{audioElement.setAttribute("src","sound/smallbox.mp3")}$.get();audioElement.addEventListener("load",function(){audioElement.play()},true);audioElement.pause();audioElement.play()}}SmallBoxes=SmallBoxes+1;BoxSmall="";var IconSection="",CurrentIDSmallbox="smallbox"+SmallBoxes;if(settings.iconSmall==undefined){IconSection="<div class='miniIcono'></div>"}else{IconSection="<div class='miniIcono'><i class='miniPic "+settings.iconSmall+"'></i></div>"}if(settings.icon==undefined){BoxSmall="<div id='smallbox"+SmallBoxes+"' class='SmallBox animated fadeInRight fast'><div class='textoFull'><span>"+settings.title+"</span><p>"+settings.content+"</p></div>"+IconSection+"</div>"}else{BoxSmall="<div id='smallbox"+SmallBoxes+"' class='SmallBox animated fadeInRight fast'><div class='foto'><i class='"+settings.icon+"'></i></div><div class='textoFoto'><span>"+settings.title+"</span><p>"+settings.content+"</p></div>"+IconSection+"</div>"}if(SmallBoxes==1){$("#divSmallBoxes").append(BoxSmall);SmallBoxesAnchos=$("#smallbox"+SmallBoxes).height()+40}else{var SmartExist=$(".SmallBox").size();if(SmartExist==0){$("#divSmallBoxes").append(BoxSmall);SmallBoxesAnchos=$("#smallbox"+SmallBoxes).height()+40}else{$("#divSmallBoxes").append(BoxSmall);$("#smallbox"+SmallBoxes).css("top",SmallBoxesAnchos);SmallBoxesAnchos=SmallBoxesAnchos+$("#smallbox"+SmallBoxes).height()+20;$(".SmallBox").each(function(index){if(index==0){$(this).css("top",20);heightPrev=$(this).height()+40;SmallBoxesAnchos=$(this).height()+40}else{$(this).css("top",heightPrev);heightPrev=heightPrev+$(this).height()+20;SmallBoxesAnchos=SmallBoxesAnchos+$(this).height()+20}})}}var ThisSmallBox=$("#smallbox"+SmallBoxes);if(settings.color==undefined){ThisSmallBox.css("background-color","#004d60")}else{ThisSmallBox.css("background-color",settings.color)}var ColorTimeInterval;if(settings.colors!=undefined&&settings.colors.length>0){ThisSmallBox.attr("colorcount","0");ColorTimeInterval=setInterval(function(){var ColorIndex=ThisSmallBox.attr("colorcount");ThisSmallBox.animate({backgroundColor:settings.colors[ColorIndex].color});if(ColorIndex<settings.colors.length-1){ThisSmallBox.attr("colorcount",((ColorIndex*1)+1))}else{ThisSmallBox.attr("colorcount",0)}},settings.colortime)}if(settings.timeout!=undefined){setTimeout(function(){clearInterval(ColorTimeInterval);var ThisHeight=$(this).height()+20;var ID=CurrentIDSmallbox;var ThisTop=$("#"+CurrentIDSmallbox).css("top");if($("#"+CurrentIDSmallbox+":hover").length!=0){$("#"+CurrentIDSmallbox).on("mouseleave",function(){SmallBoxesAnchos=SmallBoxesAnchos-ThisHeight;$("#"+CurrentIDSmallbox).remove();if(typeof callback=="function"){if(callback){callback()}}var Primero=1;var heightPrev=0;$(".SmallBox").each(function(index){if(index==0){$(this).animate({top:20},300);heightPrev=$(this).height()+40;SmallBoxesAnchos=$(this).height()+40}else{$(this).animate({top:heightPrev},350);heightPrev=heightPrev+$(this).height()+20;SmallBoxesAnchos=SmallBoxesAnchos+$(this).height()+20}})})}else{clearInterval(ColorTimeInterval);SmallBoxesAnchos=SmallBoxesAnchos-ThisHeight;if(typeof callback=="function"){if(callback){callback()}}$("#"+CurrentIDSmallbox).removeClass().addClass("SmallBox").animate({opacity:0},300,function(){$(this).remove();var Primero=1;var heightPrev=0;$(".SmallBox").each(function(index){if(index==0){$(this).animate({top:20},300);heightPrev=$(this).height()+40;SmallBoxesAnchos=$(this).height()+40}else{$(this).animate({top:heightPrev});heightPrev=heightPrev+$(this).height()+20;SmallBoxesAnchos=SmallBoxesAnchos+$(this).height()+20}})})}},settings.timeout)}$("#smallbox"+SmallBoxes).bind("click",function(){clearInterval(ColorTimeInterval);if(typeof callback=="function"){if(callback){callback()}}var ThisHeight=$(this).height()+20;var ID=$(this).attr("id");var ThisTop=$(this).css("top");SmallBoxesAnchos=SmallBoxesAnchos-ThisHeight;$(this).removeClass().addClass("SmallBox").animate({opacity:0},300,function(){$(this).remove();var Primero=1;var heightPrev=0;$(".SmallBox").each(function(index){if(index==0){$(this).animate({top:20},300);heightPrev=$(this).height()+40;SmallBoxesAnchos=$(this).height()+40}else{$(this).animate({top:heightPrev},350);heightPrev=heightPrev+$(this).height()+20;SmallBoxesAnchos=SmallBoxesAnchos+$(this).height()+20}})})})}})(jQuery);function getInternetExplorerVersion(){var rv=-1;if(navigator.appName=="Microsoft Internet Explorer"){var ua=navigator.userAgent;var re=new RegExp("MSIE ([0-9]{1,}[.0-9]{0,})");if(re.exec(ua)!=null){rv=parseFloat(RegExp.$1)}}return rv}function checkVersion(){var msg="You're not using Windows Internet Explorer.";var ver=getInternetExplorerVersion();if(ver>-1){if(ver>=8){msg="You're using a recent copy of Windows Internet Explorer."}else{msg="You should upgrade your copy of Windows Internet Explorer."}}alert(msg)}function isIE8orlower(){var msg="0";var ver=getInternetExplorerVersion();if(ver>-1){if(ver>=9){msg=0}else{msg=1}}return msg};
 ;(function() {
-  var _ref,
-    __hasProp = {}.hasOwnProperty,
+  var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   if (window.support == null) {
@@ -14176,8 +14175,7 @@ var lunr=function(e){var t=new lunr.Index;return t.pipeline.add(lunr.stopWordFil
     __extends(View, _super);
 
     function View() {
-      _ref = View.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return View.__super__.constructor.apply(this, arguments);
     }
 
     View.prototype._width = void 0;
@@ -14217,26 +14215,28 @@ var lunr=function(e){var t=new lunr.Index;return t.pipeline.add(lunr.stopWordFil
     View.prototype.dispose = function() {};
 
     View.prototype.bindTo = function(source, event, callback) {
-      var bindings,
-        _this = this;
+      var bindings;
       source.on(event, callback);
       bindings = this.bindings;
-      return _.each(event.split(' '), function(e) {
-        return bindings.push({
-          source: source,
-          event: e,
-          callback: callback
-        });
-      });
+      return _.each(event.split(' '), (function(_this) {
+        return function(e) {
+          return bindings.push({
+            source: source,
+            event: e,
+            callback: callback
+          });
+        };
+      })(this));
     };
 
     View.prototype.bindOnce = function(source, event, callback) {
-      var proxy,
-        _this = this;
-      proxy = function() {
-        _this.unbindFrom(source, event, proxy);
-        return callback.apply(null, arguments);
-      };
+      var proxy;
+      proxy = (function(_this) {
+        return function() {
+          _this.unbindFrom(source, event, proxy);
+          return callback.apply(null, arguments);
+        };
+      })(this);
       return this.bindTo(source, event, proxy);
     };
 
@@ -14254,10 +14254,11 @@ var lunr=function(e){var t=new lunr.Index;return t.pipeline.add(lunr.stopWordFil
     };
 
     View.prototype.unbindAll = function() {
-      var _this = this;
-      _.each(this.bindings, function(binding) {
-        return binding.source.off(binding.event, binding.callback);
-      });
+      _.each(this.bindings, (function(_this) {
+        return function(binding) {
+          return binding.source.off(binding.event, binding.callback);
+        };
+      })(this));
       return this.bindings = [];
     };
 
@@ -14317,8 +14318,7 @@ var lunr=function(e){var t=new lunr.Index;return t.pipeline.add(lunr.stopWordFil
 }).call(this);
 
 ;(function() {
-  var _ref,
-    __hasProp = {}.hasOwnProperty,
+  var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   if (window.support == null) {
@@ -14329,20 +14329,20 @@ var lunr=function(e){var t=new lunr.Index;return t.pipeline.add(lunr.stopWordFil
     __extends(Model, _super);
 
     function Model() {
-      _ref = Model.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return Model.__super__.constructor.apply(this, arguments);
     }
 
     Model.prototype.save = function(attributes, options) {
-      var oldSuccess,
-        _this = this;
+      var oldSuccess;
       oldSuccess = options != null ? options.success : void 0;
       this.trigger('save:start', this);
       options = _.extend({}, options, {
-        success: function(model, response, options) {
-          _this.trigger('save:success', _this);
-          return typeof oldSuccess === "function" ? oldSuccess(model, response, options) : void 0;
-        }
+        success: (function(_this) {
+          return function(model, response, options) {
+            _this.trigger('save:success', _this);
+            return typeof oldSuccess === "function" ? oldSuccess(model, response, options) : void 0;
+          };
+        })(this)
       });
       return Model.__super__.save.call(this, attributes, options);
     };
@@ -18358,6 +18358,322 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 
 }).call(this);
 
+;// jQuery & Backbone JS Autocomplete Widget
+//
+// Copyright 2011 Planbox (www.planbox.com)
+// Author Martin Drapeau
+//
+// Pass a Backbone collection and a model attribute to specify
+// values for autocomplete. Apply this on an INPUT element.
+// For example:
+// 
+//   $('input').autocomplete({
+//       collection: collection,
+//       attr: 'name'
+//   });
+//
+// Constructs a UL and places it before the INPUT element.
+// Will open right below, left-aligned. LI's get added the
+// selected class upon hover or when the user navigates with
+// the keyboard. Pressing TAB or ENTER when an item is selected
+// changes the value in the INPUT. Or, if you specified a 
+// callback (option onselect), will instead trigger it passing
+// the selected model as argument.
+//
+// Options:
+//   collection: The Backbone collection.
+//   attr: The attribute to autocomplete on.
+//   noCase: Optional. Set to true if your values are strings 
+//          and you want autocomplete to be case insensitive.
+//   onselect: Optional. Callback to be called when an item is
+//          selected. If callback is not set, will modify the 
+//          INPUT value to what has been selected.
+//   scrollable_ancestor_em: Optional. If your element is inside
+//          a scrollabale element, set this option to it.
+//   ul_css, ul_class: Optional. Set to specify element style
+//          and element class (uses jQuery's css and addClass
+//          functions).
+//   li_css, li_class: Optional. Set to specify element style
+//          and element class (uses jQuery's css and addClass
+//          functions).
+//   width: Optional. Set to force a width. Otherwise will be
+//          set to the width of the INPUT element.
+//
+// Methods:
+//   show: Call to force showing the list.
+//   destroy: Call to destroy and remove the widget from the
+//         element.
+//
+// CSS: By default the UL will have class autocomplete. That
+// can be overriden through option ul_class. Here is the 
+// suggested styling to put in your .css file:
+//    ul.autocomplete {
+//    	position:absolute;
+//    	background-color:white;
+//    	border:1px solid #999;
+//    	width:100%;
+//    	font-size:12px;
+//    	overflow-x:hidden;
+//    	overflow-y:auto;
+//    	clear:both;
+//      z-index:1000;}
+//    
+//    ul.autocomplete li {
+//    	list-style:none;
+//    	cursor:pointer;
+//    	padding:5px;}
+//    
+//    ul.autocomplete li.selected {
+//    	background-color:#E1EFF9;}
+//
+// Note: Calling autocomplete on an element twice resets the
+// widget.
+//
+(function($) {
+	
+	var defaults = {
+		collection: null,
+		attr: null,
+		noCase: false,
+		scrollable_ancestor_em: null,
+		onselect: null,
+		ul_class: 'autocomplete',
+		ul_css: null,
+		li_class: null,
+		li_css: null,
+		width: null,
+		max_results: null
+	};
+	
+	var methods = {
+		init: function(options) {
+			options || (options = {});
+			
+			return this.each(function(){
+				var $this = $(this); // INPUT
+				
+				// If widget already exists - destroy it first
+				if ($this.data('autocomplete')) methods.destroy.apply($this);
+				
+				// Turn off Browser autocomplete
+				var oldAutocomplete = $this.attr('autocomplete');
+				$this.attr('autocomplete', 'off');
+				
+				// Create
+				var list_em = $('<ul>') // UL
+					.addClass(options.ul_class || defaults.ul_class)
+					.hide()
+					.insertBefore($this);
+				
+				// Bind events
+				$this.bind('focus.autocomplete', function(e) {
+					$this.bind('blur.autocomplete', function(e) {
+						$this.unbind('blur.autocomplete');
+						$this.unbind('keydown.autocomplete');
+						$this.unbind('keyup.autocomplete');
+						list_em.hide();
+						return true;
+					});
+					$this.bind('keydown.autocomplete', function(e) {
+						return methods._inputKeydown.apply($this, [e]);
+					});
+					$this.bind('keyup.autocomplete', function(e) {
+						return methods._inputKeyup.apply($this, [e]);
+					});
+				});
+				
+				$this.data('autocomplete', {
+					target: $this,
+					oldAutocomplete: oldAutocomplete,
+					oldValue: null,
+					list_em: list_em,
+					options: $.extend({}, defaults, options)
+				});
+			});
+		},
+		// Completely removes the widget on the specified elements
+		destroy: function() {
+			return this.each(function(){
+				var $this = $(this),
+					data = $this.data('autocomplete');
+				
+				data.list_em.remove();
+				$this.attr('autocomplete', data.oldAutocomplete);
+				$this.removeData('autocomplete');
+			});
+		},
+		show: function() {
+			var $this = this;
+			var data = $this.data('autocomplete');
+			var options = data.options;
+			var collection = options.collection;
+			var attr = options.attr;
+			
+			var list_em = data.list_em;
+			
+			var str = $.trim($this.val());
+			var str_lower = str.toLowerCase();
+			
+			// Find matches
+			var result = [];
+			collection.each(function(model) {
+				var v = model.get(attr);
+				if (v.indexOf(str) == 0 || (options.noCase && v.toLowerCase().indexOf(str_lower) == 0))
+					result.push(model);
+			});
+			
+			// Hide list if none found and return now
+			if (result.length == 0) {
+				list_em.hide();
+				return this;
+			};
+
+			if(options.max_results && !isNaN(options.max_results)) {
+				result = result.slice(0, options.max_results);
+			}
+			
+			// We found some - position and show
+			list_em.empty();
+			if (!list_em.is(':visible')) {
+				var pos = $this.position();
+				var delta = 0;
+				var scroll_em = $(options.scrollable_ancestor_em);
+				if (scroll_em.length) delta = scroll_em.scrollTop();
+				var x = pos.left;
+				var y = pos.top+delta+$this.outerHeight(true);
+				list_em.css({'left': x,'top': y});
+				if (options.ul_css) list_em.css(options.ul_css);
+				if (options.width) {
+					list_em.width(options.width);
+				} else {
+					list_em.width($this.outerWidth(true)+5);
+				}
+				list_em.show();
+			}
+			
+			// Build LI elements in our UL
+			for (var i = 0; i < result.length; i++) {
+				var model = result[i];
+				var found = model.get(attr);
+				var html = '<strong>'+found.substr(0, str.length)+'</strong>'+found.substr(str.length);
+				var li_em = $("<li>"+html+"</li>");
+				li_em.mouseover(function() {
+					$(this).addClass('selected')
+						.siblings('.selected').removeClass('selected');
+				});
+				li_em.mouseleave(function() {
+					$(this).removeClass('selected');
+				});
+				li_em.mousedown(function() {
+					var model_id = $(this).attr('model_id');
+					model = collection.get(model_id);
+					if (options.onselect) {
+						options.onselect(model);
+					} else {
+						$this.val(model.get(attr));
+					}
+					$this.blur();
+					return false;
+				});
+				li_em.addClass(options.li_class).attr('model_id', model.id);
+				if (options.li_class) li_em.addClass(li_class);
+				if (options.li_css) li_em.css(options.li_css);
+				list_em.append(li_em);
+			}
+			
+			return this;
+		},
+		_inputKeydown: function(e) {
+			var $this = this;
+			var data = $this.data('autocomplete');
+			var options = data.options;
+			var collection = options.collection;
+			var list_em = data.list_em;
+			
+			// Esc
+			if (e.keyCode == 27) {
+				e.preventDefault();
+				$this.blur();
+				return false;
+			}
+			// Enter
+			if (e.keyCode == 13 || e.keyCode == 9) {
+				// If an item is selected, change input value
+				var em = list_em.children('li.selected');
+				if (em.length) {
+					var model_id = em.attr('model_id');
+					model = collection.get(model_id);
+					if (options.onselect) {
+						options.onselect(model);
+					} else {
+						this.val(model.get(options.attr));
+					}
+				}
+				list_em.hide();
+				return true;
+			}
+			// Down
+			if (e.keyCode == 40) {
+				e.preventDefault();
+				var em = list_em.children('li.selected');
+				if (em.length == 0) {
+					list_em.children('li:first').addClass('selected');
+				} else {
+					if (em == list_em.children('li:last')) {
+						em.removeClass('selected');
+					} else {
+						em.removeClass('selected').next('li').addClass('selected');
+					}
+				}
+				return false;
+			}
+			// Up
+			if (e.keyCode == 38) {
+				e.preventDefault();
+				var em = list_em.children('li.selected');
+				if (em.length == 0) {
+					list_em.children('li:last').addClass('selected');
+				} else {
+					if (em == list_em.children('li:first')) {
+						em.removeClass('selected');
+					} else {
+						em.removeClass('selected').prev('li').addClass('selected');
+					}
+				}
+				return false;
+			}
+			return true;
+		},
+		_inputKeyup: function(e) {
+			if (e.keyCode == 27 || e.keyCode == 13 || e.keyCode == 9) return true;
+			
+			var $this = this;
+			var data = $this.data('autocomplete');
+			var list_em = data.list_em;
+			
+			if (data.oldValue == $this.val()) return true;
+			
+			data.oldValue = $this.val();
+			if ($this.val().length == 0) {
+				list_em.hide();
+			} else {
+				methods.show.apply($this);
+			}
+			return false;
+		}
+	};
+	
+	$.fn.autocomplete = function( method ) {
+		if ( methods[method] ) {
+			return methods[method].apply( this, Array.prototype.slice.call( arguments, 1 ));
+		} else if ( typeof method === 'object' || ! method ) {
+			return methods.init.apply( this, arguments );
+		} else {
+			$.error( 'Method ' +  method + ' does not exist on jQuery.autocomplete' );
+		}
+	};
+
+})(jQuery);
 ;(function() {
   jQuery.fn.serializeObject = function() {
     var arrayData, objectData;
@@ -18401,7 +18717,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
         _ref.leave();
       }
       this.currentView = view;
-      return this.$el.html(this.currentView.render().el);
+      return this.$el.append(this.currentView.render().el);
     };
 
     return Application;
@@ -18411,8 +18727,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 }).call(this);
 
 ;(function() {
-  var _ref,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -18425,32 +18740,34 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 
     function Collection() {
       this.update = __bind(this.update, this);
-      _ref = Collection.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return Collection.__super__.constructor.apply(this, arguments);
     }
 
     Collection.prototype.fetch = function(options) {
-      var error, success,
-        _this = this;
+      var error, success;
       options = options ? _.clone(options) : {};
       success = options.success;
-      options.success = function(model, resp) {
-        _this.trigger('fetch:end', {
-          type: 'fetch:end'
-        });
-        if (success) {
-          return success(model, resp);
-        }
-      };
+      options.success = (function(_this) {
+        return function(model, resp) {
+          _this.trigger('fetch:end', {
+            type: 'fetch:end'
+          });
+          if (success) {
+            return success(model, resp);
+          }
+        };
+      })(this);
       error = options.error;
-      options.error = function(originalModel, resp, options) {
-        _this.trigger('fetch:end', {
-          type: 'fetch:end'
-        });
-        if (error) {
-          return error(originalModel, resp, options);
-        }
-      };
+      options.error = (function(_this) {
+        return function(originalModel, resp, options) {
+          _this.trigger('fetch:end', {
+            type: 'fetch:end'
+          });
+          if (error) {
+            return error(originalModel, resp, options);
+          }
+        };
+      })(this);
       this.trigger('fetch:start', {
         type: 'fetch:start'
       });
@@ -18611,8 +18928,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 }).call(this);
 
 ;(function() {
-  var _ref,
-    __hasProp = {}.hasOwnProperty,
+  var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   if (window.support == null) {
@@ -18623,8 +18939,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
     __extends(LazyCollection, _super);
 
     function LazyCollection() {
-      _ref = LazyCollection.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return LazyCollection.__super__.constructor.apply(this, arguments);
     }
 
     LazyCollection.prototype.initialize = function(models, options) {
@@ -18715,8 +19030,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 }).call(this);
 
 ;(function() {
-  var _ref,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -18730,25 +19044,10 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
     function ModalView() {
       this.onWindowResize = __bind(this.onWindowResize, this);
       this.onCloseClick = __bind(this.onCloseClick, this);
-      _ref = ModalView.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return ModalView.__super__.constructor.apply(this, arguments);
     }
 
-    ModalView.prototype.modalTemplate = _.template('<div id="<%= cid %>" class="modal fade" role="dialog">\
-		<div class="modal-dialog">\
-			<div class="modal-container">\
-				<div class="modal-header">\
-					<button type="button" class="close" data-dismiss="modal">×</button>\
-				</div>\
-				<div class="modal-body">           \
-		        </div>\
-		        <div class="modal-footer">\
-		            <a href="#" class="btn btn-primary js-save-btn" data-dismiss="modal">Save changes</a> \
-	            	<a href="#" class="btn js-cancel-btn" data-dismiss="modal">Cancel</a>\
-		        </div>\
-		    </div>\
-	    </div>\
-	</div>');
+    ModalView.prototype.modalTemplate = _.template('<div id="<%= cid %>" class="modal fade" role="dialog"> <div class="modal-dialog"> <div class="modal-container"> <div class="modal-header"> <button type="button" class="close" data-dismiss="modal">×</button> </div> <div class="modal-body"> </div> <div class="modal-footer"> <a href="#" class="btn btn-primary js-save-btn" data-dismiss="modal">Save changes</a> <a href="#" class="btn js-cancel-btn" data-dismiss="modal">Cancel</a> </div> </div> </div> </div>');
 
     ModalView.prototype.initialize = function(options) {
       ModalView.__super__.initialize.call(this, options);
@@ -18820,8 +19119,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 }).call(this);
 
 ;(function() {
-  var _ref,
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -18837,8 +19135,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
       this.onResize = __bind(this.onResize, this);
       this.close = __bind(this.close, this);
       this.updatePosition = __bind(this.updatePosition, this);
-      _ref = PopoverView.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return PopoverView.__super__.constructor.apply(this, arguments);
     }
 
     PopoverView.prototype.positionDefaults = {
@@ -19066,8 +19363,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 }).call(this);
 
 ;(function() {
-  var _ref,
-    __hasProp = {}.hasOwnProperty,
+  var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   if (window.support == null) {
@@ -19078,8 +19374,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
     __extends(Router, _super);
 
     function Router() {
-      _ref = Router.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return Router.__super__.constructor.apply(this, arguments);
     }
 
     return Router;
@@ -19089,8 +19384,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
 }).call(this);
 
 ;(function() {
-  var _ref,
-    __hasProp = {}.hasOwnProperty,
+  var __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   if (window.support == null) {
@@ -19101,8 +19395,7 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
     __extends(SyncModel, _super);
 
     function SyncModel() {
-      _ref = SyncModel.__super__.constructor.apply(this, arguments);
-      return _ref;
+      return SyncModel.__super__.constructor.apply(this, arguments);
     }
 
     SyncModel.prototype._savedState = null;
@@ -19110,11 +19403,12 @@ if (typeof jQuery === "undefined") { throw new Error("Bootstrap requires jQuery"
     SyncModel.prototype._dirty = null;
 
     SyncModel.prototype.initialize = function() {
-      var _this = this;
       SyncModel.__super__.initialize.apply(this, arguments);
-      return this.on('sync', function() {
-        return _this._savedState = _this.toJSON();
-      });
+      return this.on('sync', (function(_this) {
+        return function() {
+          return _this._savedState = _this.toJSON();
+        };
+      })(this));
     };
 
     SyncModel.prototype.sync = function(method, model, options) {
