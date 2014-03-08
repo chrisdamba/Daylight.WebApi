@@ -4,6 +4,7 @@ ul.autocomplete {
     background-color: #f8f8f8;
     margin: 0;
     padding: 3px 0;
+    height: 20px;
 }
 
     ul.autocomplete li {

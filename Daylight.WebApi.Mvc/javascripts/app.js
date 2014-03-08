@@ -540,11 +540,11 @@ module.exports = ConditionCollection;
 });
 
 ;require.register("daylight/collections/condition_search_collection", function(exports, require, module) {
-var ConditionSearchCollection, ConditionSearchModel,
+var ConditionSearchCollection, SearchModel,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-ConditionSearchModel = require('daylight/models/condition_search_model');
+SearchModel = require('daylight/models/search_model');
 
 ConditionSearchCollection = (function(_super) {
   __extends(ConditionSearchCollection, _super);
@@ -553,7 +553,7 @@ ConditionSearchCollection = (function(_super) {
     return ConditionSearchCollection.__super__.constructor.apply(this, arguments);
   }
 
-  ConditionSearchCollection.prototype.model = ConditionSearchModel;
+  ConditionSearchCollection.prototype.model = SearchModel;
 
   ConditionSearchCollection.prototype.sync = function(method, model, options) {
     var params, query;
@@ -776,53 +776,6 @@ module.exports = ConditionModel;
 
 });
 
-;require.register("daylight/models/condition_search_model", function(exports, require, module) {
-var ConditionSearchModel,
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-ConditionSearchModel = (function(_super) {
-  __extends(ConditionSearchModel, _super);
-
-  function ConditionSearchModel() {
-    return ConditionSearchModel.__super__.constructor.apply(this, arguments);
-  }
-
-  ConditionSearchModel.prototype.idAttribute = 'id';
-
-  ConditionSearchModel.prototype.defaults = function() {
-    var conceptId;
-    conceptId = '';
-    return {
-      name: '',
-      synonyms: void 0
-    };
-  };
-
-  ConditionSearchModel.prototype.conceptId = function() {
-    return this.get('conceptId');
-  };
-
-  ConditionSearchModel.prototype.value = function() {
-    return this.get('id');
-  };
-
-  ConditionSearchModel.prototype.label = function() {
-    return this.get('name');
-  };
-
-  ConditionSearchModel.prototype.synonyms = function() {
-    return this.get('synonyms');
-  };
-
-  return ConditionSearchModel;
-
-})(support.Model);
-
-module.exports = ConditionSearchModel;
-
-});
-
 ;require.register("daylight/models/patient_model", function(exports, require, module) {
 var PatientModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -961,6 +914,57 @@ PatientModel = (function(_super) {
 })(support.Model);
 
 module.exports = PatientModel;
+
+});
+
+;require.register("daylight/models/search_model", function(exports, require, module) {
+var SearchModel,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+SearchModel = (function(_super) {
+  __extends(SearchModel, _super);
+
+  function SearchModel() {
+    return SearchModel.__super__.constructor.apply(this, arguments);
+  }
+
+  SearchModel.prototype.idAttribute = 'id';
+
+  SearchModel.prototype.defaults = function() {
+    var snomed_concept_id;
+    snomed_concept_id = '';
+    return {
+      term: '',
+      synonyms: void 0
+    };
+  };
+
+  SearchModel.prototype.conceptId = function() {
+    return this.get('snomed_concept_id');
+  };
+
+  SearchModel.prototype.value = function() {
+    return this.get('id');
+  };
+
+  SearchModel.prototype.label = function() {
+    return this.get('term');
+  };
+
+  SearchModel.prototype.synonyms = function() {
+    return this.get('synonyms');
+  };
+
+  SearchModel.prototype.initialize = function(options) {
+    return SearchModel.__super__.initialize.call(this, options);
+  };
+
+  return SearchModel;
+
+})(support.Model);
+
+module.exports = SearchModel;
 
 });
 
@@ -1110,7 +1114,6 @@ ConditionSearchView = (function(_super) {
 
   ConditionSearchView.prototype.initialize = function(options) {
     ConditionSearchView.__super__.initialize.call(this, options);
-    this._myArray = [];
     this._collection = new ConditionSearchCollection();
     _.bindAll(this, 'render');
     return this.render();
@@ -1121,30 +1124,11 @@ ConditionSearchView = (function(_super) {
     return this;
   };
 
-  ConditionSearchView.prototype.invokeFetch = function() {
-    var items, query, self, url;
-    self = this;
-    query = $('input[name=condition]').val();
-    url = "https://api.howareyou.com/conditions/search.json?term=" + query;
-    $.getJSON(url, function(data) {
-      var condition;
-      condition = {};
-      return $.map(data, function(item) {
-        condition.conceptId = item.snomed_concept_id;
-        condition.name = item.term;
-        condition.synonyms = item.synonyms;
-        return self._myArray.push(condition);
-      });
-    });
-    items = this.unique(self._myArray);
-    self._collection.reset(items);
-    return $("#c2_condition").unbind('keydown', this.invokeFetch);
-  };
-
   ConditionSearchView.prototype.conditionsAutoComplete = function() {
     return new AutocompleteView({
       input: $("#c2_condition"),
-      model: this._collection
+      model: this._collection,
+      entity: 'conditions'
     }).render();
   };
 
@@ -1152,34 +1136,6 @@ ConditionSearchView = (function(_super) {
     $("#c2_condition").val(model.label());
     $("#c2_synonyms").val(model.synonyms());
     return $("#c2_conceptId").val(model.conceptId());
-  };
-
-  ConditionSearchView.prototype.unique = function(objArray) {
-    var results, valMatch;
-    results = [];
-    valMatch = function(seen, obj) {
-      var key, match, other, val, _i, _len;
-      for (_i = 0, _len = seen.length; _i < _len; _i++) {
-        other = seen[_i];
-        match = true;
-        for (key in obj) {
-          val = obj[key];
-          if (other[key] !== val) {
-            match = false;
-          }
-        }
-        if (match) {
-          return true;
-        }
-      }
-      return false;
-    };
-    objArray.forEach(function(item) {
-      if (!valMatch(results, item)) {
-        return results.push(item);
-      }
-    });
-    return results;
   };
 
   return ConditionSearchView;
@@ -1236,7 +1192,19 @@ ConditionsView = (function(_super) {
     ConditionsView.__super__.initialize.call(this, options);
     window.App.eventAggregator.on('click:addcondition', (function(_this) {
       return function(e) {
-        return _this.model.set(e.toJSON());
+        var conceptId, name, synonyms;
+        conceptId = e.get('snomed_concept_id');
+        name = e.get('term');
+        synonyms = e.get('synonyms');
+        _this.model.set({
+          'conceptId': conceptId
+        });
+        _this.model.set({
+          'name': name
+        });
+        return _this.model.set({
+          'synonyms': synonyms
+        });
       };
     })(this));
     this.bindTo(this.model, 'navigate', this.onNavigate);
@@ -1279,27 +1247,6 @@ ConditionsView = (function(_super) {
   ConditionsView.prototype.parseQuery = function(str) {
     str = str.replace(/\x20+(?=\x20)/g, '');
     return str = String.prototype.trim ? str.trim() : str;
-  };
-
-  ConditionsView.prototype.doSearch = function() {
-    var query, self, url;
-    self = this;
-    query = $('input[name=condition]').val();
-    url = "https://api.howareyou.com/conditions/search.json?term=" + query;
-    $.getJSON(url, function(data) {
-      var condition;
-      condition = {};
-      return $.map(data, function(item) {
-        condition.conceptId = item.snomed_concept_id;
-        condition.name = item.term;
-        condition.synonyms = item.synonyms;
-        if ($.inArray(condition, self._myArray) !== -1) {
-          return self._myArray.push(condition);
-        }
-      });
-    });
-    console.log(JSON.stringify(self._myArray));
-    return $('.js-search-terms').unbind('keydown', this.doSearch);
   };
 
   ConditionsView.prototype.show = function() {
@@ -2322,11 +2269,13 @@ module.exports = AutocompleteItemView;
 });
 
 ;require.register("daylight/views/search/autocomplete_view", function(exports, require, module) {
-var AutocompleteItemView, AutocompleteView,
+var AutocompleteItemView, AutocompleteView, SearchModel,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 AutocompleteItemView = require('daylight/views/search/autocomplete_item_view');
+
+SearchModel = require('daylight/models/search_model');
 
 AutocompleteView = (function(_super) {
   __extends(AutocompleteView, _super);
@@ -2341,28 +2290,31 @@ AutocompleteView = (function(_super) {
 
   AutocompleteView.prototype.className = 'autocomplete';
 
-  AutocompleteView.prototype.wait = 300;
-
-  AutocompleteView.prototype.queryParameter = 'term';
+  AutocompleteView.prototype.wait = 100;
 
   AutocompleteView.prototype.currentText = '';
 
   AutocompleteView.prototype.minKeywordLength = 2;
 
+  AutocompleteView.prototype.entity = 'conditions';
+
   AutocompleteView.prototype.events = {
-    'keyup #c2_condition': 'keyup'
+    'keyup #c2_condition': 'keyup',
+    'keydown #c2_condition': 'keydown'
   };
 
   AutocompleteView.prototype.initialize = function(options) {
+    if (options.entity) {
+      this.entity = options.entity;
+    }
     _.extend(this, options);
-    this.filter = _.debounce(this.filter, this.wait);
-    return this._myArray = [];
+    return this.filter = _.debounce(this.filter, this.wait);
   };
 
   AutocompleteView.prototype.render = function() {
     this.input.attr('autocomplete', 'off');
     this.$el.width(this.input.outerWidth());
-    this.input.keyup(this.keyup.bind(this)).after(this.$el);
+    this.input.keyup(this.keyup.bind(this)).keydown(this.keydown.bind(this)).after(this.$el);
     return this;
   };
 
@@ -2373,13 +2325,15 @@ AutocompleteView = (function(_super) {
     if (event.keyCode === 40) {
       return this.move(+1);
     }
+    if (event.keyCode === 91) {
+      return this.select();
+    }
     if (event.keyCode === 13) {
       return this.onEnter();
     }
     if (event.keyCode === 27) {
-      this.hide();
+      return this.hide();
     }
-    return this.keyup();
   };
 
   AutocompleteView.prototype.keyup = function() {
@@ -2395,53 +2349,23 @@ AutocompleteView = (function(_super) {
   };
 
   AutocompleteView.prototype.filter = function(keyword) {
-    var items, loadSearch, n, self, url;
+    var self, url;
     keyword = keyword.toLowerCase();
     self = this;
-    url = "https://api.howareyou.com/conditions/search.json?term=" + keyword;
-    n = $(self).data("searching");
-    clearTimeout(n);
-    this.model.reset({});
-    loadSearch = function() {
-      return $.ajax({
-        url: url
-      }).success(function(data) {
-        var condition;
-        $("search-items").data("searching", null);
-        condition = {};
-        return $.map(data, function(item) {
-          condition.conceptId = item.snomed_concept_id;
-          condition.name = item.term;
-          condition.synonyms = item.synonyms;
-          return self._myArray.push(condition);
-        });
+    this.model.reset();
+    url = "https://api.howareyou.com/" + this.entity + "/search.json?term=" + keyword;
+    return $.getJSON(url, function(data) {
+      var models;
+      models = data.map(function(m) {
+        return new SearchModel(m);
       });
-    };
-    items = this.unique(self._myArray);
-    this.model.reset(items);
-    this.currentText = keyword;
-    this.loadResult(this.model.models);
-    n = setTimeout(loadSearch, 100);
-    return $(self).data("searching", n);
-
-    /*$.getJSON url, (data) ->									
-    			condition = {}			
-    			$.map data, (item) ->
-    				condition.conceptId = item.snomed_concept_id
-    				condition.name = item.term
-    				condition.synonyms = item.synonyms
-    				self._myArray.push condition					
-    								
-    		items = @unique self._myArray
-    		@model.reset items
-    		@currentText = keyword
-    		@loadResult @model.models
-    		 *@loadResult @model.filter((C) -> C.label().indexOf(A) > -1), A
-     */
+      self.model.reset(models);
+      return self.loadResult(self.model.models, keyword);
+    });
   };
 
   AutocompleteView.prototype.isValid = function(keyword) {
-    return keyword.length > 2;
+    return keyword.length > this.minKeywordLength;
   };
 
   AutocompleteView.prototype.isChanged = function(keyword) {
@@ -2465,9 +2389,11 @@ AutocompleteView = (function(_super) {
     return false;
   };
 
-  AutocompleteView.prototype.loadResult = function(model) {
+  AutocompleteView.prototype.loadResult = function(model, keyword) {
+    this.currentText = keyword;
+    this.$el.empty();
     if (model.length) {
-      _.forEach(this.unique(model), this.addItem, this);
+      _.forEach(model, this.addItem, this);
       return this.show();
     } else {
       return this.hide();
@@ -2490,7 +2416,7 @@ AutocompleteView = (function(_super) {
   };
 
   AutocompleteView.prototype.reset = function() {
-    $('.search-items li').remove();
+    this.$el.empty();
     return this;
   };
 
@@ -2504,35 +2430,7 @@ AutocompleteView = (function(_super) {
     return this;
   };
 
-  AutocompleteView.prototype.onSelect = function() {};
-
-  AutocompleteView.prototype.unique = function(objArray) {
-    var results, valMatch;
-    results = [];
-    valMatch = function(seen, obj) {
-      var key, match, other, val, _i, _len;
-      for (_i = 0, _len = seen.length; _i < _len; _i++) {
-        other = seen[_i];
-        match = true;
-        for (key in obj) {
-          val = obj[key];
-          if (other[key] !== val) {
-            match = false;
-          }
-        }
-        if (match) {
-          return true;
-        }
-      }
-      return false;
-    };
-    objArray.forEach(function(item) {
-      if (!valMatch(results, item)) {
-        return results.push(item);
-      }
-    });
-    return results;
-  };
+  AutocompleteView.prototype.onSelect = function(model) {};
 
   return AutocompleteView;
 
@@ -3002,7 +2900,7 @@ module.exports = function (__obj) {
     
       __out.push(__sanitize(this.conceptId));
     
-      __out.push('">\n\t<ul class="search-items">\n\t</ul>\n</div>\n<div class="bbf-help"></div>\n<div class="bbf-error"></div>');
+      __out.push('">\n\t<div class="search-right">\n      \t<ul class="saved-items">\n          \t<li data-id="23986001">\n            \t<span class="search-item">Glaucoma</span>\n            \t<a href="javascript:void(0);">Delete</a>\n\t\t\t</li>          \n\t\t\t<li data-id="3723001">\n            \t<span class="search-item">Arthritis</span>\n            \t<a href="javascript:void(0);">Delete</a>\n\t\t\t</li>      \n\t\t</ul>\n    </div>\n</div>\n<div class="bbf-help">\n\t\n</div>\n<div class="bbf-error"></div>');
     
     }).call(this);
     
@@ -3072,7 +2970,7 @@ module.exports = function (__obj) {
         __out.push('\n\t\t\t\t\t\t\t');
       }
     
-      __out.push('\t -->\t\t\t\t\t\t\n\t\t\t\t    </div> \n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\t\t\t\t\n\n\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t<button type="button" class="btn btn-primary" data-dismiss="modal">\n\t\t\t\tCancel\n\t\t\t</button>\n\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\tAdd\n\t\t\t</button>\n\t\t</div>\t\t\t\n\t</div>\n</div>\t');
+      __out.push('\t -->\t\t\t\t\t\t\n\t\t\t\t    </div> \n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\t\t\t\t\n\n\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t<button type="button" class="btn btn-primary" data-dismiss="modal">\n\t\t\t\tCancel\n\t\t\t</button>\n\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\tSave\n\t\t\t</button>\n\t\t</div>\t\t\t\n\t</div>\n</div>\t');
     
     }).call(this);
     
@@ -3586,7 +3484,7 @@ module.exports = function (__obj) {
         __out.push('"');
       }
     
-      __out.push('>\n\t</div>\n\t\n\t<button class="btn btn-default btn-primary js-submit" type="submit">\n\t\t<i class="fa fa-fw fa-lg fa-search"></i>Search\n\t</button>\n</form>');
+      __out.push('>\n\t</div>\n\t<button class="btn btn-default btn-primary js-submit" type="submit">\n\t\t<i class="fa fa-fw fa-lg fa-search"></i>Search\n\t</button>\n</form>');
     
     }).call(this);
     
