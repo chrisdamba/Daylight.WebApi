@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Daylight.WebApi.Contracts.Entities;
 using Daylight.WebApi.Mvc.Models;
 using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Core.Exceptions;
@@ -45,6 +46,18 @@ namespace Daylight.WebApi.Mvc.Factories
                 throw new UnavailableItemException("Condition not found");
             }
             return condition;
+        }
+
+        public MedicationViewModel GetMedication(Guid medicationId, Guid conditionId, Guid patientId)
+        {
+            var medication =
+                GetPatient(patientId)
+                    .Medications.SingleOrDefault(x => x.ConditionId == conditionId && x.Id == medicationId);
+            if (medication == null)
+            {
+                throw new UnavailableItemException("Medication not found");
+            }
+            return medication;
         }
     }
 }

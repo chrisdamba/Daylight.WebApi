@@ -4,10 +4,13 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="92a525f7514b47cda3a1fdb05c13857e" Name="Diagram1" ZoomLevel="65">
-        <EntityTypeShape EntityType="DaylightModel.Patient" Width="1.5" PointX="5.75" PointY="17.25" />
-        <EntityTypeShape EntityType="DaylightModel.Condition" Width="1.5" PointX="2" PointY="17.25" />
+      <Diagram DiagramId="92a525f7514b47cda3a1fdb05c13857e" Name="Diagram1" ZoomLevel="85">
+        <EntityTypeShape EntityType="DaylightModel.Patient" Width="1.5" PointX="4.75" PointY="13.75" />
+        <EntityTypeShape EntityType="DaylightModel.Condition" Width="1.5" PointX="7.875" PointY="13.75" />
         <AssociationConnector Association="DaylightModel.FK_Condition_Patient" />
+        <EntityTypeShape EntityType="DaylightModel.Medication" Width="1.5" PointX="7.875" PointY="18.125" />
+        <AssociationConnector Association="DaylightModel.FK_Medication_Condition" />
+        <AssociationConnector Association="DaylightModel.FK_Medication_Patient" />
         </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

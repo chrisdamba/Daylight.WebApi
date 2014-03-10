@@ -16,5 +16,7 @@ namespace Daylight.WebApi.Mvc.Factories
                                            int take = int.MaxValue);
 
         ConditionViewModel GetCondition(Guid conditionId, Guid patientId);
+
+        MedicationViewModel GetMedication(Guid medicationId, Guid conditionId, Guid patientId);
     }
 }

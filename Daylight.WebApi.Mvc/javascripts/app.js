@@ -230,7 +230,7 @@ module.exports = {
         _thumbnailPath: '${patient.thumbnailPath}'
       }
     },
-    ConditionsCollection: {
+    ConditionCollection: {
       type: 'daylight/collections/condition_collection',
       lifestyle: 'transient',
       properties: {
@@ -428,9 +428,7 @@ Application = (function(_super) {
     if (editMode == null) {
       editMode = false;
     }
-    if (this.currentPatient && ((_ref = this.currentPatient) != null ? _ref.id : void 0) === id) {
-      return this.currentPatient.navigate(index, subIndex, editMode);
-    } else {
+    if (!(this.currentPatient && ((_ref = this.currentPatient) != null ? _ref.id : void 0) === id)) {
       patientModel = window.IoC.get('PatientModel', {
         id: id
       }, {
@@ -438,24 +436,24 @@ Application = (function(_super) {
       });
       window.App.currentPatient = this.currentPatient = patientModel;
       this.currentPatient.on('navigate', this.onPatientPageChanged);
-      return this.currentPatient.fetch({
-        success: (function(_this) {
-          return function(model, response, options) {
-            model.navigate(index, subIndex, editMode);
-            return _this.showView(new PatientView({
-              model: model
-            }));
-          };
-        })(this),
-        error: (function(_this) {
-          return function(model, response, options) {
-            if (response.status = 403) {
-              return window.location = '/Error/Access';
-            }
-          };
-        })(this)
-      });
     }
+    return this.currentPatient.fetch({
+      success: (function(_this) {
+        return function(model, response, options) {
+          model.navigate(index, subIndex, editMode);
+          return _this.showView(new PatientView({
+            model: model
+          }));
+        };
+      })(this),
+      error: (function(_this) {
+        return function(model, response, options) {
+          if (response.status = 403) {
+            return window.location = '/Error/Access';
+          }
+        };
+      })(this)
+    });
   };
 
   Application.prototype.onPatientPageChanged = function(e) {
@@ -489,11 +487,7 @@ ConditionCollection = (function(_super) {
     return ConditionCollection.__super__.constructor.apply(this, arguments);
   }
 
-  ConditionCollection.prototype.model = function(attrs, options) {
-    return window.IoC.get('ConditionModel', attrs, _.extend({}, options, {
-      parse: true
-    }));
-  };
+  ConditionCollection.prototype.model = ConditionModel;
 
   ConditionCollection.prototype.url = function() {
     if (this.patient) {
@@ -758,8 +752,32 @@ ConditionModel = (function(_super) {
     };
   };
 
+  ConditionModel.prototype.conceptId = function() {
+    return this.get('conceptId');
+  };
+
+  ConditionModel.prototype.patientId = function() {
+    return this.get('patientId');
+  };
+
+  ConditionModel.prototype.value = function() {
+    return this.get('id');
+  };
+
+  ConditionModel.prototype.label = function() {
+    return this.get('name');
+  };
+
+  ConditionModel.prototype.synonyms = function() {
+    return this.get('synonyms');
+  };
+
+  ConditionModel.prototype.initialize = function(options) {
+    return ConditionModel.__super__.initialize.call(this, options);
+  };
+
   ConditionModel.prototype.urlRoot = function() {
-    return "/API/Patients/" + (this.get('patientId')) + "/Conditions";
+    return "/API/Patients/" + (this.patientId()) + "/Conditions";
   };
 
   ConditionModel.prototype.toJSON = function() {
@@ -879,6 +897,7 @@ PatientModel = (function(_super) {
     if (editMode == null) {
       editMode = false;
     }
+    index = Math.max(0, Math.min(this.get('conditions').length - 1, index));
     oldIndex = this.get('_index');
     oldSubIndex = this.get('_subIndex');
     oldEditMode = this.get('_editMode');
@@ -1084,6 +1103,201 @@ module.exports = ConditionDetailView;
 
 });
 
+;require.register("daylight/views/condition/condition_list_item_view", function(exports, require, module) {
+var ConditionCollection, ConditionListItemTemplate, ConditionListItemView,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+ConditionCollection = require('daylight/collections/condition_collection');
+
+ConditionListItemTemplate = require('templates/condition/condition_list_item_template');
+
+ConditionListItemView = (function(_super) {
+  __extends(ConditionListItemView, _super);
+
+  function ConditionListItemView() {
+    this.onDeleteCondition = __bind(this.onDeleteCondition, this);
+    this.onDestroy = __bind(this.onDestroy, this);
+    this.render = __bind(this.render, this);
+    this.template = __bind(this.template, this);
+    return ConditionListItemView.__super__.constructor.apply(this, arguments);
+  }
+
+  ConditionListItemView.prototype.tagName = 'li';
+
+  ConditionListItemView.prototype.className = 'dd-item';
+
+  ConditionListItemView.prototype.events = {
+    'click .js-delete-condition': 'onDeleteCondition'
+  };
+
+  ConditionListItemView.prototype.template = function(data) {
+    return ConditionListItemTemplate(data);
+  };
+
+  ConditionListItemView.prototype.initialize = function(options) {
+    ConditionListItemView.__super__.initialize.call(this, options);
+    this.bindTo(this.model, 'change', this.render);
+    return this.bindTo(this.model, 'destroy', this.onDestroy);
+  };
+
+  ConditionListItemView.prototype.render = function() {
+    this.$el.html(this.template(this.model.toJSON()));
+    return this;
+  };
+
+  ConditionListItemView.prototype.onDestroy = function() {
+    return this.$el.remove();
+  };
+
+  ConditionListItemView.prototype.onDeleteCondition = function(e) {
+    var _model;
+    _model = this.model;
+    $.SmartMessageBox({
+      title: 'Shekhinah Surgery Condition Remove Alert!',
+      content: 'Are you sure you want to remove this condition?',
+      buttons: '[No][Yes]'
+    }, function(ButtonPressed) {
+      if (ButtonPressed === 'Yes') {
+        _model.destroy({
+          wait: true
+        });
+        $.smallBox({
+          title: 'Shekhinah Surgery Condition Remove',
+          content: "<i class='fa fa-clock-o'></i> <i>Condition successfully removed...</i>",
+          color: '#659265',
+          iconSmall: 'fa fa-times fa-2x fadeInRight animated',
+          timeout: 4000
+        });
+        window.App.eventAggregator.trigger('navigate:patient', {
+          id: _model.patientId()
+        });
+      }
+      if (ButtonPressed === 'No') {
+        return $.smallBox({
+          title: 'Shekhinah Surgery Condition Remove',
+          content: "<i class='fa fa-clock-o'></i> <i>Condition has not been removed...</i>",
+          color: '#C46A69',
+          iconSmall: 'fa fa-times fa-2x fadeInRight animated',
+          timeout: 4000
+        });
+      }
+    });
+    return e.preventDefault();
+  };
+
+  return ConditionListItemView;
+
+})(support.View);
+
+module.exports = ConditionListItemView;
+
+});
+
+;require.register("daylight/views/condition/condition_list_view", function(exports, require, module) {
+var ConditionListItemView, ConditionListTemplate, ConditionListView,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+ConditionListItemView = require('daylight/views/condition/condition_list_item_view');
+
+ConditionListTemplate = require('templates/condition/condition_list_template');
+
+ConditionListView = (function(_super) {
+  __extends(ConditionListView, _super);
+
+  function ConditionListView() {
+    this.reset = __bind(this.reset, this);
+    this.removeCondition = __bind(this.removeCondition, this);
+    this.conditionEvent = __bind(this.conditionEvent, this);
+    this.renderCondition = __bind(this.renderCondition, this);
+    this.render = __bind(this.render, this);
+    this.dispose = __bind(this.dispose, this);
+    return ConditionListView.__super__.constructor.apply(this, arguments);
+  }
+
+  ConditionListView.prototype.tagName = 'ol';
+
+  ConditionListView.prototype.className = 'dd-list';
+
+  ConditionListView.prototype.template = ConditionListTemplate;
+
+  ConditionListView.prototype.itemView = ConditionListItemView;
+
+  ConditionListView.prototype.dispose = function() {
+    ConditionListView.__super__.dispose.apply(this, arguments);
+    return delete this.collection;
+  };
+
+  ConditionListView.prototype.initialize = function(options) {
+    ConditionListView.__super__.initialize.call(this, options);
+    this.listenTo(this.collection, 'add', this.renderCondition);
+    this.listenTo(this.collection, 'remove', (function(_this) {
+      return function(model, collection, options) {
+        return _this.removeCondition(model);
+      };
+    })(this));
+    this.listenTo(this.collection, 'reset', (function(_this) {
+      return function(collection, options) {
+        return _this.reset();
+      };
+    })(this));
+    return _.bindAll(this, 'render');
+  };
+
+  ConditionListView.prototype.render = function() {
+    ConditionListView.__super__.render.apply(this, arguments);
+    this.$el.empty();
+    this.replaceElement(this.template());
+    this.collection.fetch();
+    this.collection.forEach(this.renderCondition, this);
+    return this;
+  };
+
+  ConditionListView.prototype.renderCondition = function(model) {
+    var view;
+    view = new ConditionListItemView({
+      model: model
+    });
+    this.conditionEvent('conditionAdded', view);
+    this.conditionEvent('conditionRendered', view);
+    return this.$el.append(this.renderChild(view).$el);
+  };
+
+  ConditionListView.prototype.conditionEvent = function(type, conditionView) {
+    return this.trigger(type, {
+      target: this,
+      conditionView: conditionView
+    });
+  };
+
+  ConditionListView.prototype.removeCondition = function(model) {
+    var view;
+    view = new ConditionListItemView({
+      model: model
+    });
+    if (view.model.id === model.id) {
+      view.leave();
+      return this.conditionEvent('conditionRemoved', view);
+    }
+  };
+
+  ConditionListView.prototype.reset = function() {
+    return this.render();
+  };
+
+  return ConditionListView;
+
+})(support.View);
+
+if (typeof module !== "undefined" && module !== null) {
+  module.exports = ConditionListView;
+}
+
+});
+
 ;require.register("daylight/views/condition/condition_search_view", function(exports, require, module) {
 var AutocompleteView, ConditionSearchCollection, ConditionSearchTemplate, ConditionSearchView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -1109,7 +1323,7 @@ ConditionSearchView = (function(_super) {
   ConditionSearchView.prototype.className = 'condition-search';
 
   ConditionSearchView.prototype.events = {
-    'focus #c2_condition': 'conditionsAutoComplete'
+    'focus #c2_condition': 'renderAutoComplete'
   };
 
   ConditionSearchView.prototype.initialize = function(options) {
@@ -1124,7 +1338,7 @@ ConditionSearchView = (function(_super) {
     return this;
   };
 
-  ConditionSearchView.prototype.conditionsAutoComplete = function() {
+  ConditionSearchView.prototype.renderAutoComplete = function() {
     return new AutocompleteView({
       input: $("#c2_condition"),
       model: this._collection,
@@ -1188,6 +1402,33 @@ ConditionsView = (function(_super) {
     'click .js-save-btn': 'onSaveClick'
   };
 
+  ConditionsView.prototype.validationOptions = {
+    ignore: [],
+    rules: {
+      conceptId: {
+        required: true
+      }
+    },
+    messages: {
+      conceptId: 'Please enter a condition to search'
+    },
+    highlight: function(el) {
+      return $(el).closest(".form-group").removeClass("has-success").addClass("has-error");
+    },
+    unhighlight: function(el) {
+      return $(el).closest(".form-group").removeClass("has-error").addClass("has-success");
+    },
+    errorElement: 'span',
+    errorClass: 'help-block',
+    errorPlacement: function(error, el) {
+      if (el.parent('.input-group').length) {
+        return error.insertAfter(el.parent());
+      } else {
+        return error.insertAfter(el);
+      }
+    }
+  };
+
   ConditionsView.prototype.initialize = function(options) {
     ConditionsView.__super__.initialize.call(this, options);
     window.App.eventAggregator.on('click:addcondition', (function(_this) {
@@ -1239,8 +1480,8 @@ ConditionsView = (function(_super) {
       })(this)
     });
     this.teardown();
-    return window.App.eventAggregator.trigger('navigate:pageCondition', {
-      id: this.model.patientId
+    return window.App.eventAggregator.trigger('navigate:patient', {
+      id: this.model.patientId()
     });
   };
 
@@ -1258,8 +1499,16 @@ ConditionsView = (function(_super) {
   };
 
   ConditionsView.prototype.onSaveClick = function(e) {
+    var $valid, $validator;
     e.preventDefault();
-    return this.save();
+    $validator = $("#searchcondition").validate(this.validationOptions);
+    $valid = $('#searchcondition').valid();
+    if (!$valid) {
+      $validator.focusInvalid();
+      return false;
+    } else {
+      return this.save();
+    }
   };
 
   ConditionsView.prototype.onCancelClick = function(e) {
@@ -2052,7 +2301,7 @@ if (typeof module !== "undefined" && module !== null) {
 });
 
 ;require.register("daylight/views/patient_view", function(exports, require, module) {
-var ConditionModel, ConditionsView, PatientEditView, PatientView, PatientViewTemplate,
+var ConditionCollection, ConditionListView, ConditionModel, ConditionsView, PatientEditView, PatientView, PatientViewTemplate,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2065,6 +2314,10 @@ ConditionsView = require('daylight/views/condition/conditions_view');
 
 ConditionModel = require('daylight/models/condition_model');
 
+ConditionListView = require('daylight/views/condition/condition_list_view');
+
+ConditionCollection = require('daylight/collections/condition_collection');
+
 PatientView = (function(_super) {
   __extends(PatientView, _super);
 
@@ -2076,6 +2329,7 @@ PatientView = (function(_super) {
     this.onSaveStart = __bind(this.onSaveStart, this);
     this.onNavigate = __bind(this.onNavigate, this);
     this.onDestroy = __bind(this.onDestroy, this);
+    this.renderConditions = __bind(this.renderConditions, this);
     this.render = __bind(this.render, this);
     this.template = __bind(this.template, this);
     return PatientView.__super__.constructor.apply(this, arguments);
@@ -2102,6 +2356,18 @@ PatientView = (function(_super) {
 
   PatientView.prototype.render = function() {
     this.$el.html(this.template(this.model.toJSON()));
+    this.renderConditions();
+    return this;
+  };
+
+  PatientView.prototype.renderConditions = function() {
+    var collection, view;
+    collection = new ConditionCollection;
+    collection.url = "API/Patients/" + (this.model.get('id')) + "/conditions";
+    view = new ConditionListView({
+      collection: collection
+    });
+    this.$('.js-conditions-list').append(this.renderChild(view).el);
     return this;
   };
 
@@ -2318,20 +2584,20 @@ AutocompleteView = (function(_super) {
     return this;
   };
 
-  AutocompleteView.prototype.keydown = function() {
-    if (event.keyCode === 38) {
+  AutocompleteView.prototype.keydown = function(e) {
+    if (e.keyCode === 38) {
       return this.move(-1);
     }
-    if (event.keyCode === 40) {
+    if (e.keyCode === 40) {
       return this.move(+1);
     }
-    if (event.keyCode === 91) {
+    if (e.keyCode === 91) {
       return this.select();
     }
-    if (event.keyCode === 13) {
+    if (e.keyCode === 13) {
       return this.onEnter();
     }
-    if (event.keyCode === 27) {
+    if (e.keyCode === 27) {
       return this.hide();
     }
   };
@@ -2818,27 +3084,133 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      var synonym, _i, _len, _ref, _ref1;
+      var condition, _i, _len, _ref, _ref1;
     
-      __out.push('<div class="col-xs-12 col-sm-6 col-md-3">\n    <div class="panel panel-success pricing-big">    \t\n        <div class="panel-heading">\n            <h3 class="panel-title">\n                Conditions</h3>\n        </div>\n        <div class="panel-body no-padding text-align-center">            \n\t\t\t<div class="the-price">\n                <h1>\n                    <strong>');
+      __out.push('<div class="jarviswidget" id="wid-id-1" role="widget">\n    <header>\n        <h2><strong>Conditions</strong></h2>\n    </header>\n    <div>                                           \n        <div class="widget-body">\n            <div class="dd" id="nestable">\n                <ol class="dd-list">\n                    ');
+    
+      if ((_ref = this.conditions) != null ? _ref.length : void 0) {
+        __out.push('\n                        ');
+        _ref1 = this.conditions;
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          condition = _ref1[_i];
+          __out.push('\n                            <li class="dd-item" data-id="');
+          __out.push(__sanitize(condition.id));
+          __out.push('">\n                                <!--<button type="button" data-action="collapse" class="condition-delete" data-original-title="Delete condition" data-placement="left" title="" rel="tooltip" style="display: block;">Delete</button>-->\n                                <div class="dd-handle">\n                                    ');
+          __out.push(__sanitize(condition.name));
+          __out.push('\n                                    <a class="condition-delete"><em data-original-title="Delete condition" data-placement="left" title="" rel="tooltip" class="pull-right padding-5"><i class="fa fa-trash-o fa-lg"></i></em></a>\n                                </div>\n                            </li>       \n                        ');
+        }
+        __out.push('\n                    ');
+      }
+    
+      __out.push('                                               \n                </ol>\n            </div>\n            <button class="btn btn-sm btn-success condition-add" type="button">\n                Add +\n            </button>   \n             <i class="fa fa-plus-o fa-lg"></i>\n        </div>                                  \n    </div>    \n</div>\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("templates/condition/condition_list_item_template", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      __out.push('<div class="dd-handle">\n\t');
     
       __out.push(__sanitize(this.name));
     
-      __out.push('</strong>\n                </h1>\n            </div>\n\t\t\t<div class="price-features">\t\t\t\t\n\t\t\t\t<ul class="list-unstyled text-left">\t\t          \n\t\t\t        ');
+      __out.push('\n\t<a class="remove label label-danger pull-right padding-5 js-delete-condition" href="#"  data-id="');
     
-      if ((_ref = this.synonyms) != null ? _ref.length : void 0) {
-        __out.push('\n\t\t\t\t\t\t\t');
-        _ref1 = this.synonyms;
-        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-          synonym = _ref1[_i];
-          __out.push('\n\t\t\t\t\t\t\t\t<li><strong>');
-          __out.push(__sanitize(synonym));
-          __out.push('</strong> <i class="fa fa-times text-danger"></i> </li>\n\t\t\t\t\t\t');
-        }
-        __out.push('\n\t\t\t\t\t');
-      }
+      __out.push(__sanitize(this.id));
     
-      __out.push('\t\t\t          \n\t\t        </ul>\n\t\t\t</div>\n        </div>        \n    </div>\n</div>');
+      __out.push('">\n\t\t<i class="glyphicon glyphicon-remove"></i> remove\n\t</a>\t\t\t\t\t\n</div>');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("templates/condition/condition_list_template", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      __out.push('<ol class="dd-list js-condition-ol">\n\t\t\t\t\t\t\t\t\t\t\t\n</ol>');
     
     }).call(this);
     
@@ -2888,19 +3260,11 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<div class="bbf-editor">\n\t<input class="form-control input-lg js-search-terms" autocomplete="off" placeholder="Search for condition" type="text" name="condition" id="c2_condition" value="');
+      __out.push('<div class="row">\n\t<div class="col-sm-12">\n\t\t<div class="form-group">\n\t\t\t<div class="input-group margin-bottom-sm">\n\t\t\t\t<div class="inline-group">\n\t\t\t\t\t<div class="bbf-editor">\n\t\t\t\t\t\t<input class="form-control input-lg js-search-terms" autocomplete="off" placeholder="Search for condition" type="text" name="condition" id="c2_condition" value="');
     
       __out.push(__sanitize(this.name));
     
-      __out.push('">\n\t\n\t<input type="hidden" name="consynonyms" id="c2_synonyms" value="');
-    
-      __out.push(__sanitize(this.synonyms));
-    
-      __out.push('">\n\t<input type="hidden" name="conceptId" id="c2_conceptId" value="');
-    
-      __out.push(__sanitize(this.conceptId));
-    
-      __out.push('">\n\t<div class="search-right">\n      \t<ul class="saved-items">\n          \t<li data-id="23986001">\n            \t<span class="search-item">Glaucoma</span>\n            \t<a href="javascript:void(0);">Delete</a>\n\t\t\t</li>          \n\t\t\t<li data-id="3723001">\n            \t<span class="search-item">Arthritis</span>\n            \t<a href="javascript:void(0);">Delete</a>\n\t\t\t</li>      \n\t\t</ul>\n    </div>\n</div>\n<div class="bbf-help">\n\t\n</div>\n<div class="bbf-error"></div>');
+      __out.push('">\t\t\t\t\t\t\t\t\n\t\t\t\t\t</div>\t\t\t\t\t\t\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>');
     
     }).call(this);
     
@@ -2950,27 +3314,19 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      var synonym, _i, _len, _ref, _ref1;
-    
-      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Add Condition</h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<div class="row">\t\t\t\t\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t<div id="search_container"></div>\t\n\t\t\t\t\t<div class="panel-body no-padding">            \n\t\t\t\t\t\t<strong>');
+      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Add Condition</h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<div class="row">\t\t\t\t\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t<form id="searchcondition" novalidate="novalidate">\n\t\t\t\t\t\t<div id="search_container"></div>\t\n\t\t\t\t\t\t<div class="panel-body no-padding">            \n\t\t\t\t\t\t\t<strong>');
     
       __out.push(__sanitize(this.name));
     
-      __out.push('</strong> \n\t\t\t\t\t\t\t<!-- <ul class="list-unstyled text-left">        \n\t\t\t\t\t        ');
+      __out.push('</strong> \n\t\t\t\t\t\t\t<input type="hidden" name="consynonyms" id="c2_synonyms" value="');
     
-      if ((_ref = this.synonyms) != null ? _ref.length : void 0) {
-        __out.push('\n\t\t\t\t\t\t\t\t\t');
-        _ref1 = this.synonyms;
-        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-          synonym = _ref1[_i];
-          __out.push('\n\t\t\t\t\t\t\t\t\t\t<li><strong>');
-          __out.push(__sanitize(synonym));
-          __out.push('</strong> <i class="fa fa-times text-danger"></i> </li>\n\t\t\t\t\t\t\t\t');
-        }
-        __out.push('\n\t\t\t\t\t\t\t');
-      }
+      __out.push(__sanitize(this.synonyms));
     
-      __out.push('\t -->\t\t\t\t\t\t\n\t\t\t\t    </div> \n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\t\t\t\t\n\n\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t<button type="button" class="btn btn-primary" data-dismiss="modal">\n\t\t\t\tCancel\n\t\t\t</button>\n\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\tSave\n\t\t\t</button>\n\t\t</div>\t\t\t\n\t</div>\n</div>\t');
+      __out.push('">\n\t\t\t\t\t\t\t<input type="hidden" name="conceptId" id="c2_conceptId" value="');
+    
+      __out.push(__sanitize(this.conceptId));
+    
+      __out.push('">\t\t\t\t\t\n\t\t\t\t\t    </div> \n\t\t\t\t\t</form>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\t\t\t\t\n\n\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t<button type="button" class="btn btn-primary" data-dismiss="modal">\n\t\t\t\tCancel\n\t\t\t</button>\n\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\tSave\n\t\t\t</button>\n\t\t</div>\t\t\t\n\t</div>\n</div>\t');
     
     }).call(this);
     
@@ -3410,23 +3766,25 @@ module.exports = function (__obj) {
     
       __out.push(__sanitize(this.phone));
     
-      __out.push('\n\t\t\t\t\t\t</address>\n\t\t\t\t\t</p>\n\t\t\t\t\t<p>\n\t\t\t\t\t\t<button class="btn btn-primary btn-lg js-edit" type="button">Edit Details</button>\n\t\t\t\t\t\t<button class="btn btn-primary btn-lg js-delete" type="button">Delete</button>\n\t\t\t\t\t</p>\n\t\t\t\t</div>\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\n\t\t\t\n\t\t\t\t\n\t\t\t</div>\n\t\t\t<div class="col-md-6 pull-right">\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Conditions</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t');
+      __out.push('\n\t\t\t\t\t\t</address>\n\t\t\t\t\t</p>\n\t\t\t\t\t<p>\n\t\t\t\t\t\t<button class="btn btn-primary btn-lg js-edit" type="button">Edit Details</button>\n\t\t\t\t\t\t<button class="btn btn-primary btn-lg js-delete" type="button">Delete</button>\n\t\t\t\t\t</p>\n\t\t\t\t</div>\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\n\t\t\t\n\t\t\t\t\n\t\t\t</div>\n\t\t\t<div class="col-md-6 pull-right">\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Conditions</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<div class="js-conditions-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<!-- <ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t\t');
     
       if ((_ref = this.conditions) != null ? _ref.length : void 0) {
-        __out.push('\n     \t\t\t\t\t\t\t\t\t\t\t\t');
+        __out.push('\n\t     \t\t\t\t\t\t\t\t\t\t\t\t');
         _ref1 = this.conditions;
         for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
           condition = _ref1[_i];
-          __out.push('\n\t     \t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="');
+          __out.push('\n\t\t     \t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="');
           __out.push(__sanitize(condition.id));
-          __out.push('">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t');
+          __out.push('">\t\t     \t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t');
           __out.push(__sanitize(condition.name));
-          __out.push('\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\t    \n\t\t\t\t\t\t\t\t\t\t\t\t\t');
+          __out.push('\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a class="remove label label-danger pull-right padding-6 js-delete-condition" href="#"  data-id="');
+          __out.push(__sanitize(condition.id));
+          __out.push('">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i class="glyphicon glyphicon-remove"></i> remove\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\t    \n\t\t\t\t\t\t\t\t\t\t\t\t\t\t');
         }
-        __out.push('\n  \t\t\t\t\t\t\t\t\t\t\t\t');
+        __out.push('\n\t  \t\t\t\t\t\t\t\t\t\t\t\t');
       }
     
-      __out.push('\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success condition-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success condition-edit" type="button">\n\t\t\t\t\t\t\t\t\t\t\tEdit\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Allergies</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tEdit\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Medications</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tEdit\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Visits</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tEdit\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</article>\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\t\t\t</div>\n\t\t</div>\t\t\n\t</div>\t\n</div>\n');
+      __out.push('\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t</ol> -->\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success condition-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Allergies</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Medications</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Visits</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</article>\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\t\t\t</div>\n\t\t</div>\t\t\n\t</div>\t\n</div>\n');
     
     }).call(this);
     

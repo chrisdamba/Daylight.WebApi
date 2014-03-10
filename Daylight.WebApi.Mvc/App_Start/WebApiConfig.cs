@@ -27,7 +27,7 @@ namespace Daylight.WebApi.Mvc
 
             config.Routes.MapHttpRoute(
                 name: "API_PatientMedications",
-                routeTemplate: "API/Patients/{patientId}/Medications/{medicationtId}",
+                routeTemplate: "API/Patients/{patientId}/Conditions/{conditionId}/Medications/{medicationtId}",
                 defaults: new { controller = "Medication", medicationtId = RouteParameter.Optional }
             );
 

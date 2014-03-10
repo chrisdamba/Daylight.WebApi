@@ -45,6 +45,29 @@ namespace Daylight.WebApi.Mvc.Factories
             patientService.Save(patient);
         }
 
+        public virtual void Delete(Guid medicationId, Guid conditionId, Guid patientId)
+        {
+            var patient = patientService.Get(patientId);
+            if (patient == null)
+            {
+                throw new UnavailableItemException("Patient not found");
+            }
+            var medication = patient.Medications.SingleOrDefault(x => x.MedicationId == medicationId && x.ConditionId == conditionId);
+            if (medication == null)
+            {
+                throw new UnavailableItemException("Medication not found");
+            }
+
+            // Delete medication
+            medication.State = EntityState.Deleted;
+            foreach (var c in patient.Medications.Where(x => x.MedicationId != medicationId))
+            {
+                c.State = EntityState.Modified;
+            }
+
+            patientService.Save(patient);
+        }
+
         public virtual Patient Save(PatientViewModel model)
         {
             var patient = model.Id != Guid.Empty ? patientService.Get(model.Id) : null;
@@ -85,6 +108,38 @@ namespace Daylight.WebApi.Mvc.Factories
             patientService.Save(patient);
             return condition;
 
+        }
+
+        public Medication Save(MedicationViewModel model, Guid patientId, Guid conditionId)
+        {
+            // Get the patient to update
+            var patient = patientService.Get(patientId);
+
+            if (patient == null)
+            {
+                throw new UnavailableItemException("Patient not found");
+            }
+
+            Medication medication;
+
+            if (model.Id == Guid.Empty)
+            {
+                // Create condition
+                medication = model.ToEntity(null);
+                patient.Medications.Add(medication);
+            }
+            else
+            {
+                medication = patient.Medications.SingleOrDefault(x => x.ConditionId == model.ConditionId && x.MedicationId == model.Id);
+                if (medication == null)
+                {
+                    throw new UnavailableItemException("Medication not found");
+                }
+                medication = model.ToEntity(medication);
+            }
+
+            patientService.Save(patient);
+            return medication;
         }
     }
 }

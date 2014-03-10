@@ -149,6 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\ConditionController.cs" />
+    <Compile Include="Api\MedicationController.cs" />
     <Compile Include="Api\PatientController.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
@@ -166,6 +167,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\ConditionViewModel.cs" />
+    <Compile Include="Models\MedicationViewModel.cs" />
     <Compile Include="Models\PatientViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

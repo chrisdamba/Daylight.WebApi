@@ -45,6 +45,8 @@
     <Compile Include="Entities\Condition.cs" />
     <Compile Include="Entities\Condition.Local.cs" />
     <Compile Include="Entities\IStateEntity.cs" />
+    <Compile Include="Entities\Medication.cs" />
+    <Compile Include="Entities\Medication.Local.cs" />
     <Compile Include="Entities\Model.cs" />
     <Compile Include="Entities\Patient.cs">
       <DependentUpon>Model.tt</DependentUpon>

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
-using System.Web.Mvc;
 using Daylight.WebApi.Core.Attributes;
 using Daylight.WebApi.Mvc.Factories;
 using Daylight.WebApi.Mvc.Models;

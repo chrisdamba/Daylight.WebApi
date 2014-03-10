@@ -14,6 +14,7 @@ namespace Daylight.WebApi.Mvc.Models
     {
         private int? conditionsCount;
         private ConditionViewModel[] conditions;
+        private MedicationViewModel[] medications;
         
         public PatientViewModel()
         {
@@ -39,6 +40,13 @@ namespace Daylight.WebApi.Mvc.Models
         {
             get { return conditions ?? new ConditionViewModel[0]; }
             set { conditions = value; }
+        }
+
+        [DataMember]
+        public MedicationViewModel[] Medications
+        {
+            get { return medications ?? new MedicationViewModel[0]; }
+            set { medications = value; }
         }
 
         [DataMember]
