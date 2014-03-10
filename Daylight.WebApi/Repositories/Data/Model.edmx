@@ -97,10 +97,6 @@
             <End Role="Condition" EntitySet="Conditions" />
             <End Role="Medication" EntitySet="Medications" />
           </AssociationSet>
-          <AssociationSet Name="FK_Medication_Patient" Association="DaylightModel.FK_Medication_Patient">
-            <End Role="Patient" EntitySet="Patients" />
-            <End Role="Medication" EntitySet="Medications" />
-          </AssociationSet>
         </EntityContainer>
         <EntityType Name="Patient">
           <Key>
@@ -169,18 +165,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_Medication_Patient">
-          <End Type="DaylightModel.Patient" Role="Patient" Multiplicity="1" />
-          <End Type="DaylightModel.Medication" Role="Medication" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Patient">
-              <PropertyRef Name="PatientId" />
-            </Principal>
-            <Dependent Role="Medication">
-              <PropertyRef Name="PatientId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -244,7 +228,7 @@
       <DesignerInfoPropertySet>
         <DesignerProperty Name="ValidateOnBuild" Value="true" />
         <DesignerProperty Name="EnablePluralization" Value="True" />
-        <DesignerProperty Name="IncludeForeignKeysInModel" Value="True" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="False" />
         <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
         <DesignerProperty Name="UseLegacyProvider" Value="True" />
       </DesignerInfoPropertySet>
