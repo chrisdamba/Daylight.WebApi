@@ -73,8 +73,8 @@ namespace Daylight.WebApi.Mvc.Api
             }
 
             var med = itemFactory.Save(model, patientId, conditionId);
-            var medsmodel = viewFactory.GetMedication(med.MedicationId, conditionId ,patientId);
-            return medsmodel;
+            var medsModel = viewFactory.GetMedication(med.MedicationId, conditionId ,patientId);
+            return medsModel;
         }
 
         /// <summary>

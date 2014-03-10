@@ -23,7 +23,6 @@ namespace Daylight.WebApi.Mvc.Models
         public MedicationViewModel(Medication medication)
         {
             this.Id = medication.MedicationId;
-            this.PatientId = medication.PatientId;
             this.ConceptId = medication.ConceptId;
             this.ConditionId = medication.ConditionId;
             this.Name = medication.Name;
@@ -37,12 +36,6 @@ namespace Daylight.WebApi.Mvc.Models
         /// </summary>
         [DataMember]
         public Guid Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the patient id.
-        /// </summary>
-        [DataMember]
-        public Guid PatientId { get; set; }
 
         /// <summary>
         /// Gets or sets the condition identifier.
@@ -98,7 +91,6 @@ namespace Daylight.WebApi.Mvc.Models
 
             // Populate properties
             medication.ConceptId = ConceptId;
-            medication.PatientId = PatientId;
             medication.ConditionId = ConditionId;
             medication.Name = Name;
             medication.FinishedAt = FinishedAt;

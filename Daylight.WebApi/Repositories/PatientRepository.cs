@@ -29,6 +29,9 @@ namespace Daylight.WebApi.Repositories
                 {
                     condition.ConditionId = Guid.NewGuid();
                     condition.StartedAt = DateTime.Now;
+
+                    if (condition.Medications == null) continue;
+
                     // Assign medication id, as it will be empty
                     foreach (var medication in condition.Medications)
                     {
@@ -53,6 +56,9 @@ namespace Daylight.WebApi.Repositories
                 foreach (var condition in patient.Conditions)
                 {
                     condition.ConditionId = condition.ConditionId == Guid.Empty ? Guid.NewGuid() : condition.ConditionId;
+                    condition.PatientId = patient.PatientId;
+
+                    if (condition.Medications == null) continue;
                     // Assign medication id, as it will be empty
                     foreach (var medication in condition.Medications)
                     {

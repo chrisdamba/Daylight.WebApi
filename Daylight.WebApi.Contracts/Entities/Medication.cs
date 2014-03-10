@@ -15,7 +15,6 @@ namespace Daylight.WebApi.Contracts.Entities
     public partial class Medication :  IStateEntity
     {
         public System.Guid MedicationId { get; set; }
-        public System.Guid PatientId { get; set; }
         public System.Guid ConditionId { get; set; }
         public int ConceptId { get; set; }
         public string Name { get; set; }

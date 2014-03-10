@@ -90,12 +90,26 @@ namespace Daylight.WebApi.Mvc.Models
                 condition.State = EntityState.Modified;
                 condition.StartedAt = StartedAt;
             }
-
+            
             // Populate properties
+            condition.Medications =
+                Medications.Select(
+                    x => x.ToEntity(condition.Medications.SingleOrDefault(m => m.ConditionId == x.ConditionId)))
+                    .ToList();
             condition.ConceptId = ConceptId;
             condition.PatientId = PatientId;
             condition.Name = Name;
             condition.FinishedAt = FinishedAt;
+
+            // Identify deleted medications
+            var deleted = condition.Medications.Where(x => !Medications.Select(m => m.Id).Contains(x.MedicationId)).ToArray();
+
+            // Attach deleted medications for deletion
+            foreach (var del in deleted)
+            {
+                condition.Medications.Add(del);
+                del.State = EntityState.Deleted;
+            }
 
             return condition;
         }
