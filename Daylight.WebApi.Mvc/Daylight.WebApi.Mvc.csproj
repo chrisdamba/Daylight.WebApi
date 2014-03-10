@@ -158,6 +158,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="ControllerExtensions.cs" />
+    <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Factories\IItemFactory.cs" />
     <Compile Include="Factories\ItemFactory.cs" />
@@ -256,6 +257,7 @@
     <Content Include="css\dropzone\dropzone.css" />
     <Content Include="css\DT_bootstrap.css" />
     <Content Include="css\elements.css" />
+    <Content Include="css\error404.css" />
     <Content Include="css\fd-slider.css" />
     <Content Include="css\font-awesome.css" />
     <Content Include="css\font-awesome.min.css" />
@@ -1122,11 +1124,14 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Shared\Copy of _Layout.cshtml" />
     <Content Include="Views\Home\Copy of Index.cshtml" />
     <Content Include="sound\bigbox.ogg" />
     <Content Include="sound\messagebox.ogg" />
     <Content Include="sound\smallbox.ogg" />
+    <Content Include="Views\Error\Access.cshtml" />
+    <Content Include="Views\Error\HttpError.cshtml" />
+    <Content Include="Views\Error\NotFound.cshtml" />
+    <Content Include="Views\Error\Validation.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
