@@ -52,7 +52,14 @@ namespace Daylight.WebApi.Mvc.Factories
             {
                 throw new UnavailableItemException("Patient not found");
             }
-            var medication = patient.Medications.SingleOrDefault(x => x.MedicationId == medicationId && x.ConditionId == conditionId);
+
+            var condition = patient.Conditions.SingleOrDefault(x => x.ConditionId == conditionId);
+            if (condition == null)
+            {
+                throw new UnavailableItemException("Condition not found");
+            }
+           
+            var medication = condition.Medications.SingleOrDefault(x => x.MedicationId == medicationId);
             if (medication == null)
             {
                 throw new UnavailableItemException("Medication not found");
@@ -60,7 +67,7 @@ namespace Daylight.WebApi.Mvc.Factories
 
             // Delete medication
             medication.State = EntityState.Deleted;
-            foreach (var c in patient.Medications.Where(x => x.MedicationId != medicationId))
+            foreach (var c in condition.Medications.Where(x => x.MedicationId != medicationId))
             {
                 c.State = EntityState.Modified;
             }
@@ -120,17 +127,24 @@ namespace Daylight.WebApi.Mvc.Factories
                 throw new UnavailableItemException("Patient not found");
             }
 
+            var condition = patient.Conditions.SingleOrDefault(x => x.ConditionId == conditionId);
+            if (condition == null)
+            {
+                throw new UnavailableItemException("Condition not found");
+            }
+
             Medication medication;
 
             if (model.Id == Guid.Empty)
             {
-                // Create condition
+                // Create medication
                 medication = model.ToEntity(null);
-                patient.Medications.Add(medication);
+                condition.Medications.Add(medication);
             }
             else
             {
-                medication = patient.Medications.SingleOrDefault(x => x.ConditionId == model.ConditionId && x.MedicationId == model.Id);
+                // Update the medication
+                medication = condition.Medications.SingleOrDefault(x => x.MedicationId == model.Id);
                 if (medication == null)
                 {
                     throw new UnavailableItemException("Medication not found");

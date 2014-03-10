@@ -33,6 +33,5 @@ namespace Daylight.WebApi.Contracts.Entities
         public string Address { get; set; }
     
         public virtual ICollection<Condition> Conditions { get; set; }
-        public virtual ICollection<Medication> Medications { get; set; }
     }
 }

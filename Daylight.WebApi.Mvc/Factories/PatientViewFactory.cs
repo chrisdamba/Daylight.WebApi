@@ -51,8 +51,8 @@ namespace Daylight.WebApi.Mvc.Factories
         public MedicationViewModel GetMedication(Guid medicationId, Guid conditionId, Guid patientId)
         {
             var medication =
-                GetPatient(patientId)
-                    .Medications.SingleOrDefault(x => x.ConditionId == conditionId && x.Id == medicationId);
+                GetCondition(conditionId, patientId)
+                    .Medications.SingleOrDefault(x => x.Id == medicationId);
             if (medication == null)
             {
                 throw new UnavailableItemException("Medication not found");

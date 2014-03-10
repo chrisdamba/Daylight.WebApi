@@ -7,19 +7,19 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using Daylight.WebApi.Contracts.Entities;
-
 namespace Daylight.WebApi.Repositories.Data
 {
     using System;
     using System.Data.Entity;
     using System.Data.Entity.Infrastructure;
+    using Daylight.WebApi.Contracts.Entities;
 
     public partial class DaylightDataContext : DbContext
     {
         public DaylightDataContext()
             : base("name=DaylightDataContext")
         {
+            Configuration.ProxyCreationEnabled = false;
         }
 
         public DaylightDataContext(string connectionString)

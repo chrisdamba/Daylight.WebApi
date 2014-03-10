@@ -29,16 +29,15 @@ namespace Daylight.WebApi.Repositories
                 {
                     condition.ConditionId = Guid.NewGuid();
                     condition.StartedAt = DateTime.Now;
+                    // Assign medication id, as it will be empty
+                    foreach (var medication in condition.Medications)
+                    {
+                        medication.MedicationId = Guid.NewGuid();
+                        medication.StartedAt = DateTime.Now;
+                        medication.ConditionId = condition.ConditionId;
+                    }
                 }
-
-                // Assign medication id, as it will be empty
-                foreach (var medication in patient.Medications)
-                {
-                    medication.MedicationId = Guid.NewGuid();
-                    medication.StartedAt = DateTime.Now;
-                }
-
-               
+                
                 context.Patients.Add(patient);
                 context.SaveChanges();
             }
@@ -54,30 +53,27 @@ namespace Daylight.WebApi.Repositories
                 foreach (var condition in patient.Conditions)
                 {
                     condition.ConditionId = condition.ConditionId == Guid.Empty ? Guid.NewGuid() : condition.ConditionId;
+                    // Assign medication id, as it will be empty
+                    foreach (var medication in condition.Medications)
+                    {
+                        medication.MedicationId = medication.MedicationId == Guid.Empty ? Guid.NewGuid() : medication.MedicationId;
+                        medication.ConditionId = medication.ConditionId;
+                        if (medication.State == EntityState.Deleted)
+                        {
+                            medication.State = EntityState.Deleted;
+                        }
+                    }
                 }
 
-                // Assign medication id, as it will be empty
-                foreach (var medication in patient.Medications)
-                {
-                    medication.MedicationId = medication.ConditionId == Guid.Empty ? Guid.NewGuid() : medication.MedicationId;
-                }
                 
                 // Update the entities in the context
                 var entries = patient.Conditions.Cast<IStateEntity>()
+                                     .Union(patient.Conditions.SelectMany(x => x.Medications.Cast<IStateEntity>()))
                                      .Union(new IStateEntity[] { patient })
                                      .ToArray();
                 foreach (var entry in entries)
                 {
                     context.Entry(entry).State = entry.State;
-                }
-
-                // Update the entities in the context
-                var meds = patient.Medications.Cast<IStateEntity>()
-                                     .Union(new IStateEntity[] { patient })
-                                     .ToArray();
-                foreach (var med in meds)
-                {
-                    context.Entry(med).State = med.State;
                 }
                 
                 context.SaveChanges();
@@ -90,7 +86,7 @@ namespace Daylight.WebApi.Repositories
             {
                 return context.Patients
                     .Include(Lambda.Property<Patient>(x => x.Conditions))
-                    .Include(Lambda.Property<Patient>(x => x.Medications))    
+                    .Include(string.Format("{0}.{1}", Lambda.Property<Patient>(x => x.Conditions), Lambda.Property<Condition>(x => x.Medications)))
                     .SingleOrDefault(x => x.PatientId == id);
             }
         }
@@ -101,7 +97,7 @@ namespace Daylight.WebApi.Repositories
             {
                 return context.Patients
                     .Include(Lambda.Property<Patient>(x => x.Conditions))
-                    .Include(Lambda.Property<Patient>(x => x.Medications)) 
+                    .Include(string.Format("{0}.{1}", Lambda.Property<Patient>(x => x.Conditions), Lambda.Property<Condition>(x => x.Medications)))
                     .Where(x => ids.Contains(x.PatientId) && !x.IsDeleted).ToArray();
             }
         }

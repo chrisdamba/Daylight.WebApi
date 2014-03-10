@@ -24,6 +24,5 @@ namespace Daylight.WebApi.Contracts.Entities
         public decimal Cost { get; set; }
     
         public virtual Condition Condition { get; set; }
-        public virtual Patient Patient { get; set; }
     }
 }

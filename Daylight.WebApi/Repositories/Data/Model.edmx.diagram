@@ -8,7 +8,7 @@
         <EntityTypeShape EntityType="DaylightModel.Patient" Width="1.5" PointX="4.75" PointY="13.75" />
         <EntityTypeShape EntityType="DaylightModel.Condition" Width="1.5" PointX="7.875" PointY="13.75" />
         <AssociationConnector Association="DaylightModel.FK_Condition_Patient" />
-        <EntityTypeShape EntityType="DaylightModel.Medication" Width="1.5" PointX="7.875" PointY="18.125" />
+        <EntityTypeShape EntityType="DaylightModel.Medication" Width="1.5" PointX="10.375" PointY="13.75" />
         <AssociationConnector Association="DaylightModel.FK_Medication_Condition" />
         <AssociationConnector Association="DaylightModel.FK_Medication_Patient" />
         </Diagram>

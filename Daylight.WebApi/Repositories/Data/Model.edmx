@@ -21,15 +21,12 @@
             <PropertyRef Name="MedicationId" />
           </Key>
           <Property Name="MedicationId" Type="uniqueidentifier" Nullable="false" />
-          <Property Name="PatientId" Type="uniqueidentifier" Nullable="false" />
           <Property Name="ConditionId" Type="uniqueidentifier" Nullable="false" />
           <Property Name="ConceptId" Type="int" Nullable="false" />
           <Property Name="Name" Type="varchar" MaxLength="255" />
           <Property Name="StartedAt" Type="datetime" Nullable="false" />
           <Property Name="FinishedAt" Type="datetime" />
           <Property Name="Cost" Type="money" Nullable="false" />
-          <Property Name="Extension" Type="xml" />
-          <Property Name="Code" Type="varchar" MaxLength="6" Nullable="false" />
         </EntityType>
         <EntityType Name="Patient">
           <Key>
@@ -71,18 +68,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_Medication_Patient">
-          <End Role="Patient" Type="Self.Patient" Multiplicity="1" />
-          <End Role="Medication" Type="Self.Medication" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Patient">
-              <PropertyRef Name="PatientId" />
-            </Principal>
-            <Dependent Role="Medication">
-              <PropertyRef Name="PatientId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <EntityContainer Name="DaylightModelStoreContainer">
           <EntitySet Name="Condition" EntityType="Self.Condition" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Medication" EntityType="Self.Medication" Schema="dbo" store:Type="Tables" />
@@ -93,10 +78,6 @@
           </AssociationSet>
           <AssociationSet Name="FK_Medication_Condition" Association="Self.FK_Medication_Condition">
             <End Role="Condition" EntitySet="Condition" />
-            <End Role="Medication" EntitySet="Medication" />
-          </AssociationSet>
-          <AssociationSet Name="FK_Medication_Patient" Association="Self.FK_Medication_Patient">
-            <End Role="Patient" EntitySet="Patient" />
             <End Role="Medication" EntitySet="Medication" />
           </AssociationSet>
         </EntityContainer>
@@ -137,7 +118,6 @@
           <Property Type="String" Name="Email" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Type="String" Name="Address" MaxLength="500" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="Conditions" Relationship="DaylightModel.FK_Condition_Patient" FromRole="Patient" ToRole="Condition" />
-          <NavigationProperty Name="Medications" Relationship="DaylightModel.FK_Medication_Patient" FromRole="Patient" ToRole="Medication" />
         </EntityType>
         <EntityType Name="Condition">
           <Key>
@@ -169,7 +149,6 @@
             <PropertyRef Name="MedicationId" />
           </Key>
           <Property Name="MedicationId" Type="Guid" Nullable="false" />
-          <Property Name="PatientId" Type="Guid" Nullable="false" />
           <Property Name="ConditionId" Type="Guid" Nullable="false" />
           <Property Name="ConceptId" Type="Int32" Nullable="false" />
           <Property Name="Name" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
@@ -177,7 +156,6 @@
           <Property Name="FinishedAt" Type="DateTime" Precision="3" />
           <Property Name="Cost" Type="Decimal" Nullable="false" Precision="19" Scale="4" />
           <NavigationProperty Name="Condition" Relationship="DaylightModel.FK_Medication_Condition" FromRole="Medication" ToRole="Condition" />
-          <NavigationProperty Name="Patient" Relationship="DaylightModel.FK_Medication_Patient" FromRole="Medication" ToRole="Patient" />
         </EntityType>
         <Association Name="FK_Medication_Condition">
           <End Type="DaylightModel.Condition" Role="Condition" Multiplicity="1" />
@@ -247,7 +225,6 @@
                 <ScalarProperty Name="Name" ColumnName="Name" />
                 <ScalarProperty Name="ConceptId" ColumnName="ConceptId" />
                 <ScalarProperty Name="ConditionId" ColumnName="ConditionId" />
-                <ScalarProperty Name="PatientId" ColumnName="PatientId" />
                 <ScalarProperty Name="MedicationId" ColumnName="MedicationId" />
               </MappingFragment>
             </EntityTypeMapping>

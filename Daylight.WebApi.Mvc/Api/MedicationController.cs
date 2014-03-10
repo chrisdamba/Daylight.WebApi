@@ -29,19 +29,28 @@ namespace Daylight.WebApi.Mvc.Api
             this.itemFactory = itemFactory;   
         }
 
-        [System.Web.Http.AllowAnonymous]
-        public IEnumerable<MedicationViewModel> Get(Guid patientId)
-        {
-            return viewFactory.GetPatient(patientId).Medications;
-        }
-
         /// <summary>
-        /// Returns a condition for the provided patient and condition ids.
+        /// Returns an enumerable of the medications for the provided patient and condition id
         /// </summary>
+        /// <param name="conditionId">The condition identifier.</param>
+        /// <param name="patientId">The patient identifier.</param>
+        /// <returns></returns>
+        [AllowAnonymous]
+        public IEnumerable<MedicationViewModel> Get(Guid conditionId, Guid patientId)
+        {
+            return viewFactory.GetCondition(conditionId, patientId).Medications;
+        }
+        
+        /// <summary>
+        /// Returns an enumerable of the medications for the provided patient, condition and medication id.
+        /// </summary>
+        /// <param name="medicationId">The medication identifier.</param>
         /// <param name="conditionId">The condition id.</param>
         /// <param name="patientId">The patient id.</param>
-        /// <returns>A step.</returns>
-        [System.Web.Http.AllowAnonymous]
+        /// <returns>
+        /// A medication model.
+        /// </returns>
+        [AllowAnonymous]
         public MedicationViewModel Get(Guid medicationId, Guid conditionId, Guid patientId)
         {
             return viewFactory.GetMedication(medicationId, conditionId, patientId);
@@ -54,7 +63,7 @@ namespace Daylight.WebApi.Mvc.Api
         /// <param name="patientId">The patient to create onto.</param>
         /// <param name="conditionId">The condition identifier.</param>
         /// <returns>
-        /// The updated model.
+        /// The updated medication model.
         /// </returns>
         public MedicationViewModel Post([FromBody]MedicationViewModel model, Guid patientId, Guid conditionId)
         {
@@ -75,7 +84,7 @@ namespace Daylight.WebApi.Mvc.Api
         /// <param name="patientId">The patient the medication is on.</param>
         /// <param name="conditionId">The condition identifier.</param>
         /// <returns>
-        /// The updated model.
+        /// The updated medication model.
         /// </returns>
         public MedicationViewModel Put([FromBody]MedicationViewModel model, Guid patientId, Guid conditionId)
         {
@@ -91,9 +100,12 @@ namespace Daylight.WebApi.Mvc.Api
         /// <summary>
         /// Deletes the medication described by the provided patient and condition ids.
         /// </summary>
+        /// <param name="medicationId">The medication identifier.</param>
         /// <param name="conditionId">The condition id to delete.</param>
         /// <param name="patientId">The patient id.</param>
-        /// <returns>A HttpStatusCode response.</returns>
+        /// <returns>
+        /// A HttpStatusCode response.
+        /// </returns>
         public HttpResponseMessage Delete(Guid medicationId, Guid conditionId, Guid patientId)
         {
             itemFactory.Delete(medicationId, conditionId, patientId);

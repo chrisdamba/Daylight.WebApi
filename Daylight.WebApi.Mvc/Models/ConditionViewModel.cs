@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Linq;
 using System.Runtime.Serialization;
 using Daylight.WebApi.Contracts.Entities;
 
@@ -9,6 +10,7 @@ namespace Daylight.WebApi.Mvc.Models
     [DataContract]
     public class ConditionViewModel
     {
+        private MedicationViewModel[] medications;
         /// <summary>
         /// Initializes a new instance of the <see cref="ConditionViewModel" /> class.
         /// </summary>
@@ -28,6 +30,17 @@ namespace Daylight.WebApi.Mvc.Models
             this.Name = condition.Name;
             this.StartedAt = condition.StartedAt;
             this.FinishedAt = condition.FinishedAt;
+            this.Medications = condition.Medications.Select(m => new MedicationViewModel(m)).ToArray();
+        }
+
+        /// <summary>
+        /// Gets or sets the medications.
+        /// </summary>
+        [DataMember]
+        public MedicationViewModel[] Medications
+        {
+            get { return medications ?? new MedicationViewModel[0]; }
+            set { medications = value; }
         }
 
         /// <summary>
