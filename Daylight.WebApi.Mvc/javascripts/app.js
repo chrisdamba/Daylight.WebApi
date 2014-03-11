@@ -3290,74 +3290,6 @@ module.exports = function (__obj) {
 }
 });
 
-;require.register("templates/condition/condition_detail_template", function(exports, require, module) {
-module.exports = function (__obj) {
-  if (!__obj) __obj = {};
-  var __out = [], __capture = function(callback) {
-    var out = __out, result;
-    __out = [];
-    callback.call(this);
-    result = __out.join('');
-    __out = out;
-    return __safe(result);
-  }, __sanitize = function(value) {
-    if (value && value.ecoSafe) {
-      return value;
-    } else if (typeof value !== 'undefined' && value != null) {
-      return __escape(value);
-    } else {
-      return '';
-    }
-  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
-  __safe = __obj.safe = function(value) {
-    if (value && value.ecoSafe) {
-      return value;
-    } else {
-      if (!(typeof value !== 'undefined' && value != null)) value = '';
-      var result = new String(value);
-      result.ecoSafe = true;
-      return result;
-    }
-  };
-  if (!__escape) {
-    __escape = __obj.escape = function(value) {
-      return ('' + value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    };
-  }
-  (function() {
-    (function() {
-      var condition, _i, _len, _ref, _ref1;
-    
-      __out.push('<div class="jarviswidget" id="wid-id-1" role="widget">\n    <header>\n        <h2><strong>Conditions</strong></h2>\n    </header>\n    <div>                                           \n        <div class="widget-body">\n            <div class="dd" id="nestable">\n                <ol class="dd-list">\n                    ');
-    
-      if ((_ref = this.conditions) != null ? _ref.length : void 0) {
-        __out.push('\n                        ');
-        _ref1 = this.conditions;
-        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-          condition = _ref1[_i];
-          __out.push('\n                            <li class="dd-item" data-id="');
-          __out.push(__sanitize(condition.id));
-          __out.push('">\n                                <!--<button type="button" data-action="collapse" class="condition-delete" data-original-title="Delete condition" data-placement="left" title="" rel="tooltip" style="display: block;">Delete</button>-->\n                                <div class="dd-handle">\n                                    ');
-          __out.push(__sanitize(condition.name));
-          __out.push('\n                                    <a class="condition-delete"><em data-original-title="Delete condition" data-placement="left" title="" rel="tooltip" class="pull-right padding-5"><i class="fa fa-trash-o fa-lg"></i></em></a>\n                                </div>\n                            </li>       \n                        ');
-        }
-        __out.push('\n                    ');
-      }
-    
-      __out.push('                                               \n                </ol>\n            </div>\n            <button class="btn btn-sm btn-success condition-add" type="button">\n                Add +\n            </button>   \n             <i class="fa fa-plus-o fa-lg"></i>\n        </div>                                  \n    </div>    \n</div>\n');
-    
-    }).call(this);
-    
-  }).call(__obj);
-  __obj.safe = __objSafe, __obj.escape = __escape;
-  return __out.join('');
-}
-});
-
 ;require.register("templates/condition/condition_list_item_template", function(exports, require, module) {
 module.exports = function (__obj) {
   if (!__obj) __obj = {};
@@ -3682,6 +3614,114 @@ module.exports = function (__obj) {
 }
 });
 
+;require.register("templates/medication/medication_list_item_template", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      __out.push('<div class="dd-handle">\n\t');
+    
+      __out.push(__sanitize(this.name));
+    
+      __out.push('\n\t<a class="remove label label-danger pull-right padding-5 js-delete-medication" href="#"  data-id="');
+    
+      __out.push(__sanitize(this.id));
+    
+      __out.push('">\n\t\t<i class="glyphicon glyphicon-remove"></i> remove\n\t</a>\t\t\t\t\t\n</div>');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("templates/medication/medication_list_template", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      __out.push('<ol class="dd-list js-medication-ol">\n\t\t\t\t\t\t\t\t\t\t\t\n</ol>');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
 ;require.register("templates/medication/medication_search_template", function(exports, require, module) {
 module.exports = function (__obj) {
   if (!__obj) __obj = {};
@@ -3727,6 +3767,68 @@ module.exports = function (__obj) {
       __out.push(__sanitize(this.name));
     
       __out.push('">\t\t\t\t\t\t\t\t\n\t\t\t\t\t</div>\t\t\t\t\t\t\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("templates/medication/medication_template", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Add Medication</h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<div class="row">\t\t\t\t\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t<form id="searchmedication" novalidate="novalidate">\n\t\t\t\t\t\t<div id="search_medication_container"></div>\t\n\t\t\t\t\t\t<div class="panel-body no-padding">            \n\t\t\t\t\t\t\t<strong>');
+    
+      __out.push(__sanitize(this.name));
+    
+      __out.push('</strong> \n\t\t\t\t\t\t\t<input type="hidden" name="medsynonyms" id="m2_synonyms" value="');
+    
+      __out.push(__sanitize(this.synonyms));
+    
+      __out.push('">\n\t\t\t\t\t\t\t<input type="hidden" name="medconceptId" id="m2_conceptId" value="');
+    
+      __out.push(__sanitize(this.conceptId));
+    
+      __out.push('">\t\t\t\t\t\n\t\t\t\t\t    </div> \n\t\t\t\t\t</form>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\t\t\t\t\n\n\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t<button type="button" class="btn btn-primary" data-dismiss="modal">\n\t\t\t\tCancel\n\t\t\t</button>\n\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\tSave\n\t\t\t</button>\n\t\t</div>\t\t\t\n\t</div>\n</div>\t');
     
     }).call(this);
     
@@ -4064,7 +4166,7 @@ module.exports = function (__obj) {
     
       __out.push(__sanitize(this.phone));
     
-      __out.push('\n\t\t\t\t\t\t</address>\n\t\t\t\t\t</p>\n\t\t\t\t\t<p>\n\t\t\t\t\t\t<button class="btn btn-primary btn-lg js-edit" type="button">Edit Details</button>\n\t\t\t\t\t\t<button class="btn btn-primary btn-lg js-delete" type="button">Delete</button>\n\t\t\t\t\t</p>\n\t\t\t\t</div>\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\n\t\t\t\n\t\t\t\t\n\t\t\t</div>\n\t\t\t<div class="col-md-6 pull-right">\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Conditions</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<div class="js-conditions-list">\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success condition-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Allergies</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Medications</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<div class="js-medications-list">\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success medication-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Visits</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="tree smart-form">\n\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-folder-open"></i> Parent</span>\n\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-plus-circle"></i> Administrators</span>\n\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span> <label class="checkbox inline-block">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Michael.Jackson</label> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span> <label class="checkbox inline-block">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" checked="checked" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Sunny.Ahmed</label> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span> <label class="checkbox inline-block">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" checked="checked" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Jackie.Chan</label> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-minus-circle"></i> Child</span>\n\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-plus-circle"></i> Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-plus-circle"></i> Great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Great great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Great great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-folder-open"></i> Parent2</span>\n\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Child</span>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</article>\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\t\t\t</div>\n\t\t</div>\t\t\n\t</div>\t\n</div>\n');
+      __out.push('\n\t\t\t\t\t\t</address>\n\t\t\t\t\t</p>\n\t\t\t\t\t<p>\n\t\t\t\t\t\t<button class="btn btn-primary btn-lg js-edit" type="button">Edit Details</button>\n\t\t\t\t\t\t<button class="btn btn-primary btn-lg js-delete" type="button">Delete</button>\n\t\t\t\t\t</p>\n\t\t\t\t</div>\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\n\t\t\t\n\t\t\t\t\n\t\t\t</div>\n\t\t\t<div class="col-md-6 pull-right">\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Conditions</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<div class="js-conditions-list">\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success condition-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Allergies</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-orange" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Medications</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="tree">\n\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-calendar"></i>Condition 1</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="label label-success"><i class="fa fa-lg fa-plus-circle"></i> Monday, January 7: 8.00 hours</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 8.00</span> &ndash; <a href="javascript:void(0);">Changed CSS to accomodate...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="label label-success"><i class="fa fa-lg fa-minus-circle"></i> Tuesday, January 8: 8.00 hours</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 6.00</span> &ndash; <a href="javascript:void(0);">Altered code...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 2.00</span> &ndash; <a href="javascript:void(0);">Simplified our approach to...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="label label-warning"><i class="fa fa-lg fa-minus-circle"></i> Wednesday, January 9: 6.00 hours</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 3.00</span> &ndash; <a href="javascript:void(0);">Fixed bug caused by...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 3.00</span> &ndash; <a href="javascript:void(0);">Comitting latest code to Git...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="label label-danger"><i class="fa fa-lg fa-minus-circle"></i> Wednesday, January 9: 4.00 hours</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 2.00</span> &ndash; <a href="javascript:void(0);">Create component that...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-calendar"></i> Condition 2</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="label label-success"><i class="fa fa-lg fa-minus-circle"></i> Monday, January 14: 8.00 hours</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 7.75</span> &ndash; <a href="javascript:void(0);">Writing documentation...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 0.25</span> &ndash; <a href="javascript:void(0);">Reverting code back to...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success condition-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Visits</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="tree smart-form">\n\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-folder-open"></i> Parent</span>\n\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-plus-circle"></i> Administrators</span>\n\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span> <label class="checkbox inline-block">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Michael.Jackson</label> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span> <label class="checkbox inline-block">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" checked="checked" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Sunny.Ahmed</label> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span> <label class="checkbox inline-block">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" checked="checked" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Jackie.Chan</label> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-minus-circle"></i> Child</span>\n\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-plus-circle"></i> Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-plus-circle"></i> Great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Great great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Great great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-folder-open"></i> Parent2</span>\n\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Child</span>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</article>\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\t\t\t</div>\n\t\t</div>\t\t\n\t</div>\t\n</div>\n');
     
     }).call(this);
     
