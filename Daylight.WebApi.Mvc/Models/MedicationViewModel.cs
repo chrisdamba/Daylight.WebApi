@@ -29,6 +29,7 @@ namespace Daylight.WebApi.Mvc.Models
             this.FinishedAt = medication.FinishedAt;
             this.StartedAt = medication.StartedAt;
             this.Cost = medication.Cost;
+            this.PatientId = medication.Condition.PatientId;
         }
 
         /// <summary>
@@ -42,6 +43,11 @@ namespace Daylight.WebApi.Mvc.Models
         /// </summary>
         [DataMember]
         public Guid ConditionId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the patient identifier.
+        /// </summary>
+        public Guid PatientId { get; set; }
 
         /// <summary>
         /// Gets or sets the patient condition SNOMED concept id.
@@ -73,7 +79,7 @@ namespace Daylight.WebApi.Mvc.Models
         public decimal Cost { get; set; }
 
         /// <summary>
-        /// To the entity.
+        /// Converts medication object to EF medication entity.
         /// </summary>
         /// <param name="medication">The medication.</param>
         /// <returns></returns>

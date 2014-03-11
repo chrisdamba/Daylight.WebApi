@@ -79,6 +79,11 @@ namespace Daylight.WebApi.Mvc.Models
         [DataMember]
         public DateTime? FinishedAt { get; set; }
 
+        /// <summary>
+        /// To the entity.
+        /// </summary>
+        /// <param name="condition">The condition.</param>
+        /// <returns></returns>
         public Condition ToEntity(Condition condition)
         {
             if (condition == null)

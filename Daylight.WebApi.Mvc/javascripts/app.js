@@ -668,8 +668,6 @@ MedicationSearchCollection = (function(_super) {
 
   MedicationSearchCollection.prototype.model = SearchModel;
 
-  MedicationSearchCollection.prototype.url = 'https://api.howareyou.com/medications/search.json';
-
   MedicationSearchCollection.prototype.sync = function(method, model, options) {
     var params, query;
     query = $('input[name=medication]').val();
@@ -918,6 +916,7 @@ module.exports = ConditionModel;
 
 ;require.register("daylight/models/medication_model", function(exports, require, module) {
 var MedicationModel,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
@@ -925,6 +924,7 @@ MedicationModel = (function(_super) {
   __extends(MedicationModel, _super);
 
   function MedicationModel() {
+    this.urlRoot = __bind(this.urlRoot, this);
     return MedicationModel.__super__.constructor.apply(this, arguments);
   }
 
@@ -948,6 +948,10 @@ MedicationModel = (function(_super) {
     return this.get('conditionId');
   };
 
+  MedicationModel.prototype.patientId = function() {
+    return this.get('patientId');
+  };
+
   MedicationModel.prototype.value = function() {
     return this.get('id');
   };
@@ -962,6 +966,10 @@ MedicationModel = (function(_super) {
 
   MedicationModel.prototype.initialize = function(options) {
     return MedicationModel.__super__.initialize.call(this, options);
+  };
+
+  MedicationModel.prototype.urlRoot = function() {
+    return "/API/Patients/" + window.App.currentPatient.id + "/Conditions/" + (this.conditionId()) + "/Medications";
   };
 
   MedicationModel.prototype.toJSON = function() {
@@ -1081,7 +1089,6 @@ PatientModel = (function(_super) {
     if (editMode == null) {
       editMode = false;
     }
-    index = Math.max(0, Math.min(this.get('conditions').length - 1, index));
     oldIndex = this.get('_index');
     oldSubIndex = this.get('_subIndex');
     oldEditMode = this.get('_editMode');
@@ -1249,46 +1256,8 @@ module.exports = AddWidgetModalView;
 
 });
 
-;require.register("daylight/views/condition/condition_detail_view", function(exports, require, module) {
-var ConditionDetailTemplate, ConditionDetailView,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-ConditionDetailTemplate = require('templates/condition/condition_detail_template');
-
-ConditionDetailView = (function(_super) {
-  __extends(ConditionDetailView, _super);
-
-  function ConditionDetailView() {
-    this.render = __bind(this.render, this);
-    return ConditionDetailView.__super__.constructor.apply(this, arguments);
-  }
-
-  ConditionDetailView.prototype.template = ConditionDetailTemplate;
-
-  ConditionDetailView.prototype.className = 'condition';
-
-  ConditionDetailView.prototype.initialize = function(options) {
-    ConditionDetailView.__super__.initialize.call(this, options);
-    return this.listenTo(this.model, 'sync', this.render);
-  };
-
-  ConditionDetailView.prototype.render = function() {
-    this.$el.html(this.template(this.model.toJSON()));
-    return this;
-  };
-
-  return ConditionDetailView;
-
-})(support.View);
-
-module.exports = ConditionDetailView;
-
-});
-
 ;require.register("daylight/views/condition/condition_list_item_view", function(exports, require, module) {
-var ConditionCollection, ConditionListItemTemplate, ConditionListItemView,
+var ConditionCollection, ConditionListItemTemplate, ConditionListItemView, MedicationModel, MedicationsView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -1297,10 +1266,15 @@ ConditionCollection = require('daylight/collections/condition_collection');
 
 ConditionListItemTemplate = require('templates/condition/condition_list_item_template');
 
+MedicationModel = require('daylight/models/medication_model');
+
+MedicationsView = require('daylight/views/medication/medications_view');
+
 ConditionListItemView = (function(_super) {
   __extends(ConditionListItemView, _super);
 
   function ConditionListItemView() {
+    this.onAddMedicationClick = __bind(this.onAddMedicationClick, this);
     this.onDeleteCondition = __bind(this.onDeleteCondition, this);
     this.onDestroy = __bind(this.onDestroy, this);
     this.render = __bind(this.render, this);
@@ -1310,10 +1284,11 @@ ConditionListItemView = (function(_super) {
 
   ConditionListItemView.prototype.tagName = 'li';
 
-  ConditionListItemView.prototype.className = 'dd-item';
+  ConditionListItemView.prototype.className = 'parent_li';
 
   ConditionListItemView.prototype.events = {
-    'click .js-delete-condition': 'onDeleteCondition'
+    'click .js-delete-condition': 'onDeleteCondition',
+    'click .js-medication-add': 'onAddMedicationClick'
   };
 
   ConditionListItemView.prototype.template = function(data) {
@@ -1371,6 +1346,19 @@ ConditionListItemView = (function(_super) {
     return e.preventDefault();
   };
 
+  ConditionListItemView.prototype.onAddMedicationClick = function(e) {
+    var model, view;
+    e.preventDefault();
+    model = new MedicationModel;
+    model.set({
+      conditionId: this.model.value()
+    });
+    view = new MedicationsView({
+      model: model
+    });
+    return view.show();
+  };
+
   return ConditionListItemView;
 
 })(support.View);
@@ -1402,9 +1390,9 @@ ConditionListView = (function(_super) {
     return ConditionListView.__super__.constructor.apply(this, arguments);
   }
 
-  ConditionListView.prototype.tagName = 'ol';
+  ConditionListView.prototype.tagName = 'ul';
 
-  ConditionListView.prototype.className = 'dd-list';
+  ConditionListView.prototype.className = 'condition-tree';
 
   ConditionListView.prototype.template = ConditionListTemplate;
 
@@ -1615,7 +1603,7 @@ ConditionsView = (function(_super) {
 
   ConditionsView.prototype.initialize = function(options) {
     ConditionsView.__super__.initialize.call(this, options);
-    window.App.eventAggregator.on('click:addcondition', (function(_this) {
+    window.App.eventAggregator.on('click:addentity', (function(_this) {
       return function(e) {
         var conceptId, name, synonyms;
         conceptId = e.get('snomed_concept_id');
@@ -1804,7 +1792,7 @@ MedicationSearchView = (function(_super) {
   MedicationSearchView.prototype.className = 'medication-search';
 
   MedicationSearchView.prototype.events = {
-    'focus #c2_medication': 'renderAutoComplete'
+    'focus #m2_medication': 'renderAutoComplete'
   };
 
   MedicationSearchView.prototype.initialize = function(options) {
@@ -1821,16 +1809,16 @@ MedicationSearchView = (function(_super) {
 
   MedicationSearchView.prototype.renderAutoComplete = function() {
     return new AutocompleteView({
-      input: $("#c2_medication"),
+      input: $("#m2_medication"),
       model: this._collection,
       entity: 'medications'
     }).render();
   };
 
   MedicationSearchView.prototype.autocompleteSelect = function(model) {
-    $("#c2_medication").val(model.label());
-    $("#c2_synonyms").val(model.synonyms());
-    return $("#c2_conceptId").val(model.conceptId());
+    $("#m2_medication").val(model.label());
+    $("#m2_synonyms").val(model.synonyms());
+    return $("#m2_conceptId").val(model.conceptId());
   };
 
   return MedicationSearchView;
@@ -1838,6 +1826,208 @@ MedicationSearchView = (function(_super) {
 })(support.View);
 
 module.exports = MedicationSearchView;
+
+});
+
+;require.register("daylight/views/medication/medications_view", function(exports, require, module) {
+var MedicationCollection, MedicationModel, MedicationSearchView, MedicationsTemplate, MedicationsView,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+MedicationsTemplate = require('templates/medication/medications_template');
+
+MedicationCollection = require('daylight/collections/medication_collection');
+
+MedicationModel = require('daylight/models/medication_model');
+
+MedicationSearchView = require('daylight/views/medication/medication_search_view');
+
+MedicationsView = (function(_super) {
+  __extends(MedicationsView, _super);
+
+  function MedicationsView() {
+    this.initializeAutoComplete = __bind(this.initializeAutoComplete, this);
+    this.onClearSearch = __bind(this.onClearSearch, this);
+    this.onSubmit = __bind(this.onSubmit, this);
+    this.onSaveSuccess = __bind(this.onSaveSuccess, this);
+    this.onNavigate = __bind(this.onNavigate, this);
+    this.onKeyDown = __bind(this.onKeyDown, this);
+    this.save = __bind(this.save, this);
+    this.render = __bind(this.render, this);
+    return MedicationsView.__super__.constructor.apply(this, arguments);
+  }
+
+  MedicationsView.prototype.id = "medications-add";
+
+  MedicationsView.prototype._query = void 0;
+
+  MedicationsView.prototype.className = "modal fade";
+
+  MedicationsView.prototype.template = MedicationsTemplate;
+
+  MedicationsView.prototype.events = {
+    'click .js-submit': 'onSubmit',
+    'click .js-save-btn': 'onSaveClick'
+  };
+
+  MedicationsView.prototype.validationOptions = {
+    ignore: [],
+    rules: {
+      conceptId: {
+        required: true
+      }
+    },
+    messages: {
+      conceptId: 'Please enter a medication to search'
+    },
+    highlight: function(el) {
+      return $(el).closest(".form-group").removeClass("has-success").addClass("has-error");
+    },
+    unhighlight: function(el) {
+      return $(el).closest(".form-group").removeClass("has-error").addClass("has-success");
+    },
+    errorElement: 'span',
+    errorClass: 'help-block',
+    errorPlacement: function(error, el) {
+      if (el.parent('.input-group').length) {
+        return error.insertAfter(el.parent());
+      } else {
+        return error.insertAfter(el);
+      }
+    }
+  };
+
+  MedicationsView.prototype.initialize = function(options) {
+    MedicationsView.__super__.initialize.call(this, options);
+    window.App.eventAggregator.on('click:addentity', (function(_this) {
+      return function(e) {
+        var conceptId, name, synonyms;
+        conceptId = e.get('snomed_concept_id');
+        name = e.get('term');
+        synonyms = e.get('synonyms');
+        _this.model.set({
+          'conceptId': conceptId
+        });
+        _this.model.set({
+          'name': name
+        });
+        return _this.model.set({
+          'synonyms': synonyms
+        });
+      };
+    })(this));
+    this.bindTo(this.model, 'navigate', this.onNavigate);
+    this.listenTo(this.model, 'change', this.render);
+    _.bindAll(this, "render");
+    this.render();
+    return this.initializeAutoComplete();
+  };
+
+  MedicationsView.prototype.render = function() {
+    this.$el.html(this.template(this.model.toJSON()));
+    this.$el.modal({
+      show: false
+    });
+    this.delegateEvents(this.events);
+    return this;
+  };
+
+  MedicationsView.prototype.save = function() {
+    this.model.save(null, {
+      wait: true,
+      success: (function(_this) {
+        return function(model, response, options) {
+          return $.smallBox({
+            title: "Medication has been successfully added!",
+            content: "<i class='fa fa-clock-o'></i> <i>3 seconds ago...</i>",
+            color: '#5F895F',
+            iconSmall: 'fa fa-check bounce animated',
+            timeout: 4000
+          });
+        };
+      })(this)
+    });
+    this.teardown();
+    return window.App.eventAggregator.trigger('navigate:patient', {
+      id: this.model.patientId()
+    });
+  };
+
+  MedicationsView.prototype.parseQuery = function(str) {
+    str = str.replace(/\x20+(?=\x20)/g, '');
+    return str = String.prototype.trim ? str.trim() : str;
+  };
+
+  MedicationsView.prototype.show = function() {
+    return this.$el.modal("show");
+  };
+
+  MedicationsView.prototype.teardown = function() {
+    return this.$el.modal("hide");
+  };
+
+  MedicationsView.prototype.onSaveClick = function(e) {
+    var $valid, $validator;
+    e.preventDefault();
+    $validator = $("#searchmedication").validate(this.validationOptions);
+    $valid = $('#searchmedication').valid();
+    if (!$valid) {
+      $validator.focusInvalid();
+      return false;
+    } else {
+      return this.save();
+    }
+  };
+
+  MedicationsView.prototype.onCancelClick = function(e) {
+    e.preventDefault();
+    return this.teardown();
+  };
+
+  MedicationsView.prototype.onKeyDown = function(e) {
+    if (e.which === 13) {
+      e.preventDefault();
+    }
+    return this.doSearch();
+  };
+
+  MedicationsView.prototype.onNavigate = function(e) {
+    return this.render();
+  };
+
+  MedicationsView.prototype.onSaveSuccess = function() {
+    return window.App.eventAggregator.trigger('navigate:patient', {
+      id: this.model.patientId()
+    });
+  };
+
+  MedicationsView.prototype.onSubmit = function(e) {
+    return e.preventDefault();
+  };
+
+  MedicationsView.prototype.onClearSearch = function(e) {
+    e.preventDefault();
+    return window.App.eventAggregator.trigger('navigate:patients', {
+      filter: null
+    });
+  };
+
+  MedicationsView.prototype.initializeAutoComplete = function() {
+    var model, selector, view;
+    model = new MedicationModel;
+    view = new MedicationSearchView({
+      model: model
+    });
+    selector = this.$el.find('#search_medication_container');
+    return selector.html(view.el);
+  };
+
+  return MedicationsView;
+
+})(support.View);
+
+module.exports = MedicationsView;
 
 });
 
@@ -2569,6 +2759,8 @@ PatientView = (function(_super) {
 
   function PatientView() {
     this.onDeletePatientClick = __bind(this.onDeletePatientClick, this);
+    this.onTreeNodeClick = __bind(this.onTreeNodeClick, this);
+    this.setupTree = __bind(this.setupTree, this);
     this.onAddConditionClick = __bind(this.onAddConditionClick, this);
     this.onEditPatientClick = __bind(this.onEditPatientClick, this);
     this.onSaveSuccess = __bind(this.onSaveSuccess, this);
@@ -2603,6 +2795,7 @@ PatientView = (function(_super) {
   PatientView.prototype.render = function() {
     this.$el.html(this.template(this.model.toJSON()));
     this.renderConditions();
+    this.setupTree();
     return this;
   };
 
@@ -2653,6 +2846,24 @@ PatientView = (function(_super) {
       model: cmodel
     });
     return view.show();
+  };
+
+  PatientView.prototype.setupTree = function() {
+    return this.$(".tree > ul").attr("role", "tree").find("ul").attr("role", "group");
+  };
+
+  PatientView.prototype.onTreeNodeClick = function(e) {
+    var children;
+    children = $(this).parent("li.parent_li").find(" > ul > li");
+    console.log(children.is(":visible"));
+    if (children.is(":visible")) {
+      children.hide("fast");
+      $(this).attr("title", "Expand this branch").find(" > i").removeClass().addClass("fa fa-lg fa-plus-circle");
+    } else {
+      children.show("fast");
+      $(this).attr("title", "Collapse this branch").find(" > i").removeClass().addClass("fa fa-lg fa-minus-circle");
+    }
+    return e.stopPropagation();
   };
 
   PatientView.prototype.onDeletePatientClick = function(e) {
@@ -2766,7 +2977,7 @@ AutocompleteItemView = (function(_super) {
   };
 
   AutocompleteItemView.prototype.select = function(e) {
-    App.eventAggregator.trigger('click:addcondition', this.model);
+    App.eventAggregator.trigger('click:addentity', this.model);
     this.$el.hide();
     e.preventDefault();
     return false;
@@ -3330,15 +3541,19 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<div class="dd-handle">\n\t');
+      __out.push('<span title="Add medication" class="js-medication-add"><i class="fa fa-lg fa-plus-circle"></i> ');
     
       __out.push(__sanitize(this.name));
     
-      __out.push('\n\t<a class="remove label label-danger pull-right padding-5 js-delete-condition" href="#"  data-id="');
+      __out.push('</span>\n<a class="remove label label-danger pull-right padding-5 js-delete-condition" href="#"  data-id="');
     
       __out.push(__sanitize(this.id));
     
-      __out.push('">\n\t\t<i class="glyphicon glyphicon-remove"></i> remove\n\t</a>\t\t\t\t\t\n</div>');
+      __out.push('">\n\t\t<i class="glyphicon glyphicon-remove"></i> remove\n</a>\n<!-- <a class="btn btn-labeled btn-danger pull-right js-delete-condition" href="#" data-id="');
+    
+      __out.push(__sanitize(this.id));
+    
+      __out.push('"> <span class="btn-label"><i class="glyphicon glyphicon-remove"></i></span>Remove </a>\n -->\n<!-- <ul role="group">\n\t\t<li class="parent_li" role="treeitem">\n\t\t\t<span class="label label-success" title="Expand this branch"><i class="fa fa-lg fa-plus-circle"></i> Monday, January 7: 8.00 hours</span>\n\t\t\t<ul role="group">\n\t\t\t\t<li style="display: none;">\n\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 8.00</span> &ndash; <a href="javascript:void(0);">Changed CSS to accomodate...</a>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</li>\n\t\t<li class="parent_li" role="treeitem">\n\t\t\t<span class="label label-success" title="Expand this branch"><i class="fa fa-lg fa-plus-circle"></i> Tuesday, January 8: 8.00 hours</span>\n\t\t\t<ul role="group">\n\t\t\t\t<li style="display: none;">\n\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 6.00</span> &ndash; <a href="javascript:void(0);">Altered code...</a>\n\t\t\t\t</li>\n\t\t\t\t<li style="display: none;">\n\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 2.00</span> &ndash; <a href="javascript:void(0);">Simplified our approach to...</a>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</li>\n\t\t<li class="parent_li" role="treeitem">\n\t\t\t<span class="label label-warning" title="Collapse this branch"><i class="fa fa-lg fa-minus-circle"></i> Wednesday, January 9: 6.00 hours</span>\n\t\t\t<ul role="group">\n\t\t\t\t<li>\n\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 3.00</span> &ndash; <a href="javascript:void(0);">Fixed bug caused by...</a>\n\t\t\t\t</li>\n\t\t\t\t<li>\n\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 3.00</span> &ndash; <a href="javascript:void(0);">Comitting latest code to Git...</a>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</li>\n\t\t<li class="parent_li" role="treeitem">\n\t\t\t<span class="label label-danger" title="Collapse this branch"><i class="fa fa-lg fa-minus-circle"></i> Wednesday, January 9: 4.00 hours</span>\n\t\t\t<ul role="group">\n\t\t\t\t<li>\n\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 2.00</span> &ndash; <a href="javascript:void(0);">Create component that...</a>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</li>\n\t</ul> \n\t<li class="parent_li" role="treeitem">\n\t\t<span title="Collapse this branch"><i class="fa fa-lg fa-folder-open"></i> Carpal hygroma</span>\n\t\t<ul role="group">\n\t\t\t<li class="parent_li" role="treeitem">\n\t\t\t\t<span class="label label-success" title="Collapse this branch"><i class="fa fa-lg fa-minus-circle"></i> Monday, January 14: 8.00 hours</span>\n\t\t\t\t<ul role="group">\n\t\t\t\t\t<li>\n\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 7.75</span> &ndash; <a href="javascript:void(0);">Writing documentation...</a>\n\t\t\t\t\t</li>\n\t\t\t\t\t<li>\n\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 0.25</span> &ndash; <a href="javascript:void(0);">Reverting code back to...</a>\n\t\t\t\t\t</li>\n\t\t\t\t</ul>\n\t\t\t</li>\n\t\t</ul> \n\t</li> -->');
     
     }).call(this);
     
@@ -3388,7 +3603,7 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<ol class="dd-list js-condition-ol">\n\t\t\t\t\t\t\t\t\t\t\t\n</ol>');
+      __out.push('<ul role="tree" class="condition-tree"></ul>\n\n');
     
     }).call(this);
     
@@ -3762,7 +3977,7 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<div class="row">\n\t<div class="col-sm-12">\n\t\t<div class="form-group">\n\t\t\t<div class="input-group margin-bottom-sm">\n\t\t\t\t<div class="inline-group">\n\t\t\t\t\t<div class="bbf-editor">\n\t\t\t\t\t\t<input class="form-control input-lg js-search-terms" autocomplete="off" placeholder="Search for medication" type="text" name="medication" id="c2_medication" value="');
+      __out.push('<div class="row">\n\t<div class="col-sm-12">\n\t\t<div class="form-group">\n\t\t\t<div class="input-group margin-bottom-sm">\n\t\t\t\t<div class="inline-group">\n\t\t\t\t\t<div class="bbf-editor">\n\t\t\t\t\t\t<input class="form-control input-lg js-search-terms" autocomplete="off" placeholder="Search for medication" type="text" name="medication" id="m2_medication" value="');
     
       __out.push(__sanitize(this.name));
     
@@ -3776,7 +3991,7 @@ module.exports = function (__obj) {
 }
 });
 
-;require.register("templates/medication/medication_template", function(exports, require, module) {
+;require.register("templates/medication/medications_template", function(exports, require, module) {
 module.exports = function (__obj) {
   if (!__obj) __obj = {};
   var __out = [], __capture = function(callback) {
@@ -4166,7 +4381,7 @@ module.exports = function (__obj) {
     
       __out.push(__sanitize(this.phone));
     
-      __out.push('\n\t\t\t\t\t\t</address>\n\t\t\t\t\t</p>\n\t\t\t\t\t<p>\n\t\t\t\t\t\t<button class="btn btn-primary btn-lg js-edit" type="button">Edit Details</button>\n\t\t\t\t\t\t<button class="btn btn-primary btn-lg js-delete" type="button">Delete</button>\n\t\t\t\t\t</p>\n\t\t\t\t</div>\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\n\t\t\t\n\t\t\t\t\n\t\t\t</div>\n\t\t\t<div class="col-md-6 pull-right">\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Conditions</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<div class="js-conditions-list">\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success condition-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Allergies</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-orange" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Medications</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="tree">\n\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-calendar"></i>Condition 1</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="label label-success"><i class="fa fa-lg fa-plus-circle"></i> Monday, January 7: 8.00 hours</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 8.00</span> &ndash; <a href="javascript:void(0);">Changed CSS to accomodate...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="label label-success"><i class="fa fa-lg fa-minus-circle"></i> Tuesday, January 8: 8.00 hours</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 6.00</span> &ndash; <a href="javascript:void(0);">Altered code...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 2.00</span> &ndash; <a href="javascript:void(0);">Simplified our approach to...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="label label-warning"><i class="fa fa-lg fa-minus-circle"></i> Wednesday, January 9: 6.00 hours</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 3.00</span> &ndash; <a href="javascript:void(0);">Fixed bug caused by...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 3.00</span> &ndash; <a href="javascript:void(0);">Comitting latest code to Git...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="label label-danger"><i class="fa fa-lg fa-minus-circle"></i> Wednesday, January 9: 4.00 hours</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 2.00</span> &ndash; <a href="javascript:void(0);">Create component that...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-calendar"></i> Condition 2</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span class="label label-success"><i class="fa fa-lg fa-minus-circle"></i> Monday, January 14: 8.00 hours</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 7.75</span> &ndash; <a href="javascript:void(0);">Writing documentation...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 0.25</span> &ndash; <a href="javascript:void(0);">Reverting code back to...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success condition-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Visits</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="tree smart-form">\n\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-folder-open"></i> Parent</span>\n\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-plus-circle"></i> Administrators</span>\n\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span> <label class="checkbox inline-block">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Michael.Jackson</label> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span> <label class="checkbox inline-block">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" checked="checked" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Sunny.Ahmed</label> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span> <label class="checkbox inline-block">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" checked="checked" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Jackie.Chan</label> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-minus-circle"></i> Child</span>\n\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-plus-circle"></i> Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-plus-circle"></i> Great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Great great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Great great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-folder-open"></i> Parent2</span>\n\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Child</span>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</article>\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\t\t\t</div>\n\t\t</div>\t\t\n\t</div>\t\n</div>\n');
+      __out.push('\n\t\t\t\t\t\t</address>\n\t\t\t\t\t</p>\n\t\t\t\t\t<p>\n\t\t\t\t\t\t<button class="btn btn-primary btn-lg js-edit" type="button">Edit Details</button>\n\t\t\t\t\t\t<button class="btn btn-primary btn-lg js-delete" type="button">Delete</button>\n\t\t\t\t\t</p>\n\t\t\t\t</div>\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\n\t\t\t\n\t\t\t\t\n\t\t\t</div>\n\t\t\t<div class="col-md-6 pull-right">\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-green" id="p-wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Conditions</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<div class="tree js-conditions-list">\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success condition-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="p-wid-id-2" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Allergies</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\t\t\t\t\t\t\n\t\t\t\t\t\t<article class="col-sm-12 col-md-12 col-lg-6  sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-green" id="p-wid-id-4" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Visits</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="tree smart-form">\n\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-folder-open"></i> Parent</span>\n\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-plus-circle"></i> Administrators</span>\n\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span> <label class="checkbox inline-block">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Michael.Jackson</label> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span> <label class="checkbox inline-block">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" checked="checked" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Sunny.Ahmed</label> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span> <label class="checkbox inline-block">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" checked="checked" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i></i>Jackie.Chan</label> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-minus-circle"></i> Child</span>\n\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-plus-circle"></i> Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-plus-circle"></i> Great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Great great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Great great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li style="display:none">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Great Grand Child</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<span><i class="fa fa-lg fa-folder-open"></i> Parent2</span>\n\t\t\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t<span><i class="icon-leaf"></i> Child</span>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</article>\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\t\t\t</div>\n\t\t</div>\t\t\n\t</div>\t\n</div>\n');
     
     }).call(this);
     

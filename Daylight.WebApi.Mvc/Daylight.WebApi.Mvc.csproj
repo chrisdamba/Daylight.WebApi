@@ -234,6 +234,7 @@
     <Content Include="css\bootstrap-tagsinput.css" />
     <Content Include="css\bootstrap-timepicker.css" />
     <Content Include="css\bootstrap.css" />
+    <Content Include="css\bootstrap.min.css" />
     <Content Include="css\colorpallet.css" />
     <Content Include="css\colorpicker.css" />
     <Content Include="css\compiled\calendar.css" />
@@ -272,6 +273,10 @@
     <Content Include="css\production.css" />
     <Content Include="css\smart-chat.css" />
     <Content Include="css\smart-forms.css" />
+    <Content Include="css\smartadmin-production.css" />
+    <Content Include="css\smartadmin-production_unminified.css" />
+    <Content Include="css\smartadmin-rtl.css" />
+    <Content Include="css\smartadmin-skins.css" />
     <Content Include="css\summernote.css" />
     <Content Include="css\superbox.css" />
     <Content Include="css\TableTools.css" />
