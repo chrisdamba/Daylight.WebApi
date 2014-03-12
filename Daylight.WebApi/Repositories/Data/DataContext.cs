@@ -39,5 +39,21 @@ namespace Daylight.WebApi.Repositories.Data
         {
             get { return base.Medications; }
         }
+
+        /// <summary>
+        /// Gets the user table.
+        /// </summary>
+        public IDbSet<User> Users
+        {
+            get { return base.Users; }
+        }
+
+        /// <summary>
+        /// Gets the role table.
+        /// </summary>
+        public IDbSet<Role> Roles
+        {
+            get { return base.Roles; }
+        }
     }
 }

@@ -170,6 +170,7 @@
     <Compile Include="Models\ConditionViewModel.cs" />
     <Compile Include="Models\MedicationViewModel.cs" />
     <Compile Include="Models\PatientViewModel.cs" />
+    <Compile Include="Models\Security\LoginViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

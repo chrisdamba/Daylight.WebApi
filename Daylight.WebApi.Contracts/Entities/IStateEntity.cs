@@ -10,6 +10,6 @@ namespace Daylight.WebApi.Contracts.Entities
         /// <summary>
         /// Gets the entity state of this entity.
         /// </summary>
-        EntityState State { get; }
+        EntityState State { get; set; }
     }
 }

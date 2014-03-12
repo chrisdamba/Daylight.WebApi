@@ -39,6 +39,10 @@
     <Reference Include="EntityFramework">
       <HintPath>..\packages\EntityFramework.5.0.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Practices.Unity, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Unity.3.0.1304.1\lib\Net45\Microsoft.Practices.Unity.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.4.5.6\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -61,9 +65,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Contracts\Entities\Events\UserAuthenticatedEventArgs.cs" />
+    <Compile Include="Contracts\Entities\Events\UserCreatedEventArguments.cs" />
+    <Compile Include="Contracts\Entities\Events\UserEventArgs.cs" />
+    <Compile Include="Contracts\Entities\Events\UserPasswordChangedEventArgs.cs" />
+    <Compile Include="Contracts\Entities\Events\UserUpdatingEventArgs.cs" />
     <Compile Include="Contracts\IInternalPatientService.cs" />
+    <Compile Include="Contracts\ILoginService.cs" />
+    <Compile Include="Contracts\ISecurityFactory.cs" />
+    <Compile Include="Contracts\LogInResultCode.cs" />
+    <Compile Include="Contracts\Providers\IAuthenticationProvider.cs" />
     <Compile Include="Core\Attributes\BackboneAttribute.cs" />
+    <Compile Include="Core\Attributes\CustomAuthorizeAttribute.cs" />
     <Compile Include="Core\Exceptions\UnavailableItemException.cs" />
+    <Compile Include="Core\IoC\Injector.cs" />
+    <Compile Include="Core\IoC\InjectorDependencyResolver.cs" />
+    <Compile Include="Core\IoC\IResolver.cs" />
+    <Compile Include="Core\IoC\UnityResolver.cs" />
     <Compile Include="Core\Linq\Lambda.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Repositories\Data\DataContext.cs" />
@@ -81,10 +99,16 @@
     </Compile>
     <Compile Include="Repositories\Data\RepositoryBase.cs" />
     <Compile Include="Repositories\PatientRepository.cs" />
+    <Compile Include="Security\Crypto.cs" />
+    <Compile Include="Security\CustomPrincipal.cs" />
+    <Compile Include="Security\Factories\DataContextSecurityFactory.cs" />
+    <Compile Include="Security\Factories\SecurityFactory.cs" />
+    <Compile Include="Services\LoginService.cs" />
     <Compile Include="Services\PatientService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Core\Caching\" />
+    <Folder Include="Providers\" />
     <Folder Include="Services\Cache\" />
   </ItemGroup>
   <ItemGroup>

@@ -35,5 +35,7 @@ namespace Daylight.WebApi.Repositories.Data
         public DbSet<Patient> Patients { get; set; }
         public DbSet<Condition> Conditions { get; set; }
         public DbSet<Medication> Medications { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<User> Users { get; set; }
     }
 }

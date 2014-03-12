@@ -19,6 +19,7 @@ namespace Daylight.WebApi.Mvc
 
             // register dependency resolver for WebAPI RC
             GlobalConfiguration.Configuration.DependencyResolver = new Unity.WebApi.UnityDependencyResolver(container);
+           
         }
 
         private static IUnityContainer BuildUnityContainer()
