@@ -5,7 +5,7 @@ using Daylight.WebApi.Core.IoC;
 
 namespace Daylight.WebApi.Repositories.Data
 {
-    public class DataContextInitializer : DropCreateDatabaseAlways<DataContext>
+    public class DataContextInitializer
     {
         private readonly ISecurityFactory securityFactory;
 
@@ -26,21 +26,12 @@ namespace Daylight.WebApi.Repositories.Data
             this.securityFactory = securityFactory;
         }
         
-        protected override void Seed(DataContext context)
-        {
-            var userName1 = securityFactory.CreateUser("chridam", "123456", "chridam@gmail.com");
-            securityFactory.CreateMembership(userName1, "Admin");
-
-            var userName2 = securityFactory.CreateUser("ian.muringai", "123456", "imuringai@gmail.com");
-            securityFactory.CreateMembership(userName2, "Admin");
-        }
-
         public void InitializeUsers()
         {
-            var userName1 = securityFactory.CreateUser("chridam", "123456", "chridam@gmail.com");
+            var userName1 = securityFactory.CreateUser("chridam", "123456", "chridam@gmail.com", "Christopher", "Dambamuromo");
             securityFactory.CreateMembership(userName1, "Admin");
 
-            var userName2 = securityFactory.CreateUser("ian.muringai", "123456", "imuringai@gmail.com");
+            var userName2 = securityFactory.CreateUser("ian.muringai", "123456", "imuringai@gmail.com", "Ian", "Muringai");
             securityFactory.CreateMembership(userName2, "Admin");
         }
 

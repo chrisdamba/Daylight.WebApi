@@ -254,7 +254,6 @@
           <Property Name="Description" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
           <Property Name="RoleName" Type="String" Nullable="false" MaxLength="255" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="Users" Relationship="DaylightModel.FK_User_Role" FromRole="Role" ToRole="User" />
-          <NavigationProperty Name="User" Relationship="DaylightModel.FK_Role_User" FromRole="Role" ToRole="User" />
         </EntityType>
         <EntityType Name="User">
           <Key>
@@ -269,7 +268,6 @@
           <Property Name="DateCreated" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="DateModified" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="IsActive" Type="Boolean" Nullable="false" />
-          <NavigationProperty Name="Role" Relationship="DaylightModel.FK_User_Role" FromRole="User" ToRole="Role" />
           <NavigationProperty Name="Roles" Relationship="DaylightModel.FK_Role_User" FromRole="User" ToRole="Role" />
           <Property Name="IsApproved" Type="Boolean" Nullable="false" />
           <Property Name="PasswordFailuresSinceLastSuccess" Type="Int32" Nullable="false" />

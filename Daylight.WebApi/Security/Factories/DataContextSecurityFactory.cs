@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity.Validation;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -379,7 +380,7 @@ namespace Daylight.WebApi.Security.Factories
             return role;
         }
 
-        public string CreateUser(string userName, string password, string email)
+        public string CreateUser(string userName, string password, string email, string firstName, string lastName)
         {
             using (var context = CreateContext)
             {
@@ -391,6 +392,9 @@ namespace Daylight.WebApi.Security.Factories
                         UserId = Guid.NewGuid(),
                         UserName = userName,
                         Password = Crypto.HashPassword(password),
+                        Email = email,
+                        FirstName = firstName,
+                        LastName = lastName,
                         IsApproved = true,
                         DateCreated = DateTime.UtcNow,
                         LastPasswordChangedDate = DateTime.UtcNow,

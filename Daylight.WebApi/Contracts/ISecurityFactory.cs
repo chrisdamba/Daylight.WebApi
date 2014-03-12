@@ -143,8 +143,10 @@ namespace Daylight.WebApi.Contracts
         /// <param name="userName">Name of the user.</param>
         /// <param name="password">The password.</param>
         /// <param name="email">The email.</param>
+        /// <param name="firstName">The first name.</param>
+        /// <param name="lastName">The last name.</param>
         /// <returns></returns>
-        string CreateUser(string userName, string password, string email);
+        string CreateUser(string userName, string password, string email, string firstName, string lastName);
         
         /// <summary>
         /// Creates the user.
