@@ -161,6 +161,9 @@
     <Compile Include="ControllerExtensions.cs" />
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
+    <Compile Include="Controllers\LoginControllerBase.cs" />
+    <Compile Include="Factories\Home\HomeModel.cs" />
+    <Compile Include="Factories\Home\IViewFactory.cs" />
     <Compile Include="Factories\IItemFactory.cs" />
     <Compile Include="Factories\ItemFactory.cs" />
     <Compile Include="Factories\IViewFactory.cs" />
@@ -306,13 +309,16 @@
     <Content Include="img\avatars\contact-img.png" />
     <Content Include="img\avatars\contact-img2.png" />
     <Content Include="img\avatars\contact-profile.png" />
+    <Content Include="img\avatars\copyright.txt" />
     <Content Include="img\avatars\female.png" />
     <Content Include="img\avatars\male.png" />
     <Content Include="img\avatars\personal-info.png" />
     <Content Include="img\avatars\sunny-big.png" />
     <Content Include="img\avatars\sunny.png" />
+    <Content Include="img\clear.png" />
     <Content Include="img\demo\64x64.png" />
     <Content Include="img\demo\basic.png" />
+    <Content Include="img\demo\copyright.txt" />
     <Content Include="img\demo\demo-smartbig-alert.png" />
     <Content Include="img\demo\demo-smartmedium-alert.png" />
     <Content Include="img\demo\demo-smartsmall-alert.png" />
@@ -327,6 +333,7 @@
     <Content Include="img\demo\s1.jpg" />
     <Content Include="img\demo\s2.jpg" />
     <Content Include="img\demo\s3.jpg" />
+    <Content Include="img\demo\sa-demo.png" />
     <Content Include="img\demo\sample.jpg" />
     <Content Include="img\demo\sidebar.png" />
     <Content Include="img\demo\sidebarhero.png" />
@@ -419,19 +426,29 @@
     <Content Include="img\jqueryui\ui-icons_ffffff_256x240.png" />
     <Content Include="img\loading.gif" />
     <Content Include="img\logo-blacknwhite.png" />
+    <Content Include="img\logo-blue.png" />
     <Content Include="img\logo-o.png" />
+    <Content Include="img\logo-pale.png" />
+    <Content Include="img\logo-white.png" />
     <Content Include="img\logo.png" />
+    <Content Include="img\mappin-default.png" />
     <Content Include="img\mybg.png" />
     <Content Include="img\pattern\divider.jpg" />
+    <Content Include="img\pattern\graphy-xs.png" />
     <Content Include="img\pattern\graphy.png" />
     <Content Include="img\pattern\lightpaperfibers.png" />
     <Content Include="img\pattern\movable.png" />
+    <Content Include="img\pattern\nistri-xs.png" />
     <Content Include="img\pattern\nistri.png" />
     <Content Include="img\pattern\overlay-pattern.png" />
+    <Content Include="img\pattern\paper-xs.png" />
+    <Content Include="img\pattern\paper.png" />
     <Content Include="img\pattern\pattern.png" />
     <Content Include="img\pattern\purty_wood.png" />
     <Content Include="img\pattern\retina_wood.png" />
+    <Content Include="img\pattern\sneaker_mesh_fabric-xs.png" />
     <Content Include="img\pattern\sneaker_mesh_fabric.png" />
+    <Content Include="img\pattern\tileable_wood_texture-xs.png" />
     <Content Include="img\pattern\tileable_wood_texture.png" />
     <Content Include="img\publishing-images\multiple-layout.png" />
     <Content Include="img\publishing-images\screenshot.png" />
@@ -440,8 +457,17 @@
     <Content Include="img\select2-spinner.gif" />
     <Content Include="img\select2.png" />
     <Content Include="img\sort_asc.png" />
+    <Content Include="img\sort_asc_disabled.png" />
     <Content Include="img\sort_both.png" />
     <Content Include="img\sort_desc.png" />
+    <Content Include="img\sort_desc_disabled.png" />
+    <Content Include="img\splash\ipad-landscape.png" />
+    <Content Include="img\splash\ipad-portrait.png" />
+    <Content Include="img\splash\iphone.png" />
+    <Content Include="img\splash\sptouch-icon-iphone.png" />
+    <Content Include="img\splash\touch-icon-ipad-retina.png" />
+    <Content Include="img\splash\touch-icon-ipad.png" />
+    <Content Include="img\splash\touch-icon-iphone-retina.png" />
     <Content Include="img\superbox\superbox-full-1.jpg" />
     <Content Include="img\superbox\superbox-full-10.jpg" />
     <Content Include="img\superbox\superbox-full-11.jpg" />
@@ -1087,6 +1113,7 @@
     <Content Include="js\plugin\datatables\media\images\psd\printer.psd" />
     <Content Include="js\plugin\datatables\media\js\TableTools.min.js.gz" />
     <Content Include="js\plugin\slickgrid\slick.editors.js--" />
+    <Content Include="img\avatars\index.php" />
     <None Include="Scripts\jquery-1.7.1.intellisense.js" />
     <Content Include="javascripts\app.js" />
     <Content Include="javascripts\vendor.js" />
@@ -1131,7 +1158,6 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Home\Copy of Index.cshtml" />
     <Content Include="sound\bigbox.ogg" />
     <Content Include="sound\messagebox.ogg" />
     <Content Include="sound\smallbox.ogg" />
@@ -1139,10 +1165,10 @@
     <Content Include="Views\Error\HttpError.cshtml" />
     <Content Include="Views\Error\NotFound.cshtml" />
     <Content Include="Views\Error\Validation.cshtml" />
+    <Content Include="Views\Dashboard\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Factories\Login\" />
     <Folder Include="Listeners\" />
   </ItemGroup>
   <ItemGroup>

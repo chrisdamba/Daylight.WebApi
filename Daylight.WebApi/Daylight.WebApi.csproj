@@ -78,6 +78,7 @@
     <Compile Include="Core\Attributes\BackboneAttribute.cs" />
     <Compile Include="Core\Attributes\CustomAuthorizeAttribute.cs" />
     <Compile Include="Core\Exceptions\UnavailableItemException.cs" />
+    <Compile Include="Core\Helper\EnumHelper.cs" />
     <Compile Include="Core\IoC\Injector.cs" />
     <Compile Include="Core\IoC\InjectorDependencyResolver.cs" />
     <Compile Include="Core\IoC\IResolver.cs" />

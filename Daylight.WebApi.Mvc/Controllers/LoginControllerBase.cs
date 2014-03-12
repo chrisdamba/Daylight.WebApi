@@ -5,7 +5,7 @@ using Daylight.WebApi.Core.IoC;
 
 namespace Daylight.WebApi.Mvc.Controllers
 {
-     /// <summary>
+    /// <summary>
     /// The base controller for login functions to promote reuse across sites.
     /// </summary>
     public abstract class LoginControllerBase : Controller
@@ -49,7 +49,7 @@ namespace Daylight.WebApi.Mvc.Controllers
             {
                 return LoginSuccessful();
             }
-            
+
             return Invalid(result);
         }
 
@@ -63,7 +63,6 @@ namespace Daylight.WebApi.Mvc.Controllers
             loginService.Logout();
             Session.Abandon();
 
-            // TODO: Logout to the correct space homepage
             return RedirectToAction("Index");
         }
 
@@ -73,7 +72,7 @@ namespace Daylight.WebApi.Mvc.Controllers
         /// <returns>A JSON result.</returns>
         public JsonResult KeepAlive()
         {
-            return Json(new { success = true }, JsonRequestBehavior.AllowGet);
+            return Json(new {success = true}, JsonRequestBehavior.AllowGet);
         }
 
         #region Protected Methods
@@ -93,7 +92,7 @@ namespace Daylight.WebApi.Mvc.Controllers
 
             // Redirect to source page, or failing that index
             return Request.UrlReferrer != null
-                ? (ActionResult)Redirect(Request.UrlReferrer.ToString())
+                ? (ActionResult) Redirect(Request.UrlReferrer.ToString())
                 : RedirectToAction("Index");
         }
 
@@ -102,7 +101,7 @@ namespace Daylight.WebApi.Mvc.Controllers
         /// </summary>
         /// <returns>The action result.</returns>
         protected abstract ActionResult LoginSuccessful();
-        
+
         /// <summary>
         /// Performs additional validation on the username and password provided, such as that
         /// they contain no invalid characters.
@@ -117,4 +116,5 @@ namespace Daylight.WebApi.Mvc.Controllers
         }
 
         #endregion
+    }
 }
