@@ -3,6 +3,7 @@ using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
 using Castle.Windsor;
+using Daylight.WebApi.Repositories.Data;
 using Thinktecture.IdentityModel.Http.Cors.WebApi;
 
 namespace Daylight.WebApi.Mvc
@@ -24,6 +25,9 @@ namespace Daylight.WebApi.Mvc
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
             Bootstrapper.Initialise();
+
+            var data = new DataContextInitializer();
+            data.InitializeUsers();
         }
 
         private static void RegisterApi()

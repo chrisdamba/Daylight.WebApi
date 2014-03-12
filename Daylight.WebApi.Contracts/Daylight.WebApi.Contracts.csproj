@@ -45,10 +45,7 @@
     <Compile Include="Entities\AuditAction.cs" />
     <Compile Include="Entities\Condition.cs" />
     <Compile Include="Entities\Condition.Local.cs" />
-    <Compile Include="Entities\IRole.cs" />
-    <Compile Include="Entities\ISecurityEntity.cs" />
     <Compile Include="Entities\IStateEntity.cs" />
-    <Compile Include="Entities\IUser.cs" />
     <Compile Include="Entities\Medication.cs" />
     <Compile Include="Entities\Medication.Local.cs" />
     <Compile Include="Entities\Model.cs" />

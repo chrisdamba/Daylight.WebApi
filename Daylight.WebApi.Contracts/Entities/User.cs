@@ -13,7 +13,7 @@ namespace Daylight.WebApi.Contracts.Entities
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
 
-    public partial class User : IUser
+    public partial class User : IStateEntity
     {
         public User()
         {

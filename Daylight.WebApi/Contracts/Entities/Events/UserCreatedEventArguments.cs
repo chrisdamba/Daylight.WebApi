@@ -11,6 +11,6 @@ namespace Daylight.WebApi.Contracts.Entities.Events
         /// Gets or sets the user.
         /// </summary>
         /// <value>The user.</value>
-        public IUser User { get; set; }
+        public User User { get; set; }
     }
 }

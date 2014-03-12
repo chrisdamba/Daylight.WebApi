@@ -9,7 +9,8 @@
         /// Signs the user with the given username in.
         /// </summary>
         /// <param name="userName">The username to log in.</param>
-        void Authenticate(string userName);
+        /// <param name="rememberMe">if set to <c>true</c> [remember me].</param>
+        void Authenticate(string userName, bool rememberMe = false);
 
         /// <summary>
         /// Signs the current user out.

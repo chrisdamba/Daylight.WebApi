@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Web.Mvc;
+using System.Web.Security;
 using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Core.IoC;
 
@@ -39,12 +40,12 @@ namespace Daylight.WebApi.Mvc.Controllers
         /// <param name="password">The password.</param>
         /// <returns>The action result.</returns>
         [HttpPost]
-        public ActionResult Login(string username, string password)
+        public ActionResult Login(string username, string password, bool rememberMe)
         {
             TempData[LOGIN_USERNAME] = (username ?? string.Empty).Trim();
 
             // Attempt to log in and act accordingly
-            var result = loginService.Login(username, password);
+            var result = loginService.Login(username, password, rememberMe);
             if (result == LogInResultCode.None)
             {
                 return LoginSuccessful();

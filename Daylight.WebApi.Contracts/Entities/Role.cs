@@ -13,7 +13,7 @@ namespace Daylight.WebApi.Contracts.Entities
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
 
-    public partial class Role : IRole
+    public partial class Role : IStateEntity
     {
         public Role()
         {

@@ -2,12 +2,22 @@
 using System.Web.Mvc;
 using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Core.Helper;
+using Daylight.WebApi.Core.IoC;
 using Daylight.WebApi.Mvc.Factories.Home;
 
 namespace Daylight.WebApi.Mvc.Controllers
 {
     public class HomeController : LoginControllerBase
     {
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HomeController"/> class.
+        /// </summary>
+        public HomeController()
+            :this(Injector.Get<ILoginService>())
+        {
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="HomeController"/> class.
         /// </summary>

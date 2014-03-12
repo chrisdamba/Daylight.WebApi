@@ -27,5 +27,13 @@
         ///   <c>true</c> if valid; otherwise, <c>false</c>.
         /// </value>
         public bool Valid { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [remember me].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [remember me]; otherwise, <c>false</c>.
+        /// </value>
+        public bool RememberMe { get; set; }
     }
 }

@@ -13,9 +13,10 @@ namespace Daylight.WebApi.Providers
         /// Signs the user with the given username in.
         /// </summary>
         /// <param name="userName">The username to log in.</param>
-        public void Authenticate(string userName)
+        /// <param name="rememberMe">if set to <c>true</c> [remember me].</param>
+        public void Authenticate(string userName, bool rememberMe = false)
         {
-            FormsAuthentication.SetAuthCookie(userName, false);
+            FormsAuthentication.SetAuthCookie(userName, rememberMe);
         }
 
         /// <summary>

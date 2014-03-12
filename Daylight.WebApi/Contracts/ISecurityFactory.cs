@@ -42,47 +42,47 @@ namespace Daylight.WebApi.Contracts
         /// </summary>
         /// <param name="userName">Login name of the user.</param>
         /// <returns></returns>
-        IUser GetUser(string userName);
+        User GetUser(string userName);
 
         /// <summary>
         /// Gets the currently logged in user
         /// </summary>
         /// <returns></returns>
-        IUser GetUser();
+        User GetUser();
 
         /// <summary>
         /// Gets the users.
         /// </summary>
         /// <returns>The list of users</returns>
-        IEnumerable<IUser> GetUsers();
+        IEnumerable<User> GetUsers();
 
         /// <summary>
         /// Gets the Role by it's unique Id
         /// </summary>
         /// <param name="roleId">The Role id.</param>
         /// <returns></returns>
-        IRole GetRole(Guid roleId);
+        Role GetRole(Guid roleId);
 
         /// <summary>
         /// Gets the Role by it's unique name
         /// </summary>
         /// <param name="name">The Role name.</param>
         /// <returns>The Role name</returns>
-        IRole GetRole(string name);
+        Role GetRole(string name);
 
         /// <summary>
         /// Finds the Roles, optionally filtered by organization and other options.
         /// </summary>
         /// <param name="search">The search.</param>
         /// <returns>A list of matching Roles.</returns>
-        IEnumerable<IRole> FindRoles(string search);
+        IEnumerable<Role> FindRoles(string search);
 
         /// <summary>
         /// Finds the users.
         /// </summary>
         /// <param name="search">The search.</param>
         /// <returns></returns>
-        IEnumerable<IUser> FindUsers(string search);
+        IEnumerable<User> FindUsers(string search);
 
         /// <summary>
         /// Finds the users with an email containing the provided string.
@@ -91,7 +91,7 @@ namespace Daylight.WebApi.Contracts
         /// <returns>
         /// A list of matching users.
         /// </returns>
-        IEnumerable<IUser> FindUsersWithEmailAddress(string search);
+        IEnumerable<User> FindUsersWithEmailAddress(string search);
         
         /// <summary>
         /// Gets the memberships.
@@ -101,26 +101,26 @@ namespace Daylight.WebApi.Contracts
         /// <returns>
         /// A list of Roles the user is a member of, with inherited Roles if <paramref name="withNesting"/> is true
         /// </returns>
-        IEnumerable<IRole> GetMemberships(string userName, bool withNesting = false);
+        IEnumerable<Role> GetMemberships(string userName, bool withNesting = false);
 
         /// <summary>
         /// Gets the memberships for the current user
         /// </summary>
         /// <returns></returns>
-        IEnumerable<IRole> GetMemberships();
+        IEnumerable<Role> GetMemberships();
 
         /// <summary>
         /// Updates the user.
         /// </summary>
         /// <param name="user">The user.</param>
-        void UpdateUser(IUser user);
+        void UpdateUser(User user);
 
         /// <summary>
         /// Updates the username of a user.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="userName">The new username</param>
-        void UpdateUserName(IUser user, string userName);
+        void UpdateUserName(User user, string userName);
 
         /// <summary>
         /// Authenticates the user.
@@ -135,13 +135,22 @@ namespace Daylight.WebApi.Contracts
         /// </summary>
         /// <param name="roleId">The Role id.</param>
         /// <param name="name">The name.</param>
-        IRole CreateRole(Guid roleId, string name);
+        Role CreateRole(Guid roleId, string name);
 
         /// <summary>
         /// Creates the user.
         /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="email">The email.</param>
+        /// <returns></returns>
+        string CreateUser(string userName, string password, string email);
+        
+        /// <summary>
+        /// Creates the user.
+        /// </summary>
         /// <param name="user">The user.</param>
-        string CreateUser(IUser user);
+        string CreateUser(User user);
 
         /// <summary>
         /// Creates the user.
@@ -150,7 +159,7 @@ namespace Daylight.WebApi.Contracts
         /// <param name="password">The password.</param>
         /// <param name="forceReset">If set to <c>true</c> force the create user to reset their password on next login.</param>
         /// <returns></returns>
-        string CreateUser(IUser user, string password, bool forceReset = false);
+        string CreateUser(User user, string password, bool forceReset = false);
 
         /// <summary>
         /// Creates the membership for a member to a Role
@@ -163,7 +172,7 @@ namespace Daylight.WebApi.Contracts
         /// Updates the Role.
         /// </summary>
         /// <param name="role">The Role.</param>
-        void UpdateRole(IRole role);
+        void UpdateRole(Role role);
        
         /// <summary>
         /// Gets the user name of the current user.
@@ -190,7 +199,7 @@ namespace Daylight.WebApi.Contracts
         /// </summary>
         /// <param name="role">The Role.</param>
         /// <param name="user">The member user to remove.</param>
-        void RemoveMembership(IRole role, IUser user);
+        void RemoveMembership(Role role, User user);
 
         /// <summary>
         /// Removes the membership for a member to a Role
@@ -209,24 +218,24 @@ namespace Daylight.WebApi.Contracts
         /// Gets the user by source userSourceId.
         /// </summary>
         /// <param name="userSourceId">The userSourceId.</param>
-        /// <returns>An IUser</returns>
-        IUser GetUserBySourceId(string userSourceId);
+        /// <returns>An User</returns>
+        User GetUserBySourceId(string userSourceId);
 
         /// <summary>
         /// Gets the user by employee id (this is the user's UPN in the SIMS requests).
         /// </summary>
         /// <param name="userEmployeeId">The user employee id.</param>
         /// <returns>
-        /// An IUser
+        /// An User
         /// </returns>
-        IUser GetUserByEmployeeId(string userEmployeeId);
+        User GetUserByEmployeeId(string userEmployeeId);
 
         /// <summary>
         /// Gets the name of the Role by.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
-        IEnumerable<IRole> GetRolesByName(string name);
+        IEnumerable<Role> GetRolesByName(string name);
 
         /// <summary>
         /// Gets the Role members.
@@ -234,7 +243,7 @@ namespace Daylight.WebApi.Contracts
         /// <param name="roleId">The id.</param>
         /// <param name="searchText">The text.</param>
         /// <returns></returns>
-        IEnumerable<IRole> GetRoleMembers(Guid roleId, string searchText);
+        IEnumerable<Role> GetRoleMembers(Guid roleId, string searchText);
 
         /// <summary>
         /// Sets the password.
@@ -242,7 +251,7 @@ namespace Daylight.WebApi.Contracts
         /// <param name="user">The user.</param>
         /// <param name="newPassword">The text.</param>
         /// <param name="forceReset">Whether to force reset on next login</param>
-        void SetPassword(IUser user, string newPassword, bool forceReset = false);
+        void SetPassword(User user, string newPassword, bool forceReset = false);
 
         /// <summary>
         /// Sets the password
@@ -252,14 +261,14 @@ namespace Daylight.WebApi.Contracts
         /// <returns>
         /// The new set password
         /// </returns>
-        string SetPassword(IUser user, bool forceReset = false);
+        string SetPassword(User user, bool forceReset = false);
 
         /// <summary>
         /// Determines whether the user is in a given role
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="roleId">The Role id.</param>
-        bool IsUserMemberOf(IUser user, Guid roleId);
+        bool IsUserMemberOf(User user, Guid roleId);
 
         /// <summary>
         /// Gets the members in Role.
@@ -267,7 +276,7 @@ namespace Daylight.WebApi.Contracts
         /// <param name="role">The Role.</param>
         /// <param name="search">The search.</param>
         /// <returns></returns>
-        IEnumerable<ISecurityEntity> GetMembersInRole(IRole role, string search = "");
+        IEnumerable<User> GetMembersInRole(Role role, string search = "");
 
         /// <summary>
         /// Gets the user only members of a Role
@@ -275,38 +284,32 @@ namespace Daylight.WebApi.Contracts
         /// <param name="roleId">The Role id</param>
         /// <param name="search">The Search</param>
         /// <returns>list of users.</returns>
-        IEnumerable<ISecurityEntity> GetUserMembersInRole(Guid roleId, string search);
+        IEnumerable<User> GetUserMembersInRole(Guid roleId, string search);
 
         /// <summary>
         /// Gets the all the Roles in the system.
         /// </summary>
         /// <returns>A list of all available Roles in the system</returns>
-        Dictionary<Guid, IRole> GetRoles();
+        Dictionary<Guid, Role> GetRoles();
 
         /// <summary>
         /// Deletes the Role.
         /// </summary>
         /// <param name="role">The Role.</param>
-        void DeleteRole(IRole role);
+        void DeleteRole(Role role);
 
         /// <summary>
         /// Deletes the user.
         /// </summary>
         /// <param name="user">The user to be deleted</param>
-        void DeleteUser(IUser user);
+        void DeleteUser(User user);
 
         /// <summary>
-        /// Moved the user to a holding org, so that they can finish proceedings, before being removed completely from system.
+        /// Creates the membdership for a user to a role.
         /// </summary>
-        /// <param name="user">The user.</param>
-        void LeaveUser(IUser user);
-
-        /// <summary>
-        /// Creates the membership for a Role joining another Role
-        /// </summary>
-        /// <param name="containerRole">The Role recieving the new member.</param>
-        /// <param name="member">The member joining the container.</param>
-        void CreateMembership(IRole containerRole, ISecurityEntity member);
+        /// <param name="roleName">Name of the role.</param>
+        /// <param name="userName">Name of the user.</param>
+        void CreateMembership(string roleName, string userName);
 
         /// <summary>
         /// Determines whether this user can manage the given user
@@ -325,13 +328,13 @@ namespace Daylight.WebApi.Contracts
         /// </summary>
         /// <param name="name">The name.</param>
         /// <returns></returns>
-        IEnumerable<IRole> GetRoleByName(string name);
+        IEnumerable<Role> GetRoleByName(string name);
 
         /// <summary>
         /// Get Roles for current user as Owner
         /// </summary>
         /// <returns>List of owned Roles</returns>
-        IEnumerable<IRole> GetRolesByOwner();
+        IEnumerable<Role> GetRolesByOwner();
 
         /// <summary>
         /// Get Roles for current user as Owner
@@ -340,40 +343,40 @@ namespace Daylight.WebApi.Contracts
         /// <returns>
         /// List of owned Roles
         /// </returns>
-        IEnumerable<IRole> GetRolesByOwner(ISecurityEntity user);
+        IEnumerable<Role> GetRolesByOwner(User user);
 
         /// <summary>
         /// Removes all memberships for a user
         /// </summary>
         /// <param name="user">The user.</param>
-        void RemoveAllMemberships(IUser user);
+        void RemoveAllMemberships(User user);
 
         /// <summary>
         /// Determines whether this Role can be managed by the user
         /// </summary>
         /// <param name="role">The Role.</param>
-        bool CanManageRole(IRole role);
+        bool CanManageRole(Role role);
 
         /// <summary>
         /// Gets the user.
         /// </summary>
         /// <param name="id">The guid id.</param>
         /// <returns>The user instance</returns>
-        IUser GetUser(Guid id);
+        User GetUser(Guid id);
 
         /// <summary>
         /// Gets the users with the specified ids.
         /// </summary>
         /// <param name="ids">The ids.</param>
         /// <returns>The users</returns>
-        IEnumerable<IUser> GetUser(Guid[] ids);
+        IEnumerable<User> GetUser(Guid[] ids);
 
         /// <summary>
         /// Gets the principal with claims.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns></returns>
-        Claim[] GetClaims(IUser user);
+        Claim[] GetClaims(User user);
 
         /// <summary>
         /// Gets the principal.
@@ -387,8 +390,8 @@ namespace Daylight.WebApi.Contracts
         /// </summary>
         /// <param name="role">The Role.</param>
         /// <param name="search">The search.</param>
-        /// <returns>A list of IUsers</returns>
-        IEnumerable<IUser> GetRoleUserMembers(IRole role, string search);
+        /// <returns>A list of Users</returns>
+        IEnumerable<User> GetRoleUserMembers(Role role, string search);
 
     }
 }

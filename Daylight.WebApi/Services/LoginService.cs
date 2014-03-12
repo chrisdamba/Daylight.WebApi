@@ -33,7 +33,7 @@ namespace Daylight.WebApi.Services
             this.securityFactory = securityFactory;
         }
         
-        public LogInResultCode Login(string username, string password)
+        public LogInResultCode Login(string username, string password, bool rememberMe=false)
         {
             // Check username
             if (string.IsNullOrEmpty(username))
@@ -55,7 +55,7 @@ namespace Daylight.WebApi.Services
             }
 
             // Authenticate user
-            authenticationProvider.Authenticate(username.Trim());
+            authenticationProvider.Authenticate(username.Trim(), rememberMe);
             return LogInResultCode.None;
         }
 

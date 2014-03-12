@@ -10,11 +10,11 @@ namespace Daylight.WebApi.Contracts.Entities.Events
         /// <summary>
         /// The user before the chanages
         /// </summary>
-        public IUser BeforeUser;
+        public User BeforeUser;
 
         /// <summary>
         /// The user after the changes
         /// </summary>
-        public IUser AfterUser;
+        public User AfterUser;
     }
 }

@@ -118,9 +118,7 @@ namespace Daylight.WebApi.Core.IoC
             container.RegisterType<ISecurityFactory, DataContextSecurityFactory>();
             container.RegisterType<IAuthenticationProvider, FormsAuthenticationProvider>();
             container.RegisterType<ILoginService, LoginService>();
-            container.RegisterType<IUser, User>();
-            container.RegisterType<IRole, Role>();
-
+            
             return container;
         }
     }

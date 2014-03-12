@@ -61,14 +61,14 @@ namespace Daylight.WebApi.Security.Factories
         /// The maximum invalid password attempts
         /// </summary>
         public const int MaxInvalidPasswordAttempts = 5;
-        
+
 
         /// <summary>
         /// Gets the user from it's user name
         /// </summary>
         /// <param name="userName">Login name of the user.</param>
         /// <returns></returns>
-        public IUser GetUser(string userName)
+        public User GetUser(string userName)
         {
             using (var context = CreateContext)
             {
@@ -80,7 +80,7 @@ namespace Daylight.WebApi.Security.Factories
         /// Gets the currently logged in user
         /// </summary>
         /// <returns></returns>
-        public IUser GetUser()
+        public User GetUser()
         {
             var currentUserName = SecurityFactory.GetCurrentUserName();
 
@@ -93,7 +93,7 @@ namespace Daylight.WebApi.Security.Factories
         /// <returns>
         /// The list of users
         /// </returns>
-        public IEnumerable<IUser> GetUsers()
+        public IEnumerable<User> GetUsers()
         {
             using (var context = CreateContext)
             {
@@ -106,7 +106,7 @@ namespace Daylight.WebApi.Security.Factories
         /// </summary>
         /// <param name="roleId">The Role id.</param>
         /// <returns></returns>
-        public IRole GetRole(Guid roleId)
+        public Role GetRole(Guid roleId)
         {
             using (var context = CreateContext)
             {
@@ -121,7 +121,7 @@ namespace Daylight.WebApi.Security.Factories
         /// <returns>
         /// The Role name
         /// </returns>
-        public IRole GetRole(string name)
+        public Role GetRole(string name)
         {
             using (var context = CreateContext)
             {
@@ -136,7 +136,7 @@ namespace Daylight.WebApi.Security.Factories
         /// <returns>
         /// A list of matching Roles.
         /// </returns>
-        public IEnumerable<IRole> FindRoles(string search)
+        public IEnumerable<Role> FindRoles(string search)
         {
             using (var context = CreateContext)
             {
@@ -150,7 +150,7 @@ namespace Daylight.WebApi.Security.Factories
         /// </summary>
         /// <param name="search">The search.</param>
         /// <returns></returns>
-        public IEnumerable<IUser> FindUsers(string search)
+        public IEnumerable<User> FindUsers(string search)
         {
             using (var context = CreateContext)
             {
@@ -166,7 +166,7 @@ namespace Daylight.WebApi.Security.Factories
         /// <returns>
         /// A list of matching users.
         /// </returns>
-        public IEnumerable<IUser> FindUsersWithEmailAddress(string search)
+        public IEnumerable<User> FindUsersWithEmailAddress(string search)
         {
             using (var context = CreateContext)
             {
@@ -183,7 +183,7 @@ namespace Daylight.WebApi.Security.Factories
         /// A list of Roles the user is a member of, with inherited Roles if <paramref name="withNesting" /> is true
         /// </returns>
         /// <exception cref="System.NotSupportedException"></exception>
-        public IEnumerable<IRole> GetMemberships(string userName, bool withNesting = false)
+        public IEnumerable<Role> GetMemberships(string userName, bool withNesting = false)
         {
             using (var context = CreateContext)
             {
@@ -200,7 +200,7 @@ namespace Daylight.WebApi.Security.Factories
         /// Gets the memberships for the current user
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<IRole> GetMemberships()
+        public IEnumerable<Role> GetMemberships()
         {
             return SecurityFactory.GetMemberships(SecurityFactory.GetCurrentUserName());
         }
@@ -209,7 +209,7 @@ namespace Daylight.WebApi.Security.Factories
         /// Updates the user.
         /// </summary>
         /// <param name="user">The user.</param>
-        public void UpdateUser(IUser user)
+        public void UpdateUser(User user)
         {
             //get the user from before
             var beforeUser = SecurityFactory.GetUser(user.UserName);
@@ -229,7 +229,7 @@ namespace Daylight.WebApi.Security.Factories
                 }
 
                 // Update the entities in the context
-                var entries = user.Roles.Union(new IStateEntity[] { user }).ToArray();
+                var entries = user.Roles.Union(new IStateEntity[] {user}).ToArray();
 
                 foreach (var entry in entries)
                 {
@@ -248,7 +248,7 @@ namespace Daylight.WebApi.Security.Factories
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="userName">The new username</param>
-        public void UpdateUserName(IUser user, string userName)
+        public void UpdateUserName(User user, string userName)
         {
             if (user == null)
             {
@@ -304,7 +304,7 @@ namespace Daylight.WebApi.Security.Factories
         /// <param name="user">The user.</param>
         /// <param name="password">The password.</param>
         /// <returns></returns>
-        private bool Authenticate(IUser user, string password)
+        private bool Authenticate(User user, string password)
         {
             //check user is set
             if (user == null)
@@ -327,9 +327,10 @@ namespace Daylight.WebApi.Security.Factories
                 {
                     return false;
                 }
-                
+
                 var hashedPassword = user.Password;
-                var verificationSucceeded = (hashedPassword != null && Crypto.VerifyHashedPassword(hashedPassword, password));
+                var verificationSucceeded = (hashedPassword != null &&
+                                             Crypto.VerifyHashedPassword(hashedPassword, password));
                 if (verificationSucceeded)
                 {
                     user.PasswordFailuresSinceLastSuccess = 0;
@@ -365,9 +366,9 @@ namespace Daylight.WebApi.Security.Factories
         /// <param name="roleId">The Role id.</param>
         /// <param name="name">The name.</param>
         /// <returns></returns>
-        public IRole CreateRole(Guid roleId, string name)
+        public Role CreateRole(Guid roleId, string name)
         {
-            var role = new Role {RoleId = roleId, RoleName = name, State = EntityState.Added };
+            var role = new Role {RoleId = roleId, RoleName = name, State = EntityState.Added};
 
             using (var context = CreateContext)
             {
@@ -378,12 +379,44 @@ namespace Daylight.WebApi.Security.Factories
             return role;
         }
 
+        public string CreateUser(string userName, string password, string email)
+        {
+            using (var context = CreateContext)
+            {
+                var userExists = context.Users.Any(x => x.UserName == userName);
+                if (!userExists)
+                {
+                    var user = new User
+                    {
+                        UserId = Guid.NewGuid(),
+                        UserName = userName,
+                        Password = Crypto.HashPassword(password),
+                        IsApproved = true,
+                        DateCreated = DateTime.UtcNow,
+                        LastPasswordChangedDate = DateTime.UtcNow,
+                        PasswordFailuresSinceLastSuccess = 0,
+                        LastLoginDate = DateTime.UtcNow,
+                        LastActivityDate = DateTime.UtcNow,
+                        LastLockoutDate = DateTime.UtcNow,
+                        IsLockedOut = false,
+                        LastPasswordFailureDate = DateTime.UtcNow,
+                        PasswordExpired = false,
+                        State = EntityState.Added
+                    };
+
+                    context.Users.Add(user);
+                    context.SaveChanges();
+                }
+            }
+            return userName;
+        }
+
         /// <summary>
-        /// Creates the user.
+        /// Creates a user.
         /// </summary>
         /// <param name="user">The user.</param>
         /// <returns></returns>
-        public string CreateUser(IUser user)
+        public string CreateUser(User user)
         {
             var password = RandomPassword();
             SecurityFactory.CreateUser(user, password);
@@ -397,7 +430,7 @@ namespace Daylight.WebApi.Security.Factories
         /// <param name="password">The password.</param>
         /// <param name="forceReset">If set to <c>true</c> force the create user to reset their password on next login.</param>
         /// <returns></returns>
-        public string CreateUser(IUser user, string password, bool forceReset = false)
+        public string CreateUser(User user, string password, bool forceReset = false)
         {
             // Small efficiency gain here, if you only force reset when True we save a UpdateUser call by not using the SetPassword overload
             if (forceReset) user.IsActive = false;
@@ -423,7 +456,7 @@ namespace Daylight.WebApi.Security.Factories
         /// <param name="role">The role.</param>
         /// <param name="duplicateCheck">if set to <c>true</c> [duplicate check].</param>
         /// <exception cref="System.ApplicationException">Role already exists.</exception>
-        public void CreateRole(IRole role, bool duplicateCheck = true)
+        public void CreateRole(Role role, bool duplicateCheck = true)
         {
             if (!duplicateCheck) return;
             var existingRoles = SecurityFactory.FindRoles(role.RoleName);
@@ -442,12 +475,12 @@ namespace Daylight.WebApi.Security.Factories
             throw new NotImplementedException();
         }
 
-        public void UpdateRole(IRole role)
+        public void UpdateRole(Role role)
         {
             throw new NotImplementedException();
         }
 
-        public IUser CreateManager(string userName)
+        public User CreateManager(string userName)
         {
             throw new NotImplementedException();
         }
@@ -483,7 +516,7 @@ namespace Daylight.WebApi.Security.Factories
             throw new NotImplementedException();
         }
 
-        public void RemoveMembership(IRole role, IUser user)
+        public void RemoveMembership(Role role, User user)
         {
             throw new NotImplementedException();
         }
@@ -498,22 +531,22 @@ namespace Daylight.WebApi.Security.Factories
             throw new NotImplementedException();
         }
 
-        public IUser GetUserBySourceId(string userSourceId)
+        public User GetUserBySourceId(string userSourceId)
         {
             throw new NotImplementedException();
         }
 
-        public IUser GetUserByEmployeeId(string userEmployeeId)
+        public User GetUserByEmployeeId(string userEmployeeId)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<IRole> GetRolesByName(string name)
+        public IEnumerable<Role> GetRolesByName(string name)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<IRole> GetRoleMembers(Guid roleId, string searchText)
+        public IEnumerable<Role> GetRoleMembers(Guid roleId, string searchText)
         {
             throw new NotImplementedException();
         }
@@ -524,7 +557,7 @@ namespace Daylight.WebApi.Security.Factories
         /// <param name="user">The user.</param>
         /// <param name="newPassword">The text.</param>
         /// <param name="forceReset">Whether to force reset on next login</param>
-        public void SetPassword(IUser user, string newPassword, bool forceReset = false)
+        public void SetPassword(User user, string newPassword, bool forceReset = false)
         {
            user.PasswordExpired = forceReset;
            SetPassword(user, newPassword);
@@ -536,7 +569,7 @@ namespace Daylight.WebApi.Security.Factories
         /// <param name="user">The user.</param>
         /// <param name="password">The password.</param>
         /// <exception cref="System.ApplicationException"></exception>
-        public void SetPassword(IUser user, string password)
+        public void SetPassword(User user, string password)
         {
             try
             {
@@ -558,7 +591,7 @@ namespace Daylight.WebApi.Security.Factories
             }
         }
 
-        public string SetPassword(IUser user, bool forceReset = false)
+        public string SetPassword(User user, bool forceReset = false)
         {
             throw new NotImplementedException();
         }
@@ -569,7 +602,7 @@ namespace Daylight.WebApi.Security.Factories
         /// <param name="user">The user.</param>
         /// <param name="roleId">The Role id.</param>
         /// <returns></returns>
-        public bool IsUserMemberOf(IUser user, Guid roleId)
+        public bool IsUserMemberOf(User user, Guid roleId)
         {
             using (var context = CreateContext)
             {
@@ -578,39 +611,52 @@ namespace Daylight.WebApi.Security.Factories
             }
         }
 
-        public IEnumerable<ISecurityEntity> GetMembersInRole(IRole role, string search = "")
+        public IEnumerable<User> GetMembersInRole(Role role, string search = "")
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<ISecurityEntity> GetUserMembersInRole(Guid roleId, string search)
+        public IEnumerable<User> GetUserMembersInRole(Guid roleId, string search)
         {
             throw new NotImplementedException();
         }
 
-        public Dictionary<Guid, IRole> GetRoles()
+        public Dictionary<Guid, Role> GetRoles()
         {
             throw new NotImplementedException();
         }
 
-        public void DeleteRole(IRole role)
+        public void DeleteRole(Role role)
         {
             throw new NotImplementedException();
         }
 
-        public void DeleteUser(IUser user)
+        public void DeleteUser(User user)
         {
             throw new NotImplementedException();
         }
 
-        public void LeaveUser(IUser user)
+        /// <summary>
+        /// Creates the membership for a user to a role.
+        /// </summary>
+        /// <param name="roleName">Name of the role.</param>
+        /// <param name="userName">Name of the user.</param>
+        public void CreateMembership(string roleName, string userName)
         {
-            throw new NotImplementedException();
-        }
+            using (var context = CreateContext)
+            {
+                var role = context.Roles.SingleOrDefault(r => r.RoleName == roleName) ?? new Role
+                {
+                    RoleId = Guid.NewGuid(),
+                    RoleName = roleName,
+                    State = EntityState.Deleted
+                };
 
-        public void CreateMembership(IRole containerRole, ISecurityEntity member)
-        {
-            throw new NotImplementedException();
+                var user = SecurityFactory.GetUser(userName);
+                if (user != null)
+                    user.Roles.Add(role);
+                context.SaveChanges();
+            }
         }
 
         public bool CanManageUser(string userName)
@@ -623,32 +669,39 @@ namespace Daylight.WebApi.Security.Factories
             throw new NotImplementedException();
         }
 
-        public IEnumerable<IRole> GetRoleByName(string name)
+        public IEnumerable<Role> GetRoleByName(string name)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<IRole> GetRolesByOwner()
+        public IEnumerable<Role> GetRolesByOwner()
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<IRole> GetRolesByOwner(ISecurityEntity user)
+        public IEnumerable<Role> GetRolesByOwner(User user)
         {
             throw new NotImplementedException();
         }
 
-        public void RemoveAllMemberships(IUser user)
+        public void RemoveAllMemberships(User user)
         {
             throw new NotImplementedException();
         }
 
-        public bool CanManageRole(IRole role)
+        public bool CanManageRole(Role role)
         {
             throw new NotImplementedException();
         }
 
-        public IUser GetUser(Guid id)
+        /// <summary>
+        /// Gets the user.
+        /// </summary>
+        /// <param name="id">The guid id.</param>
+        /// <returns>
+        /// The user instance
+        /// </returns>
+        public User GetUser(Guid id)
         {
             using (var context = CreateContext)
             {
@@ -657,12 +710,12 @@ namespace Daylight.WebApi.Security.Factories
             }
         }
 
-        public IEnumerable<IUser> GetUser(Guid[] ids)
+        public IEnumerable<User> GetUser(Guid[] ids)
         {
             throw new NotImplementedException();
         }
 
-        public Claim[] GetClaims(IUser user)
+        public Claim[] GetClaims(User user)
         {
             throw new NotImplementedException();
         }
@@ -672,7 +725,7 @@ namespace Daylight.WebApi.Security.Factories
             throw new NotImplementedException();
         }
 
-        public IEnumerable<IUser> GetRoleUserMembers(IRole role, string search)
+        public IEnumerable<User> GetRoleUserMembers(Role role, string search)
         {
             throw new NotImplementedException();
         }
@@ -682,7 +735,7 @@ namespace Daylight.WebApi.Security.Factories
         /// </summary>
         /// <param name="beforeUser">The before user.</param>
         /// <param name="afterUser">The after user.</param>
-        private void RaisedUserUpdatedEvent(IUser beforeUser, IUser afterUser)
+        private void RaisedUserUpdatedEvent(User beforeUser, User afterUser)
         {
             if (UserUpdated == null) return;
             var e = new UserUpdatingEventArgs {BeforeUser = beforeUser, AfterUser = afterUser};
@@ -694,7 +747,7 @@ namespace Daylight.WebApi.Security.Factories
         /// </summary>
         /// <param name="beforeUser">The before user.</param>
         /// <param name="afterUser">The after user.</param>
-        private void RaisedUserNameUpdatedEvent(IUser beforeUser, IUser afterUser)
+        private void RaisedUserNameUpdatedEvent(User beforeUser, User afterUser)
         {
             if (this.UserNameUpdated == null) return;
             var e = new UserUpdatingEventArgs {BeforeUser = beforeUser, AfterUser = afterUser};
@@ -737,7 +790,7 @@ namespace Daylight.WebApi.Security.Factories
         /// </summary>
         /// <param name="user">The user.</param>
         /// <param name="password">The password.</param>
-        private void RaiseUserPasswordUpdatedEvent(IUser user, string password)
+        private void RaiseUserPasswordUpdatedEvent(User user, string password)
         {
             if (UserPasswordUpdated == null) return;
             var e = new UserPasswordChangedEventArgs(user.UserId, password);
