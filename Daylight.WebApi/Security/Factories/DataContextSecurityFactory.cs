@@ -5,6 +5,9 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
 using System.Text;
+using System.Threading;
+using System.Web;
+using System.Web.Hosting;
 using System.Web.Security;
 using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Contracts.Entities;
@@ -364,9 +367,13 @@ namespace Daylight.WebApi.Security.Factories
         /// <returns></returns>
         public IRole CreateRole(Guid roleId, string name)
         {
-            IRole role = new Role {RoleId = roleId, RoleName = name};
+            var role = new Role {RoleId = roleId, RoleName = name, State = EntityState.Added };
 
-            SecurityFactory.CreateRole(role);
+            using (var context = CreateContext)
+            {
+                context.Roles.Add(role);
+                context.SaveChanges();
+            }
 
             return role;
         }
@@ -383,6 +390,13 @@ namespace Daylight.WebApi.Security.Factories
             return password;
         }
 
+        /// <summary>
+        /// Creates the user.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        /// <param name="forceReset">If set to <c>true</c> force the create user to reset their password on next login.</param>
+        /// <returns></returns>
         public string CreateUser(IUser user, string password, bool forceReset = false)
         {
             // Small efficiency gain here, if you only force reset when True we save a UpdateUser call by not using the SetPassword overload
@@ -401,14 +415,21 @@ namespace Daylight.WebApi.Security.Factories
             }
 
             return password;
-            using (var context = CreateContext)
-            {
-            }
         }
 
-        public void CreateRole(IRole Role, bool duplicateCheck = true)
+        /// <summary>
+        /// Creates the role.
+        /// </summary>
+        /// <param name="role">The role.</param>
+        /// <param name="duplicateCheck">if set to <c>true</c> [duplicate check].</param>
+        /// <exception cref="System.ApplicationException">Role already exists.</exception>
+        public void CreateRole(IRole role, bool duplicateCheck = true)
         {
-            throw new NotImplementedException();
+            if (!duplicateCheck) return;
+            var existingRoles = SecurityFactory.FindRoles(role.RoleName);
+
+            if (existingRoles.Any())
+                throw new ApplicationException("Role already exists.");
         }
 
         public void CreateMembership(Guid roleId, Guid memberRoleId)
@@ -431,9 +452,25 @@ namespace Daylight.WebApi.Security.Factories
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Gets the user name of the current user.
+        /// </summary>
+        /// <returns></returns>
         public string GetCurrentUserName()
         {
-            throw new NotImplementedException();
+            var userName = string.Empty;
+
+            if (HostingEnvironment.IsHosted)
+            {
+                userName = GetUserNameFromThreadIdentity();
+            }
+
+            // Ensure a username is returned
+            if (!string.IsNullOrEmpty(userName)) { return userName; }
+
+            var current = HttpContext.Current;
+
+            return current != null ? EnsureUserName(current.User.Identity.Name) : GetUserNameFromThreadIdentity();
         }
 
         public void RemoveMembership(string roleSourceId, string userSourceId)
@@ -481,13 +518,44 @@ namespace Daylight.WebApi.Security.Factories
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Sets the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="newPassword">The text.</param>
+        /// <param name="forceReset">Whether to force reset on next login</param>
         public void SetPassword(IUser user, string newPassword, bool forceReset = false)
         {
-            SetPassword(user, newPassword);
+           user.PasswordExpired = forceReset;
+           SetPassword(user, newPassword);
+        }
 
-            user.IsActive = !forceReset;
+        /// <summary>
+        /// Sets the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        /// <exception cref="System.ApplicationException"></exception>
+        public void SetPassword(IUser user, string password)
+        {
+            try
+            {
+                var hashedPassword = Crypto.HashPassword(password);
+                if (hashedPassword.Length > 128)
+                {
+                    return;
+                }
 
+                user.Password = hashedPassword;
 
+                SecurityFactory.UpdateUser(user);
+
+                RaiseUserPasswordUpdatedEvent(user, password);
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException(string.Format("An error occured updating the password for user '{0}'", user.UserName), ex);
+            }
         }
 
         public string SetPassword(IUser user, bool forceReset = false)
@@ -495,14 +563,19 @@ namespace Daylight.WebApi.Security.Factories
             throw new NotImplementedException();
         }
 
-        public bool IsUserInRole(Guid roleId)
-        {
-            throw new NotImplementedException();
-        }
-
+        /// <summary>
+        /// Determines whether the user is in a given role
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="roleId">The Role id.</param>
+        /// <returns></returns>
         public bool IsUserMemberOf(IUser user, Guid roleId)
         {
-            throw new NotImplementedException();
+            using (var context = CreateContext)
+            {
+                var q = context.Users.SingleOrDefault(x => x.UserId == user.UserId);
+                return q != null && q.Roles.Any(r => r.RoleId == roleId);
+            }
         }
 
         public IEnumerable<ISecurityEntity> GetMembersInRole(IRole role, string search = "")
@@ -577,7 +650,11 @@ namespace Daylight.WebApi.Security.Factories
 
         public IUser GetUser(Guid id)
         {
-            throw new NotImplementedException();
+            using (var context = CreateContext)
+            {
+                var user =  context.Users.SingleOrDefault(x => x.UserId == id);
+                return user;
+            }
         }
 
         public IEnumerable<IUser> GetUser(Guid[] ids)
@@ -623,6 +700,48 @@ namespace Daylight.WebApi.Security.Factories
             var e = new UserUpdatingEventArgs {BeforeUser = beforeUser, AfterUser = afterUser};
             UserUpdated(this, e);
             UserNameUpdated(this, e); // Allows other classes to know about the change, i.e. Caches
+        }
+
+        /// <summary>
+        /// Gets the user name from thread identity.
+        /// </summary>
+        /// <returns></returns>
+        private static string GetUserNameFromThreadIdentity()
+        {
+            if ((Thread.CurrentPrincipal != null) && (Thread.CurrentPrincipal.Identity != null))
+            {
+                return EnsureUserName(Thread.CurrentPrincipal.Identity.Name);
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Checks if a username contains a domain prefix attached and removes it
+        /// </summary>
+        /// <returns></returns>
+        private static string EnsureUserName(string username)
+        {
+            if (username == null)
+            {
+                return string.Empty;
+            }
+
+            //check if username contains domain name prefix
+            var domainSlashIndex = username.IndexOf(@"\");
+            return domainSlashIndex > 0 ? username.Substring(domainSlashIndex + 1) : username;
+        }
+
+        /// <summary>
+        /// Raises the user password updated event.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        private void RaiseUserPasswordUpdatedEvent(IUser user, string password)
+        {
+            if (UserPasswordUpdated == null) return;
+            var e = new UserPasswordChangedEventArgs(user.UserId, password);
+            UserPasswordUpdated(this, e);
         }
 
         /// <summary>

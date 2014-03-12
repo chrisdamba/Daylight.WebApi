@@ -153,20 +153,6 @@ namespace Daylight.WebApi.Contracts
         string CreateUser(IUser user, string password, bool forceReset = false);
 
         /// <summary>
-        /// Creates the Role.
-        /// </summary>
-        /// <param name="Role">The Role.</param>
-        /// <param name="duplicateCheck">if set to <c>true</c> [duplicate check].</param>
-        void CreateRole(IRole Role, bool duplicateCheck = true);
-
-        /// <summary>
-        /// Creates the membership for a member to a Role
-        /// </summary>
-        /// <param name="roleId">The Role id.</param>
-        /// <param name="memberRoleId">The member Role id.</param>
-        void CreateMembership(Guid roleId, Guid memberRoleId);
-
-        /// <summary>
         /// Creates the membership for a member to a Role
         /// </summary>
         /// <param name="containerRoleId">The Role id.</param>
@@ -179,13 +165,6 @@ namespace Daylight.WebApi.Contracts
         /// <param name="role">The Role.</param>
         void UpdateRole(IRole role);
        
-        /// <summary>
-        /// Create a Manager
-        /// </summary>
-        /// <param name="userName"></param>
-        /// <returns></returns>
-        IUser CreateManager(string userName);
-
         /// <summary>
         /// Gets the user name of the current user.
         /// </summary>
@@ -274,12 +253,6 @@ namespace Daylight.WebApi.Contracts
         /// The new set password
         /// </returns>
         string SetPassword(IUser user, bool forceReset = false);
-
-        /// <summary>
-        /// Determines whether the user is in a given role
-        /// </summary>
-        /// <param name="roleId">The Role id.</param>
-        bool IsUserInRole(Guid roleId);
 
         /// <summary>
         /// Determines whether the user is in a given role

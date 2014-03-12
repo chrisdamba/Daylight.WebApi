@@ -44,7 +44,7 @@ namespace Daylight.WebApi.Core.Attributes
                     if (!Users.Contains(CurrentUser.UserId.ToString()))
                     {
                         filterContext.Result = new RedirectToRouteResult(new
-                     RouteValueDictionary(new { controller = "Error", action = "Access" }));
+                        RouteValueDictionary(new { controller = "Error", action = "Access" }));
 
                         // base.OnAuthorization(filterContext); //returns to login url
                     }

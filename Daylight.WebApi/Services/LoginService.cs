@@ -1,6 +1,7 @@
 ﻿using System.Web.Security;
 using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Contracts.Providers;
+using Daylight.WebApi.Providers;
 
 namespace Daylight.WebApi.Services
 {
@@ -12,9 +13,24 @@ namespace Daylight.WebApi.Services
         private readonly IAuthenticationProvider authenticationProvider;
         private readonly ISecurityFactory securityFactory;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoginService"/> class.
+        /// </summary>
+        /// <param name="securityFactory">The security factory.</param>
+        public LoginService(ISecurityFactory securityFactory)
+            : this(new FormsAuthenticationProvider(), securityFactory)
+        {
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LoginService"/> class.
+        /// </summary>
+        /// <param name="authenticationProvider">The authentication provider.</param>
+        /// <param name="securityFactory">The security factory.</param>
         public LoginService(IAuthenticationProvider authenticationProvider, ISecurityFactory securityFactory)
         {
-                
+            this.authenticationProvider = authenticationProvider;
+            this.securityFactory = securityFactory;
         }
         
         public LogInResultCode Login(string username, string password)
@@ -30,11 +46,25 @@ namespace Daylight.WebApi.Services
             {
                 return LogInResultCode.PasswordRequired;
             }
+
+            // Check authentication
+            var authenticated = securityFactory.AuthenticateUser(username.Trim(), password);
+            if (!authenticated)
+            {
+                return LogInResultCode.InvalidUserName;
+            }
+
+            // Authenticate user
+            authenticationProvider.Authenticate(username.Trim());
+            return LogInResultCode.None;
         }
 
+        /// <summary>
+        /// Logs out the current user, if there is one logged in.
+        /// </summary>
         public void Logout()
         {
-            FormsAuthentication.SignOut();
+            authenticationProvider.SignOut();
         }
     }
 }

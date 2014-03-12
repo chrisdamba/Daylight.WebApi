@@ -45,6 +45,8 @@ namespace Daylight.WebApi.Contracts.Entities
 
         public bool IsLockedOut { get; set; }
 
+        public bool PasswordExpired { get; set; }
+
         public int PasswordFailuresSinceLastSuccess { get; set; }
         
         public Nullable<System.DateTime> LastPasswordFailureDate { get; set; }

@@ -43,15 +43,11 @@ namespace Daylight.WebApi.Security
 
             using (var alg = HashAlgorithm.Create(algorithm))
             {
-                if (alg != null)
-                {
-                    var hashData = alg.ComputeHash(input);
-                    return BinaryToHex(hashData);
-                }
-                else
-                {
-                    throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "not supported hash alg", algorithm));
-                }
+                if (alg == null)
+                    throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
+                        "not supported hash alg", algorithm));
+                var hashData = alg.ComputeHash(input);
+                return BinaryToHex(hashData);
             }
         }
 

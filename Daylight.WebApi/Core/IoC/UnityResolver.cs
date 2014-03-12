@@ -2,6 +2,8 @@
 using System.Threading;
 using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Contracts.Entities;
+using Daylight.WebApi.Contracts.Providers;
+using Daylight.WebApi.Providers;
 using Daylight.WebApi.Repositories;
 using Daylight.WebApi.Repositories.Data;
 using Daylight.WebApi.Security.Factories;
@@ -103,8 +105,6 @@ namespace Daylight.WebApi.Core.IoC
             }
         }
 
-        
-
         /// <summary>
         /// Ensures the container.
         /// </summary>
@@ -116,6 +116,8 @@ namespace Daylight.WebApi.Core.IoC
             container.RegisterType<IPatientRepository, PatientRepository>();
             container.RegisterType<IPatientService, PatientService>();
             container.RegisterType<ISecurityFactory, DataContextSecurityFactory>();
+            container.RegisterType<IAuthenticationProvider, FormsAuthenticationProvider>();
+            container.RegisterType<ILoginService, LoginService>();
             container.RegisterType<IUser, User>();
             container.RegisterType<IRole, Role>();
 

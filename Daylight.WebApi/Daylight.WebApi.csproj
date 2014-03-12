@@ -84,6 +84,7 @@
     <Compile Include="Core\IoC\UnityResolver.cs" />
     <Compile Include="Core\Linq\Lambda.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Providers\FormsAuthenticationProvider.cs" />
     <Compile Include="Repositories\Data\DataContext.cs" />
     <Compile Include="Repositories\Data\DataContextUtility.cs" />
     <Compile Include="Repositories\Data\IDataContext.cs" />
@@ -108,7 +109,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Core\Caching\" />
-    <Folder Include="Providers\" />
     <Folder Include="Services\Cache\" />
   </ItemGroup>
   <ItemGroup>

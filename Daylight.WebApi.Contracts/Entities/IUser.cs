@@ -90,6 +90,14 @@ namespace Daylight.WebApi.Contracts.Entities
         bool IsApproved { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [password expired].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [password expired]; otherwise, <c>false</c>.
+        /// </value>
+        bool PasswordExpired { get; set; }
+
+        /// <summary>
         /// Gets or sets the password failures since last success.
         /// </summary>
         /// <value>
