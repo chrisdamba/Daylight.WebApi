@@ -149,6 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\ConditionController.cs" />
+    <Compile Include="Api\LoginController.cs" />
     <Compile Include="Api\MedicationController.cs" />
     <Compile Include="Api\PatientController.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
@@ -1141,6 +1142,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Factories\Login\" />
     <Folder Include="Listeners\" />
   </ItemGroup>
   <ItemGroup>

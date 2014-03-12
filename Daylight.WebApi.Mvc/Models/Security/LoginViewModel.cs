@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace Daylight.WebApi.Mvc.Models.Security
+﻿namespace Daylight.WebApi.Mvc.Models.Security
 {
     /// <summary>
     /// Describes a View Model for a Login
