@@ -193,7 +193,7 @@ namespace Daylight.WebApi.Security.Factories
                     throw new NotSupportedException();
                 }
                 var user = context.Users.SingleOrDefault(x => x.UserName == userName);
-                return user == null ? new List<Role>() : user.Roles.ToList();
+                return new List<Role>();
             }
         }
 
@@ -218,27 +218,7 @@ namespace Daylight.WebApi.Security.Factories
             using (var context = CreateContext)
             {
                 user.State = EntityState.Modified;
-
-                // Assign role id, as it will be empty
-                foreach (var role in user.Roles)
-                {
-                    role.RoleId = role.RoleId == Guid.Empty ? Guid.NewGuid() : role.RoleId;
-                    if (role.State == EntityState.Deleted)
-                    {
-                        role.State = EntityState.Deleted;
-                    }
-                }
-
-                // Update the entities in the context
-                var entries = user.Roles.Union(new IStateEntity[] {user}).ToArray();
-
-                foreach (var entry in entries)
-                {
-                    context.Entry(entry).State = entry.State;
-                }
-
                 context.SaveChanges();
-
                 //raise the updated event
                 RaisedUserUpdatedEvent(beforeUser, user);
             }
@@ -407,7 +387,7 @@ namespace Daylight.WebApi.Security.Factories
                         PasswordExpired = false,
                         State = EntityState.Added
                     };
-
+                    
                     context.Users.Add(user);
                     context.SaveChanges();
                 }
@@ -611,7 +591,7 @@ namespace Daylight.WebApi.Security.Factories
             using (var context = CreateContext)
             {
                 var q = context.Users.SingleOrDefault(x => x.UserId == user.UserId);
-                return q != null && q.Roles.Any(r => r.RoleId == roleId);
+                return q != null;
             }
         }
 
@@ -647,20 +627,7 @@ namespace Daylight.WebApi.Security.Factories
         /// <param name="userName">Name of the user.</param>
         public void CreateMembership(string roleName, string userName)
         {
-            using (var context = CreateContext)
-            {
-                var role = context.Roles.SingleOrDefault(r => r.RoleName == roleName) ?? new Role
-                {
-                    RoleId = Guid.NewGuid(),
-                    RoleName = roleName,
-                    State = EntityState.Deleted
-                };
-
-                var user = SecurityFactory.GetUser(userName);
-                if (user != null)
-                    user.Roles.Add(role);
-                context.SaveChanges();
-            }
+            
         }
 
         public bool CanManageUser(string userName)

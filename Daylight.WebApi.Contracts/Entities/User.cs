@@ -15,11 +15,6 @@ namespace Daylight.WebApi.Contracts.Entities
 
     public partial class User : IStateEntity
     {
-        public User()
-        {
-            this.Roles = new HashSet<Role>();
-        }
-    
         public System.Guid UserId { get; set; }
         [Required]
         public string UserName { get; set; }
@@ -44,7 +39,5 @@ namespace Daylight.WebApi.Contracts.Entities
         public Nullable<System.DateTime> PasswordVerificationTokenExpirationDate { get; set; }
         public string Comment { get; set; }
         public bool PasswordExpired { get; set; }
-    
-        public virtual ICollection<Role> Roles { get; set; }
     }
 }

@@ -44,15 +44,6 @@
           <Property Name="Email" Type="varchar" MaxLength="100" />
           <Property Name="Address" Type="varchar" MaxLength="500" />
         </EntityType>
-        <EntityType Name="Role">
-          <Key>
-            <PropertyRef Name="RoleId" />
-          </Key>
-          <Property Name="RoleId" Type="uniqueidentifier" Nullable="false" />
-          <Property Name="Description" Type="varchar(max)" />
-          <Property Name="RoleName" Type="varchar" MaxLength="255" Nullable="false" />
-          <Property Name="UserId" Type="uniqueidentifier" Nullable="false" />
-        </EntityType>
         <EntityType Name="User">
           <Key>
             <PropertyRef Name="UserId" />
@@ -63,23 +54,22 @@
           <Property Name="Email" Type="varchar" MaxLength="255" Nullable="false" />
           <Property Name="FirstName" Type="varchar" MaxLength="255" Nullable="false" />
           <Property Name="LastName" Type="varchar" MaxLength="255" Nullable="false" />
-          <Property Name="DateCreated" Type="datetime" Nullable="false" />
-          <Property Name="DateModified" Type="datetime" Nullable="false" />
+          <Property Name="DateCreated" Type="datetime2" Precision="7" Nullable="false" />
+          <Property Name="DateModified" Type="datetime2" Precision="7" Nullable="false" />
           <Property Name="IsActive" Type="bit" Nullable="false" />
           <Property Name="IsApproved" Type="bit" Nullable="false" />
           <Property Name="IsLockedOut" Type="bit" Nullable="false" />
           <Property Name="PasswordExpired" Type="bit" Nullable="false" />
           <Property Name="PasswordFailuresSinceLastSuccess" Type="int" Nullable="false" />
-          <Property Name="LastPasswordFailureDate" Type="datetime" />
-          <Property Name="LastActivityDate" Type="datetime" />
-          <Property Name="LastLockoutDate" Type="datetime" />
-          <Property Name="LastLoginDate" Type="datetime" />
+          <Property Name="LastPasswordFailureDate" Type="datetime2" Precision="7" />
+          <Property Name="LastActivityDate" Type="datetime2" Precision="7" />
+          <Property Name="LastLockoutDate" Type="datetime2" Precision="7" />
+          <Property Name="LastLoginDate" Type="datetime2" Precision="7" />
           <Property Name="ConfirmationToken" Type="varchar(max)" />
-          <Property Name="LastPasswordChangedDate" Type="datetime" />
+          <Property Name="LastPasswordChangedDate" Type="datetime2" Precision="7" />
           <Property Name="PasswordVerificationToken" Type="varchar(max)" />
-          <Property Name="PasswordVerificationTokenExpirationDate" Type="datetime" />
+          <Property Name="PasswordVerificationTokenExpirationDate" Type="datetime2" Precision="7" />
           <Property Name="Comment" Type="varchar(max)" />
-          <Property Name="RoleId" Type="uniqueidentifier" Nullable="false" />
         </EntityType>
         <Association Name="FK_Condition_Patient">
           <End Role="Patient" Type="Self.Patient" Multiplicity="1" />
@@ -105,35 +95,10 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <Association Name="FK_Role_User">
-          <End Role="User" Type="Self.User" Multiplicity="1" />
-          <End Role="Role" Type="Self.Role" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="User">
-              <PropertyRef Name="UserId" />
-            </Principal>
-            <Dependent Role="Role">
-              <PropertyRef Name="UserId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
-        <Association Name="FK_User_Role">
-          <End Role="Role" Type="Self.Role" Multiplicity="1" />
-          <End Role="User" Type="Self.User" Multiplicity="*" />
-          <ReferentialConstraint>
-            <Principal Role="Role">
-              <PropertyRef Name="RoleId" />
-            </Principal>
-            <Dependent Role="User">
-              <PropertyRef Name="RoleId" />
-            </Dependent>
-          </ReferentialConstraint>
-        </Association>
         <EntityContainer Name="DaylightModelStoreContainer">
           <EntitySet Name="Condition" EntityType="Self.Condition" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Medication" EntityType="Self.Medication" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Patient" EntityType="Self.Patient" Schema="dbo" store:Type="Tables" />
-          <EntitySet Name="Role" EntityType="Self.Role" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="User" EntityType="Self.User" Schema="dbo" store:Type="Tables" />
           <AssociationSet Name="FK_Condition_Patient" Association="Self.FK_Condition_Patient">
             <End Role="Patient" EntitySet="Patient" />
@@ -142,14 +107,6 @@
           <AssociationSet Name="FK_Medication_Condition" Association="Self.FK_Medication_Condition">
             <End Role="Condition" EntitySet="Condition" />
             <End Role="Medication" EntitySet="Medication" />
-          </AssociationSet>
-          <AssociationSet Name="FK_Role_User" Association="Self.FK_Role_User">
-            <End Role="User" EntitySet="User" />
-            <End Role="Role" EntitySet="Role" />
-          </AssociationSet>
-          <AssociationSet Name="FK_User_Role" Association="Self.FK_User_Role">
-            <End Role="Role" EntitySet="Role" />
-            <End Role="User" EntitySet="User" />
           </AssociationSet>
         </EntityContainer>
       </Schema></edmx:StorageModels>
@@ -168,17 +125,8 @@
             <End Role="Condition" EntitySet="Conditions" />
             <End Role="Medication" EntitySet="Medications" />
           </AssociationSet>
-          <EntitySet Name="Roles" EntityType="DaylightModel.Role" />
           <EntitySet Name="Users" EntityType="DaylightModel.User" />
-          <AssociationSet Name="FK_User_Role" Association="DaylightModel.FK_User_Role">
-            <End Role="Role" EntitySet="Roles" />
-            <End Role="User" EntitySet="Users" />
-          </AssociationSet>
-          <AssociationSet Name="FK_Role_User" Association="DaylightModel.FK_Role_User">
-            <End Role="User" EntitySet="Users" />
-            <End Role="Role" EntitySet="Roles" />
-          </AssociationSet>
-        </EntityContainer>
+          </EntityContainer>
         <EntityType Name="Patient">
           <Key>
             <PropertyRef Name="PatientId" />
@@ -246,15 +194,6 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
-        <EntityType Name="Role">
-          <Key>
-            <PropertyRef Name="RoleId" />
-          </Key>
-          <Property Name="RoleId" Type="Guid" Nullable="false" />
-          <Property Name="Description" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
-          <Property Name="RoleName" Type="String" Nullable="false" MaxLength="255" FixedLength="false" Unicode="false" />
-          <NavigationProperty Name="Users" Relationship="DaylightModel.FK_User_Role" FromRole="Role" ToRole="User" />
-        </EntityType>
         <EntityType Name="User">
           <Key>
             <PropertyRef Name="UserId" />
@@ -265,32 +204,23 @@
           <Property Name="Email" Type="String" Nullable="false" MaxLength="255" FixedLength="false" Unicode="false" />
           <Property Name="FirstName" Type="String" Nullable="false" MaxLength="255" FixedLength="false" Unicode="false" />
           <Property Name="LastName" Type="String" Nullable="false" MaxLength="255" FixedLength="false" Unicode="false" />
-          <Property Name="DateCreated" Type="DateTime" Nullable="false" Precision="3" />
-          <Property Name="DateModified" Type="DateTime" Nullable="false" Precision="3" />
+          <Property Name="DateCreated" Type="DateTime" Nullable="false" Precision="7" />
+          <Property Name="DateModified" Type="DateTime" Nullable="false" Precision="7" />
           <Property Name="IsActive" Type="Boolean" Nullable="false" />
-          <NavigationProperty Name="Roles" Relationship="DaylightModel.FK_Role_User" FromRole="User" ToRole="Role" />
           <Property Name="IsApproved" Type="Boolean" Nullable="false" />
-          <Property Name="PasswordFailuresSinceLastSuccess" Type="Int32" Nullable="false" />
-          <Property Name="LastPasswordFailureDate" Type="DateTime" Precision="3" />
-          <Property Name="LastActivityDate" Type="DateTime" Precision="3" />
-          <Property Name="LastLockoutDate" Type="DateTime" Precision="3" />
-          <Property Name="LastLoginDate" Type="DateTime" Precision="3" />
-          <Property Name="ConfirmationToken" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
           <Property Name="IsLockedOut" Type="Boolean" Nullable="false" />
-          <Property Name="LastPasswordChangedDate" Type="DateTime" Precision="3" />
-          <Property Name="PasswordVerificationToken" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
-          <Property Name="PasswordVerificationTokenExpirationDate" Type="DateTime" Precision="3" />
-          <Property Name="Comment" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
           <Property Name="PasswordExpired" Type="Boolean" Nullable="false" />
+          <Property Name="PasswordFailuresSinceLastSuccess" Type="Int32" Nullable="false" />
+          <Property Name="LastPasswordFailureDate" Type="DateTime" Precision="7" />
+          <Property Name="LastActivityDate" Type="DateTime" Precision="7" />
+          <Property Name="LastLockoutDate" Type="DateTime" Precision="7" />
+          <Property Name="LastLoginDate" Type="DateTime" Precision="7" />
+          <Property Name="ConfirmationToken" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="LastPasswordChangedDate" Type="DateTime" Precision="7" />
+          <Property Name="PasswordVerificationToken" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="PasswordVerificationTokenExpirationDate" Type="DateTime" Precision="7" />
+          <Property Name="Comment" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
         </EntityType>
-        <Association Name="FK_User_Role">
-          <End Type="DaylightModel.Role" Role="Role" Multiplicity="1" />
-          <End Type="DaylightModel.User" Role="User" Multiplicity="*" />
-        </Association>
-        <Association Name="FK_Role_User">
-          <End Type="DaylightModel.User" Role="User" Multiplicity="1" />
-          <End Type="DaylightModel.Role" Role="Role" Multiplicity="*" />
-        </Association>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -339,30 +269,21 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="Roles">
-            <EntityTypeMapping TypeName="DaylightModel.Role">
-              <MappingFragment StoreEntitySet="Role">
-                <ScalarProperty Name="RoleName" ColumnName="RoleName" />
-                <ScalarProperty Name="Description" ColumnName="Description" />
-                <ScalarProperty Name="RoleId" ColumnName="RoleId" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="Users">
             <EntityTypeMapping TypeName="DaylightModel.User">
               <MappingFragment StoreEntitySet="User">
-                <ScalarProperty Name="PasswordExpired" ColumnName="PasswordExpired" />
                 <ScalarProperty Name="Comment" ColumnName="Comment" />
                 <ScalarProperty Name="PasswordVerificationTokenExpirationDate" ColumnName="PasswordVerificationTokenExpirationDate" />
                 <ScalarProperty Name="PasswordVerificationToken" ColumnName="PasswordVerificationToken" />
                 <ScalarProperty Name="LastPasswordChangedDate" ColumnName="LastPasswordChangedDate" />
-                <ScalarProperty Name="IsLockedOut" ColumnName="IsLockedOut" />
                 <ScalarProperty Name="ConfirmationToken" ColumnName="ConfirmationToken" />
                 <ScalarProperty Name="LastLoginDate" ColumnName="LastLoginDate" />
                 <ScalarProperty Name="LastLockoutDate" ColumnName="LastLockoutDate" />
                 <ScalarProperty Name="LastActivityDate" ColumnName="LastActivityDate" />
                 <ScalarProperty Name="LastPasswordFailureDate" ColumnName="LastPasswordFailureDate" />
                 <ScalarProperty Name="PasswordFailuresSinceLastSuccess" ColumnName="PasswordFailuresSinceLastSuccess" />
+                <ScalarProperty Name="PasswordExpired" ColumnName="PasswordExpired" />
+                <ScalarProperty Name="IsLockedOut" ColumnName="IsLockedOut" />
                 <ScalarProperty Name="IsApproved" ColumnName="IsApproved" />
                 <ScalarProperty Name="IsActive" ColumnName="IsActive" />
                 <ScalarProperty Name="DateModified" ColumnName="DateModified" />
@@ -376,23 +297,7 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <AssociationSetMapping Name="FK_User_Role" TypeName="DaylightModel.FK_User_Role" StoreEntitySet="User">
-            <EndProperty Name="User">
-              <ScalarProperty Name="UserId" ColumnName="UserId" />
-            </EndProperty>
-            <EndProperty Name="Role">
-              <ScalarProperty Name="RoleId" ColumnName="RoleId" />
-            </EndProperty>
-          </AssociationSetMapping>
-          <AssociationSetMapping Name="FK_Role_User" TypeName="DaylightModel.FK_Role_User" StoreEntitySet="Role">
-            <EndProperty Name="Role">
-              <ScalarProperty Name="RoleId" ColumnName="RoleId" />
-            </EndProperty>
-            <EndProperty Name="User">
-              <ScalarProperty Name="UserId" ColumnName="UserId" />
-            </EndProperty>
-          </AssociationSetMapping>
-        </EntityContainerMapping>
+          </EntityContainerMapping>
       </Mapping>
     </edmx:Mappings>
   </edmx:Runtime>
@@ -407,7 +312,7 @@
       <DesignerInfoPropertySet>
         <DesignerProperty Name="ValidateOnBuild" Value="true" />
         <DesignerProperty Name="EnablePluralization" Value="True" />
-        <DesignerProperty Name="IncludeForeignKeysInModel" Value="False" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="True" />
         <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
         <DesignerProperty Name="UseLegacyProvider" Value="True" />
       </DesignerInfoPropertySet>
