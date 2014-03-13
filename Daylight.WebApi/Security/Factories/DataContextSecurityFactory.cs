@@ -335,6 +335,8 @@ namespace Daylight.WebApi.Security.Factories
                 }
                 user.State = EntityState.Modified;
                 context.SaveChanges();
+
+                SetCurrentThreadIdentity(user.UserName);
                 return verificationSucceeded;
             }
 
@@ -732,7 +734,7 @@ namespace Daylight.WebApi.Security.Factories
         /// <returns></returns>
         private static string GetUserNameFromThreadIdentity()
         {
-            if ((Thread.CurrentPrincipal != null) && (Thread.CurrentPrincipal.Identity != null))
+            if ((Thread.CurrentPrincipal != null))
             {
                 return EnsureUserName(Thread.CurrentPrincipal.Identity.Name);
             }
@@ -768,6 +770,15 @@ namespace Daylight.WebApi.Security.Factories
             UserPasswordUpdated(this, e);
         }
 
+
+        private void SetCurrentThreadIdentity(string username)
+        {
+            var identity = new GenericIdentity(username);
+            Thread.CurrentPrincipal = new GenericPrincipal(identity, new string[] { });
+           // HttpContext.Current.User = new ClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name", username) }, "myauthisthebest")));
+            HttpContext.Current.User = Thread.CurrentPrincipal;
+            
+        }
         /// <summary>
         /// Raises the user authenticated event.
         /// </summary>

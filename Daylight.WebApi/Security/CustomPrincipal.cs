@@ -8,6 +8,8 @@ namespace Daylight.WebApi.Security
     {
         public IIdentity Identity { get; private set; }
 
+        public bool IsAuthenticated { get; set; }
+
         public bool IsInRole(string role)
         {
             return Roles.Any(role.Contains);

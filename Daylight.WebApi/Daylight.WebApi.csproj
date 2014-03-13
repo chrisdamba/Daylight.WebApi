@@ -75,8 +75,8 @@
     <Compile Include="Contracts\ISecurityFactory.cs" />
     <Compile Include="Contracts\LogInResultCode.cs" />
     <Compile Include="Contracts\Providers\IAuthenticationProvider.cs" />
+    <Compile Include="Core\Attributes\AuthorizeUserAttribute.cs" />
     <Compile Include="Core\Attributes\BackboneAttribute.cs" />
-    <Compile Include="Core\Attributes\CustomAuthorizeAttribute.cs" />
     <Compile Include="Core\Exceptions\UnavailableItemException.cs" />
     <Compile Include="Core\Helper\EnumHelper.cs" />
     <Compile Include="Core\IoC\Injector.cs" />
