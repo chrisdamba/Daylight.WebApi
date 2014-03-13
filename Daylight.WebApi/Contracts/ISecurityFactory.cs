@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Security.Principal;
+using System.Web.Security;
 using Daylight.WebApi.Contracts.Entities;
 using Daylight.WebApi.Contracts.Entities.Events;
 
@@ -36,6 +37,14 @@ namespace Daylight.WebApi.Contracts
         /// Occurs when a users password is updated.
         /// </summary>
         event EventHandler<UserPasswordChangedEventArgs> UserPasswordUpdated;
+
+        /// <summary>
+        /// Gets or sets the secuity user.
+        /// </summary>
+        /// <value>
+        /// The secuity user.
+        /// </value>
+        MembershipUser SecurityUser { get; set; }
 
         /// <summary>
         /// Gets the user from it's user name

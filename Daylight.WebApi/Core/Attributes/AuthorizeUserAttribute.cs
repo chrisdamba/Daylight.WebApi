@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Security.Principal;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Security;
 using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Core.IoC;
 
@@ -11,7 +13,7 @@ namespace Daylight.WebApi.Core.Attributes
     /// current user is not authorized. 
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class AuthorizeUserAttribute : ActionFilterAttribute
+    public class AuthorizeUserAttribute : AuthorizeAttribute
     {
         private readonly ISecurityFactory securityFactory;
 
@@ -36,16 +38,14 @@ namespace Daylight.WebApi.Core.Attributes
         /// Called by the MVC framework before the action method executes.
         /// </summary>
         /// <param name="filterContext">The filter context.</param>
-        public override void OnActionExecuting(ActionExecutingContext filterContext)
+        public override void OnAuthorization(AuthorizationContext filterContext)
         {
-            var user = securityFactory.GetUser();
+            var authCookie = filterContext.HttpContext.Request.Cookies[FormsAuthentication.FormsCookieName];
+            if (authCookie == null) return;
+            var authTicket = FormsAuthentication.Decrypt(authCookie.Value);
+
+            var user = securityFactory.GetUser(authTicket.Name);
             if (user == null)
-            {
-                throw new UnauthorizedAccessException("Access denied");
-            }
-            //authenticate the user
-            var authenticated = securityFactory.AuthenticateUser(user.UserName, user.Password);
-            if (!authenticated)
             {
                 throw new UnauthorizedAccessException("Access denied");
             }

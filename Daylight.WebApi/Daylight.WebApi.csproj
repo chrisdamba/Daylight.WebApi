@@ -56,8 +56,10 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System.Web.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Web.Mvc, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
+    <Reference Include="System.Web.WebPages, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -102,6 +104,7 @@
     </Compile>
     <Compile Include="Repositories\Data\RepositoryBase.cs" />
     <Compile Include="Repositories\PatientRepository.cs" />
+    <Compile Include="Security\BaseViewPage.cs" />
     <Compile Include="Security\Crypto.cs" />
     <Compile Include="Security\CustomPrincipal.cs" />
     <Compile Include="Security\Factories\DataContextSecurityFactory.cs" />

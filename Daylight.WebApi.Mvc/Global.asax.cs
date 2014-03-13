@@ -1,12 +1,17 @@
 ﻿using System;
+using System.Security.Principal;
+using System.Threading;
 using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+using System.Web.Security;
 using Castle.Windsor;
 using Daylight.WebApi.Core.Exceptions;
 using Daylight.WebApi.Repositories.Data;
+using Daylight.WebApi.Security;
+using Newtonsoft.Json;
 using Thinktecture.IdentityModel.Http.Cors.WebApi;
 
 namespace Daylight.WebApi.Mvc
@@ -84,6 +89,16 @@ namespace Daylight.WebApi.Mvc
             }
         }
 
+        protected void Application_PostAuthenticateRequest(Object sender, EventArgs e)
+        {
+            var authCookie = Request.Cookies[FormsAuthentication.FormsCookieName];
+            if (authCookie == null) return;
+            var authTicket = FormsAuthentication.Decrypt(authCookie.Value);
+            var identity = new GenericIdentity(authTicket.Name);
+            HttpContext.Current.User = new GenericPrincipal(identity, new string[] { }); ;
+            Thread.CurrentPrincipal = HttpContext.Current.User;
+        }
+               
         /// <summary>
         /// Exceptions the tree has.
         /// </summary>

@@ -115,6 +115,7 @@
                         <div class="well no-padding">
                             @using (Html.BeginForm("Login", "Home", FormMethod.Post, new { name = "login-form", id = "login-form", @class = "smart-form client-form" }))
                             {
+                                @Html.AntiForgeryToken()
                                 <header>
                                     Sign In
                                 </header>

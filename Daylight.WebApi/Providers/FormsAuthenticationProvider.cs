@@ -1,5 +1,10 @@
-﻿using System.Web.Security;
+﻿using System;
+using System.Web;
+using System.Web.Security;
+using Daylight.WebApi.Contracts.Entities;
 using Daylight.WebApi.Contracts.Providers;
+using Daylight.WebApi.Security;
+using Newtonsoft.Json;
 
 namespace Daylight.WebApi.Providers
 {
@@ -16,6 +21,25 @@ namespace Daylight.WebApi.Providers
         /// <param name="rememberMe">if set to <c>true</c> [remember me].</param>
         public void Authenticate(string userName, bool rememberMe = false)
         {
+            var serializeModel = new CustomPrincipalSerializeModel
+            {
+                UserName = userName
+            };
+            
+
+            var userData = JsonConvert.SerializeObject(serializeModel);
+            var authTicket = new FormsAuthenticationTicket(
+                1,
+                userName,
+                DateTime.Now,
+                DateTime.Now.AddMinutes(15),
+                false,
+                userData);
+
+            var encTicket = FormsAuthentication.Encrypt(authTicket);
+            var authCookie = new HttpCookie(FormsAuthentication.FormsCookieName, encTicket);
+            
+            HttpContext.Current.Response.Cookies.Add(authCookie);
             FormsAuthentication.SetAuthCookie(userName, rememberMe);
         }
 

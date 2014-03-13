@@ -44,6 +44,15 @@ namespace Daylight.WebApi.Security.Factories
         /// </summary>
         public event EventHandler<UserPasswordChangedEventArgs> UserPasswordUpdated;
 
+
+        /// <summary>
+        /// Gets or sets the secuity user.
+        /// </summary>
+        /// <value>
+        /// The secuity user.
+        /// </value>
+        public MembershipUser SecurityUser { get; set; }
+
         /// <summary>
         /// Holds the cached security factory instance.
         /// </summary>
@@ -489,7 +498,7 @@ namespace Daylight.WebApi.Security.Factories
 
             var current = HttpContext.Current;
 
-            return current != null ? EnsureUserName(current.User.Identity.Name) : GetUserNameFromThreadIdentity();
+            return current != null ? EnsureUserName(current.User.Identity.Name) : SecurityUser.UserName;
         }
 
         public void RemoveMembership(string roleSourceId, string userSourceId)
@@ -629,7 +638,6 @@ namespace Daylight.WebApi.Security.Factories
         /// <param name="userName">Name of the user.</param>
         public void CreateMembership(string roleName, string userName)
         {
-            
         }
 
         public bool CanManageUser(string userName)
@@ -738,7 +746,6 @@ namespace Daylight.WebApi.Security.Factories
             {
                 return EnsureUserName(Thread.CurrentPrincipal.Identity.Name);
             }
-
             return string.Empty;
         }
 
@@ -774,10 +781,8 @@ namespace Daylight.WebApi.Security.Factories
         private void SetCurrentThreadIdentity(string username)
         {
             var identity = new GenericIdentity(username);
-            Thread.CurrentPrincipal = new GenericPrincipal(identity, new string[] { });
-           // HttpContext.Current.User = new ClaimsPrincipal(new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name", username) }, "myauthisthebest")));
-            HttpContext.Current.User = Thread.CurrentPrincipal;
-            
+            HttpContext.Current.User  = new GenericPrincipal(identity, new string[] { });
+            Thread.CurrentPrincipal = HttpContext.Current.User;
         }
         /// <summary>
         /// Raises the user authenticated event.

@@ -1,8 +1,10 @@
-﻿using System.Threading;
+﻿using System.Security.Principal;
+using System.Threading;
 using System.Web.Mvc;
 using System.Web.Security;
 using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Core.IoC;
+using Daylight.WebApi.Security;
 
 namespace Daylight.WebApi.Mvc.Controllers
 {
@@ -15,6 +17,11 @@ namespace Daylight.WebApi.Mvc.Controllers
         public const string LOGIN_USERNAME = "userName";
 
         protected readonly ILoginService loginService;
+
+        protected virtual new CustomPrincipal User
+        {
+            get { return HttpContext.User as CustomPrincipal; }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LoginControllerBase"/> class.
@@ -43,6 +50,7 @@ namespace Daylight.WebApi.Mvc.Controllers
         /// The action result.
         /// </returns>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Login(string username, string password, bool rememberMe = true)
         {
             TempData[LOGIN_USERNAME] = (username ?? string.Empty).Trim();
