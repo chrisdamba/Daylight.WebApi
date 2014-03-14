@@ -56,6 +56,15 @@ namespace Daylight.WebApi.Mvc.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Dashboards this instance.
+        /// </summary>
+        /// <returns></returns>
+        public ActionResult Dashboard()
+        {
+            return View();
+        }
+
         protected override ActionResult LoginSuccessful()
         {
             SaveUserAgentSettings();
@@ -90,7 +99,7 @@ namespace Daylight.WebApi.Mvc.Controllers
                 return Redirect(HttpUtility.UrlDecode(Request.Form["redirectUrl"]));
             }
 
-            return Redirect("/Dashboard/Index");
+            return Redirect("/Dashboard");
         }
     }
 }

@@ -25,7 +25,7 @@ namespace Daylight.WebApi.Mvc.Models
             Dob = patient.DateOfBirth.ToLongDateString();
             DateRegistered = patient.DateBecamePatient.ToString("f");
             RelationshipStatus = patient.RelationshipStatus;
-            Gender = patient.Gender;
+            Gender = (patient.Gender == "F") ? "Female": "Male";
             FirstName = patient.FirstName;
             LastName = patient.LastName;
             Address = patient.Address;
@@ -114,7 +114,7 @@ namespace Daylight.WebApi.Mvc.Models
             var today = DateTime.Today;
             var age = today.Year - dob.Year;
             if (dob > today.AddYears(-age)) age--;
-            return age;
+            return age <= 0 ? 1 : age;
         }
     }
 }

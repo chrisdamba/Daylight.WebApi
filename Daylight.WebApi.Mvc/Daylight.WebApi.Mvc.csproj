@@ -1167,6 +1167,7 @@
     <Content Include="Views\Error\NotFound.cshtml" />
     <Content Include="Views\Error\Validation.cshtml" />
     <Content Include="Views\Dashboard\Index.cshtml" />
+    <Content Include="Views\Home\Dashboard.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

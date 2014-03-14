@@ -777,7 +777,10 @@ namespace Daylight.WebApi.Security.Factories
             UserPasswordUpdated(this, e);
         }
 
-
+        /// <summary>
+        /// Sets the current thread identity.
+        /// </summary>
+        /// <param name="username">The username.</param>
         private void SetCurrentThreadIdentity(string username)
         {
             var identity = new GenericIdentity(username);
