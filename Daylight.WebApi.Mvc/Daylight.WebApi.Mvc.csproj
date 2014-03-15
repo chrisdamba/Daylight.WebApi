@@ -310,8 +310,9 @@
     <Content Include="img\avatars\contact-img.png" />
     <Content Include="img\avatars\contact-img2.png" />
     <Content Include="img\avatars\contact-profile.png" />
-    <Content Include="img\avatars\copyright.txt" />
+    <Content Include="img\avatars\female-big.png" />
     <Content Include="img\avatars\female.png" />
+    <Content Include="img\avatars\male-big.png" />
     <Content Include="img\avatars\male.png" />
     <Content Include="img\avatars\personal-info.png" />
     <Content Include="img\avatars\sunny-big.png" />
@@ -892,6 +893,7 @@
     <Content Include="js\plugin\easy-pie-chart\examples\style.css" />
     <Content Include="js\plugin\easy-pie-chart\jquery.easy-pie-chart.js" />
     <Content Include="js\plugin\easy-pie-chart\jquery.easy-pie-chart.min.js" />
+    <Content Include="js\plugin\flot\jquery.ba-resize.min.js" />
     <Content Include="js\plugin\flot\jquery.flot.cust.js" />
     <Content Include="js\plugin\flot\jquery.flot.fillbetween.js" />
     <Content Include="js\plugin\flot\jquery.flot.fillbetween.min.js" />
@@ -1114,7 +1116,6 @@
     <Content Include="js\plugin\datatables\media\images\psd\printer.psd" />
     <Content Include="js\plugin\datatables\media\js\TableTools.min.js.gz" />
     <Content Include="js\plugin\slickgrid\slick.editors.js--" />
-    <Content Include="img\avatars\index.php" />
     <None Include="Scripts\jquery-1.7.1.intellisense.js" />
     <Content Include="javascripts\app.js" />
     <Content Include="javascripts\vendor.js" />

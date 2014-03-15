@@ -1,6 +1,7 @@
 ﻿using System.Web;
 using System.Web.Mvc;
 using Daylight.WebApi.Contracts;
+using Daylight.WebApi.Core.Attributes;
 using Daylight.WebApi.Core.Helper;
 using Daylight.WebApi.Core.IoC;
 using Daylight.WebApi.Mvc.Factories.Home;
@@ -60,6 +61,7 @@ namespace Daylight.WebApi.Mvc.Controllers
         /// Dashboards this instance.
         /// </summary>
         /// <returns></returns>
+        [AuthorizeUser]
         public ActionResult Dashboard()
         {
             return View();
