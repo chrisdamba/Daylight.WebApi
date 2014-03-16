@@ -8,6 +8,7 @@ using Daylight.WebApi.Mvc.Factories.Home;
 
 namespace Daylight.WebApi.Mvc.Controllers
 {
+    [AuthorizeUser]
     public class HomeController : LoginControllerBase
     {
 

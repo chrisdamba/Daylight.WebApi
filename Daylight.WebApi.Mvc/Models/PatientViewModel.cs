@@ -23,7 +23,7 @@ namespace Daylight.WebApi.Mvc.Models
         {
             Id = patient.PatientId;
             Dob = patient.DateOfBirth.ToLongDateString();
-            DateRegistered = patient.DateBecamePatient.ToString("f");
+            DateRegistered = patient.DateBecamePatient.ToString("dddd, dd MMMM yyyy hh:mm");
             RelationshipStatus = patient.RelationshipStatus;
             Gender = (patient.Gender == "F") ? "Female": "Male";
             FirstName = patient.FirstName;
