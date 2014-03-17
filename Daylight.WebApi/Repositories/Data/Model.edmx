@@ -71,6 +71,21 @@
           <Property Name="PasswordVerificationTokenExpirationDate" Type="datetime2" Precision="7" />
           <Property Name="Comment" Type="varchar(max)" />
         </EntityType>
+        <EntityType Name="Vitals">
+          <Key>
+            <PropertyRef Name="ObservationId" />
+          </Key>
+          <Property Name="ObservationId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="PatientId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="DateRecorded" Type="datetime2" Precision="7" Nullable="false" />
+          <Property Name="Pulse" Type="float" />
+          <Property Name="BloodGlucose" Type="float" />
+          <Property Name="DiastolicBP" Type="smallint" />
+          <Property Name="SystolicBP" Type="smallint" />
+          <Property Name="BodyTemperature" Type="float" />
+          <Property Name="Weight" Type="float" />
+          <Property Name="Height" Type="float" />
+        </EntityType>
         <Association Name="FK_Condition_Patient">
           <End Role="Patient" Type="Self.Patient" Multiplicity="1" />
           <End Role="Condition" Type="Self.Condition" Multiplicity="*" />
@@ -95,11 +110,24 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_Vitals_Patient">
+          <End Role="Patient" Type="Self.Patient" Multiplicity="1" />
+          <End Role="Vitals" Type="Self.Vitals" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Patient">
+              <PropertyRef Name="PatientId" />
+            </Principal>
+            <Dependent Role="Vitals">
+              <PropertyRef Name="PatientId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <EntityContainer Name="DaylightModelStoreContainer">
           <EntitySet Name="Condition" EntityType="Self.Condition" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Medication" EntityType="Self.Medication" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Patient" EntityType="Self.Patient" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="User" EntityType="Self.User" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Vitals" EntityType="Self.Vitals" Schema="dbo" store:Type="Tables" />
           <AssociationSet Name="FK_Condition_Patient" Association="Self.FK_Condition_Patient">
             <End Role="Patient" EntitySet="Patient" />
             <End Role="Condition" EntitySet="Condition" />
@@ -107,6 +135,10 @@
           <AssociationSet Name="FK_Medication_Condition" Association="Self.FK_Medication_Condition">
             <End Role="Condition" EntitySet="Condition" />
             <End Role="Medication" EntitySet="Medication" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Vitals_Patient" Association="Self.FK_Vitals_Patient">
+            <End Role="Patient" EntitySet="Patient" />
+            <End Role="Vitals" EntitySet="Vitals" />
           </AssociationSet>
         </EntityContainer>
       </Schema></edmx:StorageModels>
@@ -126,6 +158,11 @@
             <End Role="Medication" EntitySet="Medications" />
           </AssociationSet>
           <EntitySet Name="Users" EntityType="DaylightModel.User" />
+          <EntitySet Name="Vitals" EntityType="DaylightModel.Vital" />
+          <AssociationSet Name="FK_Vitals_Patient" Association="DaylightModel.FK_Vitals_Patient">
+            <End Role="Patient" EntitySet="Patients" />
+            <End Role="Vital" EntitySet="Vitals" />
+          </AssociationSet>
           </EntityContainer>
         <EntityType Name="Patient">
           <Key>
@@ -143,6 +180,7 @@
           <Property Type="String" Name="Email" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Type="String" Name="Address" MaxLength="500" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="Conditions" Relationship="DaylightModel.FK_Condition_Patient" FromRole="Patient" ToRole="Condition" />
+          <NavigationProperty Name="Vitals" Relationship="DaylightModel.FK_Vitals_Patient" FromRole="Patient" ToRole="Vital" />
         </EntityType>
         <EntityType Name="Condition">
           <Key>
@@ -221,6 +259,34 @@
           <Property Name="PasswordVerificationTokenExpirationDate" Type="DateTime" Precision="7" />
           <Property Name="Comment" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
         </EntityType>
+        <EntityType Name="Vital">
+          <Key>
+            <PropertyRef Name="ObservationId" />
+          </Key>
+          <Property Name="ObservationId" Type="Guid" Nullable="false" />
+          <Property Name="PatientId" Type="Guid" Nullable="false" />
+          <Property Name="DateRecorded" Type="DateTime" Nullable="false" Precision="7" />
+          <Property Name="Pulse" Type="Double" />
+          <Property Name="BloodGlucose" Type="Double" />
+          <Property Name="DiastolicBP" Type="Int16" />
+          <Property Name="SystolicBP" Type="Int16" />
+          <Property Name="BodyTemperature" Type="Double" />
+          <Property Name="Weight" Type="Double" />
+          <Property Name="Height" Type="Double" />
+          <NavigationProperty Name="Patient" Relationship="DaylightModel.FK_Vitals_Patient" FromRole="Vital" ToRole="Patient" />
+        </EntityType>
+        <Association Name="FK_Vitals_Patient">
+          <End Type="DaylightModel.Patient" Role="Patient" Multiplicity="1" />
+          <End Type="DaylightModel.Vital" Role="Vital" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Patient">
+              <PropertyRef Name="PatientId" />
+            </Principal>
+            <Dependent Role="Vital">
+              <PropertyRef Name="PatientId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -294,6 +360,22 @@
                 <ScalarProperty Name="Password" ColumnName="Password" />
                 <ScalarProperty Name="UserName" ColumnName="UserName" />
                 <ScalarProperty Name="UserId" ColumnName="UserId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Vitals">
+            <EntityTypeMapping TypeName="DaylightModel.Vital">
+              <MappingFragment StoreEntitySet="Vitals">
+                <ScalarProperty Name="Height" ColumnName="Height" />
+                <ScalarProperty Name="Weight" ColumnName="Weight" />
+                <ScalarProperty Name="BodyTemperature" ColumnName="BodyTemperature" />
+                <ScalarProperty Name="SystolicBP" ColumnName="SystolicBP" />
+                <ScalarProperty Name="DiastolicBP" ColumnName="DiastolicBP" />
+                <ScalarProperty Name="BloodGlucose" ColumnName="BloodGlucose" />
+                <ScalarProperty Name="Pulse" ColumnName="Pulse" />
+                <ScalarProperty Name="DateRecorded" ColumnName="DateRecorded" />
+                <ScalarProperty Name="PatientId" ColumnName="PatientId" />
+                <ScalarProperty Name="ObservationId" ColumnName="ObservationId" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

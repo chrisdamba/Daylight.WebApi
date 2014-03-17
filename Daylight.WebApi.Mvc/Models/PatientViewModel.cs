@@ -14,6 +14,7 @@ namespace Daylight.WebApi.Mvc.Models
     {
         private int? conditionsCount;
         private ConditionViewModel[] conditions;
+        private VitalsViewModel[] vitals;
         
         public PatientViewModel()
         {
@@ -33,7 +34,15 @@ namespace Daylight.WebApi.Mvc.Models
             Email = patient.Email;
             Age = GetAge(patient.DateOfBirth);
             Conditions = patient.Conditions.Select(x => new ConditionViewModel(x)).ToArray();
+            Vitals = patient.Vitals.Select(x => new VitalsViewModel(x)).ToArray();
         }
+
+        /// <summary>
+        /// Gets or sets the conditions.
+        /// </summary>
+        /// <value>
+        /// The conditions.
+        /// </value>
         [DataMember]
         public ConditionViewModel[] Conditions
         {
@@ -41,6 +50,25 @@ namespace Daylight.WebApi.Mvc.Models
             set { conditions = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the vitals.
+        /// </summary>
+        /// <value>
+        /// The vitals.
+        /// </value>
+        [DataMember]
+        public VitalsViewModel[] Vitals
+        {
+            get { return vitals ?? new VitalsViewModel[0]; }
+            set { vitals = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the conditions count.
+        /// </summary>
+        /// <value>
+        /// The conditions count.
+        /// </value>
         [DataMember]
         public int ConditionsCount
         {
@@ -51,36 +79,102 @@ namespace Daylight.WebApi.Mvc.Models
             }
         }
 
+        /// <summary>
+        /// Gets or sets the patient identifier.
+        /// </summary>
+        /// <value>
+        /// The identifier.
+        /// </value>
         [DataMember]
         public Guid Id { get; set; }
 
+        /// <summary>
+        /// Gets or sets the patient age.
+        /// </summary>
+        /// <value>
+        /// The age.
+        /// </value>
         [DataMember]
         public int Age { get; set; }
 
+        /// <summary>
+        /// Gets or sets the patient gender.
+        /// </summary>
+        /// <value>
+        /// The gender.
+        /// </value>
         [DataMember]
         public string Gender { get; set; }
 
+        /// <summary>
+        /// Gets or sets the relationship status.
+        /// </summary>
+        /// <value>
+        /// The relationship status.
+        /// </value>
         [DataMember]
         public string RelationshipStatus { get; set; }
 
+        /// <summary>
+        /// Gets or sets the patient first name.
+        /// </summary>
+        /// <value>
+        /// The first name.
+        /// </value>
         [DataMember]
         public string FirstName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the patient last name.
+        /// </summary>
+        /// <value>
+        /// The last name.
+        /// </value>
         [DataMember]
         public string LastName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the patient phone.
+        /// </summary>
+        /// <value>
+        /// The phone.
+        /// </value>
         [DataMember]
         public string Phone { get; set; }
 
+        /// <summary>
+        /// Gets or sets the email.
+        /// </summary>
+        /// <value>
+        /// The email.
+        /// </value>
         [DataMember]
         public string Email { get; set; }
 
+        /// <summary>
+        /// Gets or sets the date of birth.
+        /// </summary>
+        /// <value>
+        /// The dob.
+        /// </value>
         [DataMember]
         public string Dob { get; set; }
 
+        /// <summary>
+        /// Gets or sets the address.
+        /// </summary>
+        /// <value>
+        /// The address.
+        /// </value>
         [DataMember]
         public string Address { get; set; }
 
+        /// <summary>
+        /// Gets or sets the date the patient registered.
+        /// </summary>
+        /// <value>
+        /// The date registered.
+        /// </value>
         [DataMember]
         public string DateRegistered { get; set; }
 

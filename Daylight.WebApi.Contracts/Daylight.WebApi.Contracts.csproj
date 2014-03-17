@@ -57,6 +57,8 @@
     <Compile Include="Entities\Role.Local.cs" />
     <Compile Include="Entities\User.cs" />
     <Compile Include="Entities\User.Local.cs" />
+    <Compile Include="Entities\Vital.cs" />
+    <Compile Include="Entities\Vital.Local.cs" />
     <Compile Include="IConditionRepository.cs" />
     <Compile Include="IPatientRepository.cs" />
     <Compile Include="IPatientService.cs" />

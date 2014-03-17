@@ -55,5 +55,13 @@ namespace Daylight.WebApi.Repositories.Data
         {
             get { return base.Roles; }
         }
+
+        /// <summary>
+        /// Gets the vital table.
+        /// </summary>
+        public IDbSet<Vital> Vitals
+        {
+            get { return base.Vitals; }
+        }
     }
 }

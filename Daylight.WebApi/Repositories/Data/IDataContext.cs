@@ -23,6 +23,8 @@ namespace Daylight.WebApi.Repositories.Data
         IDbSet<User> Users { get; }
 
         IDbSet<Role> Roles { get; }
+
+        IDbSet<Vital> Vitals { get; }
         
         DbEntityEntry Entry(object entity);
         
