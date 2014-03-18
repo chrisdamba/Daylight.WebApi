@@ -102,7 +102,7 @@ namespace Daylight.WebApi.Security
             {
                 throw new ArgumentNullException("password");
             }
-
+            
             var hashedPasswordBytes = Convert.FromBase64String(hashedPassword);
 
             // Verify a version 0 (see comment above) password hash.

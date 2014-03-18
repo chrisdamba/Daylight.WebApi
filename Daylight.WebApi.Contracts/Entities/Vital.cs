@@ -24,5 +24,7 @@ namespace Daylight.WebApi.Contracts.Entities
         public Nullable<double> BodyTemperature { get; set; }
         public Nullable<double> Weight { get; set; }
         public Nullable<double> Height { get; set; }
+
+        public virtual Patient Patient { get; set; }
     }
 }
