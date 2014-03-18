@@ -47,6 +47,14 @@ namespace Daylight.WebApi.Contracts
         MembershipUser SecurityUser { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is authenticated.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is authenticated; otherwise, <c>false</c>.
+        /// </value>
+        bool IsAuthenticated { get; set; }
+
+        /// <summary>
         /// Gets the user from it's user name
         /// </summary>
         /// <param name="userName">Login name of the user.</param>

@@ -22,6 +22,30 @@ namespace Daylight.WebApi.Mvc.Factories
             patientService.Delete(patientId);
         }
 
+        public void DeleteVital(Guid observationId, Guid patientId)
+        {
+            var patient = patientService.Get(patientId);
+            if (patient == null)
+            {
+                throw new UnavailableItemException("Patient not found");
+            }
+            var vital = patient.Vitals.SingleOrDefault(x => x.ObservationId == observationId);
+            if (vital == null)
+            {
+                throw new UnavailableItemException("Vital not found");
+            }
+
+            // Delete condition
+            vital.State = EntityState.Deleted;
+            foreach (var v in patient.Vitals.Where(x => x.ObservationId != observationId))
+            {
+                v.State = EntityState.Modified;
+            }
+
+            patientService.Save(patient);
+        }
+
+
         public virtual void Delete(Guid conditionId, Guid patientId)
         {
             var patient = patientService.Get(patientId);
@@ -82,6 +106,38 @@ namespace Daylight.WebApi.Mvc.Factories
 
             patientService.Save(patient);
             return patient;
+        }
+
+        public Vital Save(VitalsViewModel model, Guid patientId)
+        {
+            // Get the patient to update
+            var patient = patientService.Get(patientId);
+
+            if (patient == null)
+            {
+                throw new UnavailableItemException("Patient not found");
+            }
+
+            Vital vital = null;
+
+            if (model.Id == Guid.Empty)
+            {
+                // Create vital
+                vital = model.ToEntity(null);
+                patient.Vitals.Add(vital);
+            }
+            else
+            {
+                vital = patient.Vitals.SingleOrDefault(x => x.ObservationId == model.Id);
+                if (vital == null)
+                {
+                    throw new UnavailableItemException("Vital not found");
+                }
+                vital = model.ToEntity(vital);
+            }
+
+            patientService.Save(patient);
+            return vital;
         }
 
         public virtual Condition Save(ConditionViewModel model, Guid patientId)

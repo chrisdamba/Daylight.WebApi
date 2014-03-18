@@ -152,6 +152,7 @@
     <Compile Include="Api\LoginController.cs" />
     <Compile Include="Api\MedicationController.cs" />
     <Compile Include="Api\PatientController.cs" />
+    <Compile Include="Api\VitalController.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />

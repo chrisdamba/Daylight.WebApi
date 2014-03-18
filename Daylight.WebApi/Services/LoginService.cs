@@ -51,6 +51,7 @@ namespace Daylight.WebApi.Services
             var authenticated = securityFactory.AuthenticateUser(username.Trim(), password);
             if (!authenticated)
             {
+                securityFactory.IsAuthenticated = false;
                 return LogInResultCode.InvalidUserName;
             }
 
@@ -65,6 +66,7 @@ namespace Daylight.WebApi.Services
         public void Logout()
         {
             authenticationProvider.SignOut();
+            securityFactory.IsAuthenticated = false;
         }
     }
 }

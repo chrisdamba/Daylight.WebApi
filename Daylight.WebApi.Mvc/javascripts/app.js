@@ -798,6 +798,66 @@ module.exports = PatientCollection;
 
 });
 
+;require.register("daylight/collections/vital_collection", function(exports, require, module) {
+var VitalCollection, VitalModel,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+VitalModel = require('daylight/models/vital_model');
+
+VitalCollection = (function(_super) {
+  __extends(VitalCollection, _super);
+
+  function VitalCollection() {
+    return VitalCollection.__super__.constructor.apply(this, arguments);
+  }
+
+  VitalCollection.prototype.model = VitalModel;
+
+  VitalCollection.prototype.url = function() {
+    if (this.patient) {
+      return "" + (this.patient.url()) + "/vitals";
+    } else {
+      return '';
+    }
+  };
+
+  VitalCollection.prototype.initialize = function(models, options) {
+    VitalCollection.__super__.initialize.call(this, models, options);
+    this.on('index-up', this.onIndexUp);
+    return this.on('index-down', this.onIndexDown);
+  };
+
+  VitalCollection.prototype.changeIndex = function(model, to) {
+    var from;
+    from = this.models.indexOf(model);
+    this.models.splice(to, 0, this.models.splice(from, 1)[0]);
+    return this.trigger('reorder', {
+      from: {
+        index: from
+      },
+      to: {
+        index: to
+      }
+    });
+  };
+
+  VitalCollection.prototype.onIndexUp = function(model) {
+    return this.changeIndex(model, this.indexOf(model) + 1);
+  };
+
+  VitalCollection.prototype.onIndexDown = function(model) {
+    return this.changeIndex(model, this.indexOf(model) - 1);
+  };
+
+  return VitalCollection;
+
+})(support.Collection);
+
+module.exports = VitalCollection;
+
+});
+
 ;require.register("daylight/config_merger", function(exports, require, module) {
 var ConfigMerger;
 
@@ -1031,6 +1091,7 @@ PatientModel = (function(_super) {
     dateRegistered: void 0,
     conditions: void 0,
     conditionsCount: void 0,
+    vitals: void 0,
     uri: void 0,
     _editMode: false,
     _index: 0,
@@ -1191,6 +1252,63 @@ SearchModel = (function(_super) {
 })(support.Model);
 
 module.exports = SearchModel;
+
+});
+
+;require.register("daylight/models/vital_model", function(exports, require, module) {
+var VitalModel,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+VitalModel = (function(_super) {
+  __extends(VitalModel, _super);
+
+  function VitalModel() {
+    this.urlRoot = __bind(this.urlRoot, this);
+    return VitalModel.__super__.constructor.apply(this, arguments);
+  }
+
+  VitalModel.prototype.defaults = function() {
+    return {
+      dateRecorded: void 0,
+      pulse: void 0,
+      bloodGlucose: void 0,
+      diastolicBp: void 0,
+      systolicBp: void 0,
+      bodyTemperature: void 0,
+      weight: void 0,
+      height: void 0
+    };
+  };
+
+  VitalModel.prototype.patientId = function() {
+    return this.get('patientId');
+  };
+
+  VitalModel.prototype.value = function() {
+    return this.get('id');
+  };
+
+  VitalModel.prototype.initialize = function(options) {
+    return VitalModel.__super__.initialize.call(this, options);
+  };
+
+  VitalModel.prototype.urlRoot = function() {
+    return "/API/Patients/" + (this.patientId()) + "/Vitals";
+  };
+
+  VitalModel.prototype.toJSON = function() {
+    var json;
+    json = VitalModel.__super__.toJSON.apply(this, arguments);
+    return json;
+  };
+
+  return VitalModel;
+
+})(support.Model);
+
+module.exports = VitalModel;
 
 });
 

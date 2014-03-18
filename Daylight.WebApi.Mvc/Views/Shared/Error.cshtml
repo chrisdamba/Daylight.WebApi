@@ -66,12 +66,7 @@
             <span id="logo">
                 <img src="@Url.Content("~/img/logo.png")" alt="SmartAdmin">
             </span>
-            <span id="activity" class="activity-dropdown">
-                <i class="fa fa-user"></i>
-                <b class="badge">
-                    21
-                </b>
-            </span>
+            
             <div class="ajax-dropdown">
 
                 <div class="btn-group btn-group-justified" data-toggle="buttons">
@@ -132,74 +127,13 @@
                 </button>
                 <a href="javascript:void(0);" id="cancel-search-js"><i class="fa fa-times"></i></a>
             </form>
-
-            <!-- This right panel will be released in the future version of SmartAdmin
-                <div id="right-panel-overlap-btn" class="btn-header transparent pull-right">
-                <span>
-                    <a href="javascript:void(0);" rel="tooltip" title="Show Right Panel" data-placement="bottom"><i class="fa fa-long-arrow-left"></i></a>
-                </span>
-            </div>
-
-            <ul class="header-dropdown-list hidden-xs">
-                <li>
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                        <img alt="" src="img/flags/us.png">
-                        <span>
-                            US
-                        </span>
-                        <i class="fa fa-angle-down"></i>
-                    </a>
-                    <ul class="dropdown-menu pull-right">
-                        <li class="active"><a href="javascript:void(0);"><img alt="" src="img/flags/us.png"> US</a></li>
-                        <li><a href="javascript:void(0);"><img alt="" src="img/flags/es.png"> Spanish</a></li>
-                        <li><a href="javascript:void(0);"><img alt="" src="img/flags/de.png"> German</a></li>
-                    </ul>
-                </li>
-            </ul>-->
-
-
-
-
         </div>
     </header>
     <aside id="left-panel">
         <div class="login-info">
-            <span>
-                <img src="@Url.Content("~/img/avatars/sunny.png")" alt="me" class="online" />
-                <a href="javascript:void(0);" id="show-shortcut">Ian Muringai <i class="fa fa-angle-down"></i></a>
-            </span>
+            
         </div>
-        <nav>
-            <ul>
-                <li class=""><a href="/" title="Dashboard"><i class="fa fa-lg fa-fw fa-dashboard"></i>  <span class="menu-item-parent">Dashboard</span></a></li>
-                <li><a href="#"><i class="fa fa-lg fa-fw fa-inbox"></i>  <span class="menu-item-parent">Messages</span><span class="badge pull-right inbox-badge">14</span></a></li>
-                <li>
-                    <a href="#view/patients"><i class="fa fa-lg fa-fw fa-group"></i>  <span class="menu-item-parent">My Patients</span></a>
-                    <ul>
-                        <li><a href="#view/patients?filter=adults">Adults (> 18)</a></li>
-                        <li><a href="#view/patients?filter=children">Children (< 18)</a></li>
-                        <li><a href="#view/patients?filter=removed">Removed</a></li>
-                        <li><a href="#view/patients?filter=recent">Recently Added</a></li>
-                    </ul>
-                </li>
-                <li>
-                    <a href="#"><i class="fa fa-lg fa-fw fa-bar-chart-o"></i>  <span class="menu-item-parent">Reports</span></a>
-                    <ul>
-                        <li><a href="#">Patients Chart</a></li>
-                        <li><a href="#">Procedures Charts</a></li>
-                        <li><a href="#">Medications Charts</a></li>
-                    </ul>
-                </li>
-                <li>
-                    <a href="#"><i class="fa fa-lg fa-fw fa-file-text-o"></i>  <span class="menu-item-parent">Consultations</span></a>
-                    <ul>
-                        <li><a href="#">Children</a></li>
-                        <li><a href="#">Adults</a></li>
-                    </ul>
-                </li>
-                <li><a href="#appointments"><i class="fa fa-lg fa-fw fa-calendar"><em>3</em></i>  <span class="menu-item-parent">Appointments</span></a></li>
-            </ul>
-        </nav>
+        
         <span class="minifyme">
             <i class="fa fa-arrow-circle-left hit"></i>
         </span>
@@ -212,7 +146,7 @@
         <div id="ribbon">
 
             <span class="ribbon-button-alignment">
-                <span id="refresh" class="btn btn-ribbon" data-title="refresh" rel="tooltip" data-placement="bottom" data-original-title="<i class='text-warning fa fa-warning'></i> Warning! This will reset all your widget settings." data-html="true"><i class="fa fa-refresh"></i></span>
+                
             </span>
 
             <ol class="breadcrumb">
@@ -223,56 +157,7 @@
         @RenderBody()
     </div>
     <div id="shortcut">
-        <ul>
-            <li>
-                <a href="#ajax/inbox.html" class="jarvismetro-tile big-cubes bg-color-blue">
-                    <span class="iconbox">
-                        <i class="fa fa-envelope fa-4x"></i>
-                        <span>Mail <span class="label pull-right bg-color-darken">14</span></span>
-                    </span>
-                </a>
-            </li>
-            <li>
-                <a href="#ajax/calendar.html" class="jarvismetro-tile big-cubes bg-color-orangeDark">
-                    <span class="iconbox">
-                        <i class="fa fa-calendar fa-4x"></i>
-                        <span>Calendar</span>
-                    </span>
-                </a>
-            </li>
-            <li>
-                <a href="#ajax/gmap-xml.html" class="jarvismetro-tile big-cubes bg-color-purple">
-                    <span class="iconbox">
-                        <i class="fa fa-map-marker fa-4x"></i>
-                        <span>Maps</span>
-                    </span>
-                </a>
-            </li>
-            <li>
-                <a href="#ajax/invoice.html" class="jarvismetro-tile big-cubes bg-color-blueDark">
-                    <span class="iconbox">
-                        <i class="fa fa-book fa-4x"></i>
-                        <span>Invoice <span class="label pull-right bg-color-darken">99</span></span>
-                    </span>
-                </a>
-            </li>
-            <li>
-                <a href="#ajax/gallery.html" class="jarvismetro-tile big-cubes bg-color-greenLight">
-                    <span class="iconbox">
-                        <i class="fa fa-picture-o fa-4x"></i>
-                        <span>Gallery </span>
-                    </span>
-                </a>
-            </li>
-            <li>
-                <a href="javascript:void(0);" class="jarvismetro-tile big-cubes selected bg-color-pinkDark">
-                    <span class="iconbox">
-                        <i class="fa fa-user fa-4x"></i>
-                        <span>My Profile </span>
-                    </span>
-                </a>
-            </li>
-        </ul>
+       
     </div>
     @RenderSection("Javascript", false)
 </body>

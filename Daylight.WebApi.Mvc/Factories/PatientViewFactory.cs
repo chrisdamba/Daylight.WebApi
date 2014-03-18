@@ -59,5 +59,17 @@ namespace Daylight.WebApi.Mvc.Factories
             }
             return medication;
         }
+
+        public VitalsViewModel GetVital(Guid observationId, Guid patientId)
+        {
+            var vital = GetPatient(patientId).Vitals.SingleOrDefault(x => x.Id == observationId);
+
+            if (vital == null)
+            {
+                throw new UnavailableItemException("Vital not found");
+            }
+
+            return vital;
+        }
     }
 }

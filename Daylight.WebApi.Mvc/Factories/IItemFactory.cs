@@ -11,11 +11,15 @@ namespace Daylight.WebApi.Mvc.Factories
     {
         void Delete(Guid patientId);
 
+        void DeleteVital(Guid observationId, Guid patientId);
+
         void Delete(Guid conditionId, Guid patientId);
 
         void Delete(Guid medicationId, Guid conditionId, Guid patientId);
 
         Patient Save(PatientViewModel model);
+
+        Vital Save(VitalsViewModel model, Guid patientId);
 
         Condition Save(ConditionViewModel model, Guid patientId);
 

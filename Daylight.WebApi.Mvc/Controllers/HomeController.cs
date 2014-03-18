@@ -29,7 +29,7 @@ namespace Daylight.WebApi.Mvc.Controllers
         {
         }
 
-        [AllowAnonymous]
+        [Core.Attributes.AllowAnonymous]
         public ActionResult Index(string returnUrl = null, string redirectUrl = null)
         {
             var model = new HomeModel
@@ -69,7 +69,7 @@ namespace Daylight.WebApi.Mvc.Controllers
             return View();
         }
 
-        [AllowAnonymous]
+        [Core.Attributes.AllowAnonymous]
         protected override ActionResult LoginSuccessful()
         {
             SaveUserAgentSettings();

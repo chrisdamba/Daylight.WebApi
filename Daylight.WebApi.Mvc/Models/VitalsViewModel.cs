@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data;
 using System.Runtime.Serialization;
 using Daylight.WebApi.Contracts.Entities;
 
@@ -20,7 +21,7 @@ namespace Daylight.WebApi.Mvc.Models
         /// <param name="vital">The vital.</param>
         public VitalsViewModel(Vital vital)
         {
-            ObservationId = vital.ObservationId;
+            Id = vital.ObservationId;
             PatientId = vital.PatientId;
             DateRecorded = vital.DateRecorded;
             Pulse = vital.Pulse;
@@ -33,13 +34,10 @@ namespace Daylight.WebApi.Mvc.Models
         }
 
         /// <summary>
-        /// Gets or sets the observation identifier.
+        /// Gets or sets the patient condition id.
         /// </summary>
-        /// <value>
-        /// The observation identifier.
-        /// </value>
         [DataMember]
-        public Guid ObservationId { get; set; }
+        public Guid Id { get; set; }
 
         /// <summary>
         /// Gets or sets the patient identifier.
@@ -121,5 +119,35 @@ namespace Daylight.WebApi.Mvc.Models
         /// </value>
         [DataMember]
         public double? Height { get; set; }
+
+        /// <summary>
+        /// Maps a vital view model object to entity.
+        /// </summary>
+        /// <param name="vital">The vital.</param>
+        /// <returns></returns>
+        public Vital ToEntity(Vital vital)
+        {
+            if (vital == null)
+            {
+                vital = new Vital { State = EntityState.Added, DateRecorded = DateTime.Now };
+            }
+            else
+            {
+                vital.State = EntityState.Modified;
+                vital.DateRecorded = DateRecorded;
+            }
+
+            // Populate properties
+            vital.BloodGlucose = BloodGlucose;
+            vital.BodyTemperature = BodyTemperature;
+            vital.DiastolicBP = DiastolicBp;
+            vital.Height = Height;
+            vital.PatientId = PatientId;
+            vital.Pulse = Pulse;
+            vital.SystolicBP = SystolicBp;
+            vital.Weight = Weight;
+
+            return vital;
+        }
     }
 }

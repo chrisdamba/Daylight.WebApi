@@ -35,7 +35,7 @@ namespace Daylight.WebApi.Mvc.Api
         /// <param name="conditionId">The condition identifier.</param>
         /// <param name="patientId">The patient identifier.</param>
         /// <returns></returns>
-        [AllowAnonymous]
+        [System.Web.Http.AllowAnonymous]
         public IEnumerable<MedicationViewModel> Get(Guid conditionId, Guid patientId)
         {
             return viewFactory.GetCondition(conditionId, patientId).Medications;
@@ -50,7 +50,7 @@ namespace Daylight.WebApi.Mvc.Api
         /// <returns>
         /// A medication model.
         /// </returns>
-        [AllowAnonymous]
+        [System.Web.Http.AllowAnonymous]
         public MedicationViewModel Get(Guid medicationId, Guid conditionId, Guid patientId)
         {
             return viewFactory.GetMedication(medicationId, conditionId, patientId);

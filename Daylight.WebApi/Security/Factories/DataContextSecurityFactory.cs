@@ -53,6 +53,8 @@ namespace Daylight.WebApi.Security.Factories
         /// </value>
         public MembershipUser SecurityUser { get; set; }
 
+        public bool IsAuthenticated { get; set; }
+
         /// <summary>
         /// Holds the cached security factory instance.
         /// </summary>
@@ -270,6 +272,7 @@ namespace Daylight.WebApi.Security.Factories
         /// <returns></returns>
         public bool AuthenticateUser(string userName, string password)
         {
+            this.IsAuthenticated = false;
             var user = SecurityFactory.GetUser(userName);
             if (user == null)
             {
@@ -283,6 +286,7 @@ namespace Daylight.WebApi.Security.Factories
             if (result)
             {
                 RaiseUserAuthenticatedEvent(user.UserName);
+                this.IsAuthenticated = true;
             }
 
             return result;
