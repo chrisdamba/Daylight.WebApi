@@ -8,7 +8,6 @@ using Daylight.WebApi.Mvc.Factories.Home;
 
 namespace Daylight.WebApi.Mvc.Controllers
 {
-    [AuthorizeUser]
     public class HomeController : LoginControllerBase
     {
 
@@ -57,16 +56,6 @@ namespace Daylight.WebApi.Mvc.Controllers
             }
 
             return View(model);
-        }
-
-        /// <summary>
-        /// Dashboards this instance.
-        /// </summary>
-        /// <returns></returns>
-        [AuthorizeUser]
-        public ActionResult Dashboard()
-        {
-            return View();
         }
 
         [Core.Attributes.AllowAnonymous]

@@ -55,10 +55,10 @@ namespace Daylight.WebApi.Core.Attributes
                 throw new UnauthorizedAccessException("Access denied");
             }
 
-            if (!Authenticate(filterContext))
+            /*if (!Authenticate(filterContext))
             {
                 throw new UnauthorizedAccessException("Access denied");
-            }
+            }*/
         }
 
         private bool Authenticate(AuthorizationContext filterContext)
