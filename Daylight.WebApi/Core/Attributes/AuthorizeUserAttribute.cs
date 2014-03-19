@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.Text;
 using System.Web;
 using System.Web.Http.Controllers;
 using System.Web.Mvc;
@@ -20,8 +22,7 @@ namespace Daylight.WebApi.Core.Attributes
     public class AuthorizeUserAttribute : AuthorizeAttribute
     {
         private readonly ISecurityFactory securityFactory;
-        private enum AuthType { basic, cookie };
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="AuthorizeUserAttribute"/> class.
         /// </summary>
@@ -47,106 +48,34 @@ namespace Daylight.WebApi.Core.Attributes
         {
             var skipAuthorization = filterContext.ActionDescriptor.IsDefined(typeof(AllowAnonymousAttribute), true)
             || filterContext.ActionDescriptor.ControllerDescriptor.IsDefined(typeof(AllowAnonymousAttribute), true);
-            if (!skipAuthorization)
-            {
-                if (filterContext.HttpContext.User.Identity.IsAuthenticated && filterContext.Result is HttpUnauthorizedResult)
-                {
-                    throw new UnauthorizedAccessException("Access denied");
-                }
-
-                string username;
-
-                if (Authenticate(filterContext, out username))
-                {
-                    var user = securityFactory.GetUser(username);
-                    if (user == null)
-                    {
-                        throw new UnauthorizedAccessException("Access denied");
-                    }
-                }
-                else
-                {
-                    throw new UnauthorizedAccessException("Access denied");
-                }
+            if (skipAuthorization) return;
             
-                base.OnAuthorization(filterContext);
-            }
-        }
-
-        private bool GetUserNameAndPassword(AuthorizationContext filterContext, out string username, out string password, out AuthType authType)
-        {
-            authType = AuthType.basic;
-            username = string.Empty;
-            password = string.Empty;
-            var authHeader = filterContext.HttpContext.Request.Headers["Authorization"];
-            if (authHeader == null) return false;
-            char[] delims = { ' ' };
-            var authHeaderTokens = authHeader.Split(new char[] { ' ' });
-            if (authHeaderTokens[0].Contains("Basic"))
-            {
-                var decodedStr = DecodeFrom64(authHeaderTokens[1]);
-                var unpw = decodedStr.Split(new[] { ':' });
-                username = unpw[0];
-                password = unpw[1];
-            }
-            else
-            {
-                if (authHeaderTokens.Length > 1)
-                    username = DecodeFrom64(authHeaderTokens[1]);
-                authType = AuthType.cookie;
-            }
-            return true;
-        }
-
-        private bool Authenticate(AuthorizationContext filterContext, out string username)
-        {
-            bool isAuthenticated = false;
-            var loginService = Injector.Get<ILoginService>();
-            string password;
-            AuthType authenticationType;
-
-            if (GetUserNameAndPassword(filterContext, out username, out password, out authenticationType))
-            {
-
-                if (authenticationType == AuthType.basic)
-                {
-                    if (securityFactory.AuthenticateUser(username, password))
-                    {
-                        isAuthenticated = true;
-                    }
-                    else
-                    {
-                        loginService.Logout();
-                    }
-                }
-                else //authType == cookie
-                {
-                    var authCookie = filterContext.HttpContext.Request.Cookies[FormsAuthentication.FormsCookieName];
-                    if (authCookie == null) return false;
-                    var authTicket = FormsAuthentication.Decrypt(authCookie.Value);
-                    if (securityFactory.IsAuthenticated)
-                        isAuthenticated = true;
-
-                    username = authTicket.Name;
-                }
-            }
-            else
+            if (filterContext.HttpContext.User.Identity.IsAuthenticated && filterContext.Result is HttpUnauthorizedResult)
             {
                 throw new UnauthorizedAccessException("Access denied");
             }
 
-            return isAuthenticated;
+            if (!Authenticate(filterContext))
+            {
+                throw new UnauthorizedAccessException("Access denied");
+            }
         }
 
-        private string DecodeFrom64(string encodedData)
+        private bool Authenticate(AuthorizationContext filterContext)
         {
-
-            byte[] encodedDataAsBytes
-                = System.Convert.FromBase64String(encodedData);
-            string returnValue =
-               System.Text.Encoding.ASCII.GetString(encodedDataAsBytes);
-
-            return returnValue;
+            var user = securityFactory.GetUser();
+            if (user != null)
+            {
+                filterContext.HttpContext.User = new GenericPrincipal(new GenericIdentity(user.UserName), null);
+                return true;
+            }
+            var authCookie = filterContext.HttpContext.Request.Cookies[FormsAuthentication.FormsCookieName];
+            if (authCookie == null) return false;
+            var authTicket = FormsAuthentication.Decrypt(authCookie.Value);
+            filterContext.HttpContext.User = new GenericPrincipal(new GenericIdentity(authTicket.Name), null);
+            filterContext.Result = new HttpStatusCodeResult(401);
+            return true;
         }
+        
     }
 }

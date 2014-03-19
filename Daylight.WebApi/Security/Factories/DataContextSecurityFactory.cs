@@ -330,6 +330,7 @@ namespace Daylight.WebApi.Security.Factories
                     user.PasswordFailuresSinceLastSuccess = 0;
                     user.LastLoginDate = DateTime.UtcNow;
                     user.LastActivityDate = DateTime.UtcNow;
+                    SetCurrentThreadIdentity(user.UserName);
                 }
                 else
                 {
@@ -348,8 +349,7 @@ namespace Daylight.WebApi.Security.Factories
                 }
                 user.State = EntityState.Modified;
                 context.SaveChanges();
-
-                SetCurrentThreadIdentity(user.UserName);
+                
                 return verificationSucceeded;
             }
 
