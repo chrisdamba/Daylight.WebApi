@@ -34,7 +34,7 @@ namespace Daylight.WebApi.Mvc.Models
             Email = patient.Email;
             Age = GetAge(patient.DateOfBirth);
             Conditions = patient.Conditions.Select(x => new ConditionViewModel(x)).ToArray();
-            Vitals = patient.Vitals.Select(x => new VitalsViewModel(x)).ToArray();
+            Vitals = patient.Vitals.Select(x => new VitalsViewModel(x)).OrderByDescending(x => x.DateRecorded).ToArray();
         }
 
         /// <summary>
