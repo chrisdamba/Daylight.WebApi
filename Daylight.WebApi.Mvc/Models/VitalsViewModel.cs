@@ -23,7 +23,7 @@ namespace Daylight.WebApi.Mvc.Models
         {
             Id = vital.ObservationId;
             PatientId = vital.PatientId;
-            DateRecorded = vital.DateRecorded;
+            DateRecorded = vital.DateRecorded.ToString("dd/mm/yyyy hh:mm");
             Pulse = vital.Pulse;
             BloodGlucose = vital.BloodGlucose;
             DiastolicBp = vital.DiastolicBP;
@@ -55,7 +55,7 @@ namespace Daylight.WebApi.Mvc.Models
         /// The date recorded.
         /// </value>
         [DataMember]
-        public DateTime DateRecorded { get; set; }
+        public string DateRecorded { get; set; }
 
         /// <summary>
         /// Gets or sets the pulse rate.
@@ -129,15 +129,15 @@ namespace Daylight.WebApi.Mvc.Models
         {
             if (vital == null)
             {
-                vital = new Vital { State = EntityState.Added, DateRecorded = DateTime.Now };
+                vital = new Vital { State = EntityState.Added };
             }
             else
             {
                 vital.State = EntityState.Modified;
-                vital.DateRecorded = DateRecorded;
             }
 
             // Populate properties
+            vital.DateRecorded = Convert.ToDateTime(DateRecorded);
             vital.BloodGlucose = BloodGlucose;
             vital.BodyTemperature = BodyTemperature;
             vital.DiastolicBP = DiastolicBp;
