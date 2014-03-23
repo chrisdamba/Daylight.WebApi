@@ -31,6 +31,7 @@ namespace Daylight.WebApi.Mvc.Models
             BodyTemperature = vital.BodyTemperature;
             Weight = vital.Weight;
             Height = vital.Height;
+            TimeStamp = GetJavascriptTimestamp(vital.DateRecorded);
         }
 
         /// <summary>
@@ -121,6 +122,15 @@ namespace Daylight.WebApi.Mvc.Models
         public double? Height { get; set; }
 
         /// <summary>
+        /// Gets or sets the UNIX time stamp.
+        /// </summary>
+        /// <value>
+        /// The time stamp.
+        /// </value>
+        [DataMember]
+        public long TimeStamp { get; set; }
+
+        /// <summary>
         /// Maps a vital view model object to entity.
         /// </summary>
         /// <param name="vital">The vital.</param>
@@ -148,6 +158,13 @@ namespace Daylight.WebApi.Mvc.Models
             vital.Weight = Weight;
 
             return vital;
+        }
+
+        private static long GetJavascriptTimestamp(DateTime input)
+        {
+            var span = new TimeSpan(DateTime.Parse("1/1/1970").Ticks);
+            var time = input.Subtract(span);
+            return (long)(time.Ticks / 10000);
         }
     }
 }

@@ -899,12 +899,16 @@
     <Content Include="js\plugin\flot\jquery.flot.cust.js" />
     <Content Include="js\plugin\flot\jquery.flot.fillbetween.js" />
     <Content Include="js\plugin\flot\jquery.flot.fillbetween.min.js" />
+    <Content Include="js\plugin\flot\jquery.flot.js" />
+    <Content Include="js\plugin\flot\jquery.flot.min.js" />
     <Content Include="js\plugin\flot\jquery.flot.orderBar.js" />
     <Content Include="js\plugin\flot\jquery.flot.orderBar.min.js" />
     <Content Include="js\plugin\flot\jquery.flot.pie.js" />
     <Content Include="js\plugin\flot\jquery.flot.pie.min.js" />
     <Content Include="js\plugin\flot\jquery.flot.resize.js" />
     <Content Include="js\plugin\flot\jquery.flot.resize.min.js" />
+    <Content Include="js\plugin\flot\jquery.flot.time.js" />
+    <Content Include="js\plugin\flot\jquery.flot.time.min.js" />
     <Content Include="js\plugin\flot\jquery.flot.tooltip.js" />
     <Content Include="js\plugin\flot\jquery.flot.tooltip.min.js" />
     <Content Include="js\plugin\fuelux\wizard\wizard.js" />

@@ -1278,7 +1278,8 @@ VitalModel = (function(_super) {
       systolicBp: void 0,
       bodyTemperature: void 0,
       weight: void 0,
-      height: void 0
+      height: void 0,
+      timeStamp: void 0
     };
   };
 
@@ -1309,6 +1310,11 @@ VitalModel = (function(_super) {
 })(support.Model);
 
 module.exports = VitalModel;
+
+});
+
+;require.register("daylight/models/vitals_graph_model", function(exports, require, module) {
+
 
 });
 
@@ -1897,6 +1903,187 @@ DashboardView = (function(_super) {
 
 if (typeof module !== "undefined" && module !== null) {
   module.exports = DashboardView;
+}
+
+});
+
+;require.register("daylight/views/graphs/bp_graph_view", function(exports, require, module) {
+var BPGraphView,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+BPGraphView = (function(_super) {
+  __extends(BPGraphView, _super);
+
+  function BPGraphView() {
+    this.renderGraph = __bind(this.renderGraph, this);
+    this.render = __bind(this.render, this);
+    return BPGraphView.__super__.constructor.apply(this, arguments);
+  }
+
+  BPGraphView.prototype.attributes = {
+    "class": 'graph'
+  };
+
+  BPGraphView.prototype.seriesColumn = 'timeStamp';
+
+  BPGraphView.prototype.aColumn = 'diastolicBp';
+
+  BPGraphView.prototype.bColumn = 'systolicBp';
+
+  BPGraphView.prototype.plotOptions = {
+    legend: {
+      show: true,
+      container: '.legend'
+    },
+    series: {
+      lines: {
+        show: true,
+        lineWidth: 1,
+        fill: true,
+        fillColor: {
+          colors: [
+            {
+              opacity: 0.1
+            }, {
+              opacity: 0.15
+            }
+          ]
+        }
+      },
+      points: {
+        show: true
+      },
+      shadowSize: 0
+    },
+    xaxis: {
+      mode: 'time',
+      timeformat: "%d/%m/%y",
+      minTicksSize: [1, "day"]
+    },
+    yaxes: [
+      {
+        min: 20,
+        tickLength: 5
+      }
+    ],
+    grid: {
+      hoverable: true,
+      clickable: true,
+      tickColor: "#efefef",
+      borderWidth: 0,
+      borderColor: "#efefef"
+    },
+    tooltip: true,
+    tooltipOptions: {
+      content: "%s on <b>%x</b> was %y",
+      dateFormat: "%0d/%0m/%y",
+      defaultTheme: false
+    },
+    colors: ["#E24913", "#6595b4"]
+  };
+
+  BPGraphView.prototype.render = function() {
+    this.collection.fetch();
+    this.$el.html("<div class=\"legend\"></div><div class=\"plot\"></div>");
+    return this;
+  };
+
+  BPGraphView.prototype.renderGraph = function(e) {
+    var aC, bC, data, diastolic, i, options, sC, series, systolic;
+    console.log(this.collection.toJSON());
+    data = [
+      {
+        id: "60ad8660-6268-43d0-91a7-f385a2a87338",
+        patientId: "dafd1b33-4eff-4310-80bd-04896f4793d5",
+        dateRecorded: "07/55/2014 09:55",
+        pulse: 85.12,
+        bloodGlucose: 23.69,
+        diastolicBp: 81,
+        systolicBp: 151,
+        bodyTemperature: 38.6,
+        weight: 67,
+        height: 1.56,
+        timeStamp: 1394186157204
+      }, {
+        id: "5cfbb44a-69db-41e9-994d-e9ec658876af",
+        patientId: "dafd1b33-4eff-4310-80bd-04896f4793d5",
+        dateRecorded: "06/40/2014 05:40",
+        pulse: 36.45,
+        bloodGlucose: null,
+        diastolicBp: 135,
+        systolicBp: 94,
+        bodyTemperature: null,
+        weight: 84,
+        height: 1.58,
+        timeStamp: 1394127605810
+      }, {
+        id: "d6cc4832-6ede-495b-aea2-e1fb4b5058a5",
+        patientId: "dafd1b33-4eff-4310-80bd-04896f4793d5",
+        dateRecorded: "05/40/2014 10:40",
+        pulse: 124,
+        bloodGlucose: null,
+        diastolicBp: 88,
+        systolicBp: 135,
+        bodyTemperature: null,
+        weight: 54,
+        height: 1.56,
+        timeStamp: 1394059205810
+      }, {
+        id: "e6265781-cb2c-40c7-8c29-b74741bc8db4",
+        patientId: "dafd1b33-4eff-4310-80bd-04896f4793d5",
+        dateRecorded: "04/28/2014 02:28",
+        pulse: 45.02,
+        bloodGlucose: 63.54,
+        diastolicBp: 99,
+        systolicBp: 131,
+        bodyTemperature: 33.52,
+        weight: 60,
+        height: 1.57,
+        timeStamp: 1393943280000
+      }
+    ];
+    sC = this.seriesColumn;
+    aC = this.aColumn;
+    bC = this.bColumn;
+    series = {};
+    diastolic = [];
+    systolic = [];
+    options = _.clone(this.plotOptions);
+    i = void 0;
+    if (data.length > 0) {
+      i = 0;
+      while (i < data.length) {
+        if (typeof data[i][sC] !== "undefined") {
+          diastolic[i] = [];
+          diastolic[i][0] = data[i][sC];
+          diastolic[i][1] = data[i][aC];
+          systolic[i] = [];
+          systolic[i][0] = data[i][sC];
+          systolic[i][1] = data[i][bC];
+        }
+        i++;
+      }
+      i = 0;
+      series[aC] = {
+        data: _.clone(diastolic),
+        label: 'Diastolic BP'
+      };
+      series[bC] = {
+        data: _.clone(systolic),
+        label: 'Systolic BP'
+      };
+      return $.plot(this.$(".plot"), series, options);
+    }
+  };
+
+  return BPGraphView;
+
+})(support.View);
+
+if (typeof module !== "undefined" && module !== null) {
+  module.exports = BPGraphView;
 }
 
 });
@@ -2994,7 +3181,7 @@ if (typeof module !== "undefined" && module !== null) {
 });
 
 ;require.register("daylight/views/patient_view", function(exports, require, module) {
-var ConditionCollection, ConditionListView, ConditionModel, ConditionsView, PatientEditView, PatientView, PatientViewTemplate, VitalModel, VitalsAddView,
+var BPGraphView, ConditionCollection, ConditionListView, ConditionModel, ConditionsView, PatientEditView, PatientView, PatientViewTemplate, VitalCollection, VitalModel, VitalsAddView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -3015,6 +3202,10 @@ VitalsAddView = require('daylight/views/vitals/vitals_add_view');
 
 VitalModel = require('daylight/models/vital_model');
 
+VitalCollection = require('daylight/collections/vital_collection');
+
+BPGraphView = require('daylight/views/graphs/bp_graph_view');
+
 PatientView = (function(_super) {
   __extends(PatientView, _super);
 
@@ -3029,6 +3220,7 @@ PatientView = (function(_super) {
     this.onSaveStart = __bind(this.onSaveStart, this);
     this.onNavigate = __bind(this.onNavigate, this);
     this.onDestroy = __bind(this.onDestroy, this);
+    this.renderBpGraph = __bind(this.renderBpGraph, this);
     this.renderConditions = __bind(this.renderConditions, this);
     this.render = __bind(this.render, this);
     this.template = __bind(this.template, this);
@@ -3058,6 +3250,7 @@ PatientView = (function(_super) {
   PatientView.prototype.render = function() {
     this.$el.html(this.template(this.model.toJSON()));
     this.renderConditions();
+    this.renderBpGraph();
     this.setupTree();
     return this;
   };
@@ -3071,6 +3264,17 @@ PatientView = (function(_super) {
     });
     this.$('.js-conditions-list').append(this.renderChild(view).el);
     return this;
+  };
+
+  PatientView.prototype.renderBpGraph = function() {
+    var collection, view;
+    collection = new VitalCollection;
+    collection.url = "API/Patients/" + (this.model.get('id')) + "/vitals";
+    view = new BPGraphView({
+      collection: collection
+    });
+    this.$('#bp-stats').append(this.renderChild(view).el);
+    return view.renderGraph();
   };
 
   PatientView.prototype.editMode = function(mode) {
@@ -4907,7 +5111,7 @@ module.exports = function (__obj) {
     
       __out.push(__sanitize(this.address));
     
-      __out.push('</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<p class="text-muted">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-calendar"></i>&nbsp;&nbsp;<span class="txt-color-darken">Next appointment on <a href="javascript:void(0);" rel="tooltip" title="" data-placement="top" data-original-title="Create an Appointment">4:30 PM</a></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<p class="font-md">\n\t\t\t\t\t\t\t\t\t\t\t\t<i>Patient summary...</i>\n\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t<p>\n\n\t\t\t\t\t\t\t\t\t\t\t\tEt harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio\n\t\t\t\t\t\t\t\t\t\t\t\tcumque nihil impedit quo minus id quod maxime placeat facere\n\n\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);" class="btn btn-default btn-xs"><i class="fa fa-envelope-o"></i> Send Message</a>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="col-sm-3">\n\t\t\t\t\t\t\t\t\t\t\t<h1><small>Healthcare team:</small></h1>\n\t\t\t\t\t\t\t\t\t\t\t<ul class="list-inline friends-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/1.png" alt="friend-1">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/2.png" alt="friend-2">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/3.png" alt="friend-3">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/4.png" alt="friend-4">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/5.png" alt="friend-5">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/male.png" alt="friend-6">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\n\t\t\t\t\t\t\t\t\t<hr>\n\n\t\t\t\t\t\t\t\t\t<div class="padding-10">\n\n\t\t\t\t\t\t\t\t\t\t<ul class="nav nav-tabs tabs-pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li class="active">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#a1" data-toggle="tab">Conditions</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#a2" data-toggle="tab">Visits</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="pull-left">\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="margin-top-10 display-inline"><i class="fa fa-plus-circle text-success"></i> Metrics</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\n\t\t\t\t\t\t\t\t\t\t<div class="tab-content padding-top-10">\n\t\t\t\t\t\t\t\t\t\t\t<div class="tab-pane fade in active" id="a1">\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="p-wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body">\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="tree js-conditions-list">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success condition-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t</article>\n\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<div class="tab-pane fade" id="a2">\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="alert alert-info fade in">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<button class="close" data-dismiss="alert">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t×\n\t\t\t\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<i class="fa-fw fa fa-info"></i>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<strong>51 new members </strong>joined today!\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/female.png"><a href="javascript:void(0);">Jenn Wilson</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\ttravis@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Marshall Hitt</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmarshall@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Joe Cadena</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tjoe@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Mike McBride</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmike@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Travis Wilson</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\ttravis@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Marshall Hitt</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmarshall@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="Joe Cadena joe@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Joe Cadena</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tjoe@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Mike McBride</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmike@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Marshall Hitt</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmarshall@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Joe Cadena</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tjoe@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);"> Mike McBride</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmike@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="text-center">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<ul class="pagination pagination-sm">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li class="disabled">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Prev</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li class="active">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">1</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">2</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">3</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">99</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Next</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t</div><!-- end tab -->\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end row -->\n\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="col-sm-12 col-md-12 col-lg-6">\n\n\t\t\t\t\t\t\n\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\n\t\t\t</div>\n\n\n\t</div>\n\n</div>\n\n<!-- end row -->\n\n</section>\n<!-- end widget grid -->\n\n<script type="text/javascript">\n// DO NOT REMOVE : GLOBAL FUNCTIONS!\npageSetUp()\n\n// PAGE RELATED SCRIPTS\n\n</script>\n');
+      __out.push('</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<p class="text-muted">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-calendar"></i>&nbsp;&nbsp;<span class="txt-color-darken">Next appointment on <a href="javascript:void(0);" rel="tooltip" title="" data-placement="top" data-original-title="Create an Appointment">4:30 PM</a></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<p class="font-md">\n\t\t\t\t\t\t\t\t\t\t\t\t<i>Patient summary...</i>\n\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t<p>\n\n\t\t\t\t\t\t\t\t\t\t\t\tEt harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio\n\t\t\t\t\t\t\t\t\t\t\t\tcumque nihil impedit quo minus id quod maxime placeat facere\n\n\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);" class="btn btn-default btn-xs"><i class="fa fa-envelope-o"></i> Send Message</a>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="col-sm-3">\n\t\t\t\t\t\t\t\t\t\t\t<h1><small>Healthcare team:</small></h1>\n\t\t\t\t\t\t\t\t\t\t\t<ul class="list-inline friends-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/1.png" alt="friend-1">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/2.png" alt="friend-2">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/3.png" alt="friend-3">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/4.png" alt="friend-4">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/5.png" alt="friend-5">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/male.png" alt="friend-6">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\n\t\t\t\t\t\t\t\t\t<hr>\n\n\t\t\t\t\t\t\t\t\t<div class="padding-10">\n\n\t\t\t\t\t\t\t\t\t\t<ul class="nav nav-tabs tabs-pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li class="active">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#a1" data-toggle="tab">Conditions</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#a2" data-toggle="tab">Visits</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="pull-left">\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="margin-top-10 display-inline"><i class="fa fa-plus-circle text-success"></i> Metrics</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\n\t\t\t\t\t\t\t\t\t\t<div class="tab-content padding-top-10">\n\t\t\t\t\t\t\t\t\t\t\t<div class="tab-pane fade in active" id="a1">\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="p-wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body">\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="tree js-conditions-list">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success condition-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t</article>\n\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<div class="tab-pane fade" id="a2">\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="alert alert-info fade in">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<button class="close" data-dismiss="alert">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t×\n\t\t\t\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<i class="fa-fw fa fa-info"></i>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<strong>51 new members </strong>joined today!\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/female.png"><a href="javascript:void(0);">Jenn Wilson</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\ttravis@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Marshall Hitt</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmarshall@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Joe Cadena</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tjoe@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Mike McBride</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmike@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Travis Wilson</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\ttravis@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Marshall Hitt</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmarshall@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="Joe Cadena joe@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Joe Cadena</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tjoe@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Mike McBride</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmike@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Marshall Hitt</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmarshall@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Joe Cadena</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tjoe@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);"> Mike McBride</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmike@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="text-center">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<ul class="pagination pagination-sm">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li class="disabled">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Prev</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li class="active">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">1</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">2</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">3</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">99</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Next</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t</div><!-- end tab -->\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end row -->\n\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="col-sm-12 col-md-12 col-lg-6">\n\t\t\t\t\t\t<!-- row -->\n\t\t\t\t\t\t<div class="row">\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t\t<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-bpgraph" data-widget-editbutton="false">\n\t\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-bar-chart-o"></i> </span>\n\t\t\t\t\t\t\t\t\t\t<h2>Blood Pressure</h2>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t<div class="widget-body no-padding">\n\t\t\t\t\t\t\t\t\t\t\t<div id="bp-stats" class="chart has-legend"></div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<!-- end widget content -->\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget div -->\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget -->\n\t\t\t\t\t\t\t</article>\n\t\t\t\t\t\t\t<!-- WIDGET END -->\t\t\t\t\t\t\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n<!-- end row -->\n</section>\n<!-- end widget grid -->\n\n<script type="text/javascript">\n// DO NOT REMOVE : GLOBAL FUNCTIONS!\npageSetUp()\n\n// PAGE RELATED SCRIPTS\n\n</script>\n');
     
     }).call(this);
     
