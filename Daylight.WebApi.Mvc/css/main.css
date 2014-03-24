@@ -2981,7 +2981,11 @@
 		color:#38812D;
 		font-weight:bold;
 	}
-	
+
+    .flotPlaceholder {
+        width: 99%;
+        height: 99%;
+    }
 
 	.legendLabel span {
 		display: block;
@@ -3002,7 +3006,6 @@
 		-moz-box-sizing:content-box;
 		-webkit-box-sizing: content-box;
 	}
-
 	
 	/*
 	 * Morris Charts 

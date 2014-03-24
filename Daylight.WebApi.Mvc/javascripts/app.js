@@ -242,6 +242,13 @@ module.exports = {
       properties: {
         _urlRoot: '/API/Patients/:id/Conditions'
       }
+    },
+    VitalCollection: {
+      type: 'daylight/collections/vital_collection',
+      lifestyle: 'transient',
+      properties: {
+        url: '/API/Patients/:id/Vitals'
+      }
     }
   },
   defaultSettings: {
@@ -815,8 +822,8 @@ VitalCollection = (function(_super) {
   VitalCollection.prototype.model = VitalModel;
 
   VitalCollection.prototype.url = function() {
-    if (this.patient) {
-      return "" + (this.patient.url()) + "/vitals";
+    if (this.model) {
+      return "API/Patients/" + (this.model.get('patientId')) + "/vitals";
     } else {
       return '';
     }
@@ -1564,6 +1571,7 @@ ConditionListView = (function(_super) {
     this.$el.empty();
     this.replaceElement(this.template());
     this.collection.fetch();
+    console.log(this.collection);
     this.collection.forEach(this.renderCondition, this);
     return this;
   };
@@ -1918,6 +1926,7 @@ BPGraphView = (function(_super) {
 
   function BPGraphView() {
     this.renderGraph = __bind(this.renderGraph, this);
+    this.reset = __bind(this.reset, this);
     this.render = __bind(this.render, this);
     return BPGraphView.__super__.constructor.apply(this, arguments);
   }
@@ -1978,76 +1987,43 @@ BPGraphView = (function(_super) {
     tooltip: true,
     tooltipOptions: {
       content: "%s on <b>%x</b> was %y",
-      dateFormat: "%0d/%0m/%y",
       defaultTheme: false
     },
     colors: ["#E24913", "#6595b4"]
   };
 
+  BPGraphView.prototype.initialize = function(options) {
+    BPGraphView.__super__.initialize.call(this, options);
+    this.listenTo(this.collection, 'add', this.renderGraph());
+    this.listenTo(this.collection, 'reset', (function(_this) {
+      return function(collection, options) {
+        return _this.reset();
+      };
+    })(this));
+    return _.bindAll(this, 'render');
+  };
+
   BPGraphView.prototype.render = function() {
+    BPGraphView.__super__.render.apply(this, arguments);
+    this.$el.empty();
     this.collection.fetch();
-    this.$el.html("<div class=\"legend\"></div><div class=\"plot\"></div>");
+    this.$el.html("<div class=\"legend\"></div><div class=\"plot flotPlaceholder\"></div>");
+    this.renderGraph();
     return this;
   };
 
+  BPGraphView.prototype.reset = function() {
+    return this.render();
+  };
+
   BPGraphView.prototype.renderGraph = function(e) {
-    var aC, bC, data, diastolic, i, options, sC, series, systolic;
-    console.log(this.collection.toJSON());
-    data = [
-      {
-        id: "60ad8660-6268-43d0-91a7-f385a2a87338",
-        patientId: "dafd1b33-4eff-4310-80bd-04896f4793d5",
-        dateRecorded: "07/55/2014 09:55",
-        pulse: 85.12,
-        bloodGlucose: 23.69,
-        diastolicBp: 81,
-        systolicBp: 151,
-        bodyTemperature: 38.6,
-        weight: 67,
-        height: 1.56,
-        timeStamp: 1394186157204
-      }, {
-        id: "5cfbb44a-69db-41e9-994d-e9ec658876af",
-        patientId: "dafd1b33-4eff-4310-80bd-04896f4793d5",
-        dateRecorded: "06/40/2014 05:40",
-        pulse: 36.45,
-        bloodGlucose: null,
-        diastolicBp: 135,
-        systolicBp: 94,
-        bodyTemperature: null,
-        weight: 84,
-        height: 1.58,
-        timeStamp: 1394127605810
-      }, {
-        id: "d6cc4832-6ede-495b-aea2-e1fb4b5058a5",
-        patientId: "dafd1b33-4eff-4310-80bd-04896f4793d5",
-        dateRecorded: "05/40/2014 10:40",
-        pulse: 124,
-        bloodGlucose: null,
-        diastolicBp: 88,
-        systolicBp: 135,
-        bodyTemperature: null,
-        weight: 54,
-        height: 1.56,
-        timeStamp: 1394059205810
-      }, {
-        id: "e6265781-cb2c-40c7-8c29-b74741bc8db4",
-        patientId: "dafd1b33-4eff-4310-80bd-04896f4793d5",
-        dateRecorded: "04/28/2014 02:28",
-        pulse: 45.02,
-        bloodGlucose: 63.54,
-        diastolicBp: 99,
-        systolicBp: 131,
-        bodyTemperature: 33.52,
-        weight: 60,
-        height: 1.57,
-        timeStamp: 1393943280000
-      }
-    ];
+    var a, aC, b, bC, data, diastolic, i, options, sC, series, systolic;
+    data = this.collection.toJSON();
+    console.log(data);
     sC = this.seriesColumn;
     aC = this.aColumn;
     bC = this.bColumn;
-    series = {};
+    series = [];
     diastolic = [];
     systolic = [];
     options = _.clone(this.plotOptions);
@@ -2066,14 +2042,18 @@ BPGraphView = (function(_super) {
         i++;
       }
       i = 0;
-      series[aC] = {
+      a = {
         data: _.clone(diastolic),
         label: 'Diastolic BP'
       };
-      series[bC] = {
+      b = {
         data: _.clone(systolic),
         label: 'Systolic BP'
       };
+      series.push(a, b);
+      this.$(".flotPlaceholder").css('min-height', "200px");
+      this.$(".flotPlaceholder").css('height', "100%");
+      this.$(".flotPlaceholder").css('width', "100%");
       return $.plot(this.$(".plot"), series, options);
     }
   };
@@ -3273,8 +3253,7 @@ PatientView = (function(_super) {
     view = new BPGraphView({
       collection: collection
     });
-    this.$('#bp-stats').append(this.renderChild(view).el);
-    return view.renderGraph();
+    return this.$('#bp-stats').append(this.renderChild(view).el);
   };
 
   PatientView.prototype.editMode = function(mode) {
