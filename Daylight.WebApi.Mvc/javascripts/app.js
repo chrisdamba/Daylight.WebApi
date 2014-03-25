@@ -1467,7 +1467,7 @@ ConditionListItemView = (function(_super) {
     _model = this.model;
     $.SmartMessageBox({
       title: 'Shekhinah Surgery Condition Remove Alert!',
-      content: 'Are you sure you want to remove this condition?',
+      content: 'Removing this condition will also remove the underlying medications for that condition. Are you sure you want to remove this condition?',
       buttons: '[No][Yes]'
     }, function(ButtonPressed) {
       if (ButtonPressed === 'Yes') {
@@ -1488,7 +1488,7 @@ ConditionListItemView = (function(_super) {
       if (ButtonPressed === 'No') {
         return $.smallBox({
           title: 'Shekhinah Surgery Condition Remove',
-          content: "<i class='fa fa-clock-o'></i> <i>Condition has not been removed...</i>",
+          content: "<i class='fa fa-clock-o'></i> <i>The application encountered an error. Condition has not been removed...</i>",
           color: '#C46A69',
           iconSmall: 'fa fa-times fa-2x fadeInRight animated',
           timeout: 4000
@@ -1990,8 +1990,9 @@ BPGraphView = (function(_super) {
       borderColor: "#efefef"
     },
     tooltip: true,
-    tooltipOptions: {
-      content: "%s on <b>%x</b> was %y",
+    tooltipOpts: {
+      content: "%s on <b>%x</b> was %y .<br/> Click for more info.",
+      dateFormat: "%d/%m/%y %H:%M",
       defaultTheme: false
     },
     colors: ["#E24913", "#6595b4"]

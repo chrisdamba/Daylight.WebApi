@@ -59,6 +59,16 @@ namespace Daylight.WebApi.Mvc.Factories
                 throw new UnavailableItemException("Condition not found");
             }
 
+            // Delete any underlying meds
+            var medications = condition.Medications;
+            if (medications.Any())
+            {
+                foreach (var med in medications)
+                {
+                    med.State = EntityState.Deleted;
+                }
+            }
+
             // Delete condition
             condition.State = EntityState.Deleted;
             foreach (var c in patient.Conditions.Where(x => x.ConditionId != conditionId))
