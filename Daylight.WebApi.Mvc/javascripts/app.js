@@ -835,6 +835,11 @@ VitalCollection = (function(_super) {
     return this.on('index-down', this.onIndexDown);
   };
 
+  VitalCollection.prototype.fetch = function(options) {
+    options = options ? _.clone(options) : {};
+    return VitalCollection.__super__.fetch.call(this, options);
+  };
+
   VitalCollection.prototype.changeIndex = function(model, to) {
     var from;
     from = this.models.indexOf(model);
@@ -1571,7 +1576,6 @@ ConditionListView = (function(_super) {
     this.$el.empty();
     this.replaceElement(this.template());
     this.collection.fetch();
-    console.log(this.collection);
     this.collection.forEach(this.renderCondition, this);
     return this;
   };
@@ -1927,6 +1931,7 @@ BPGraphView = (function(_super) {
   function BPGraphView() {
     this.renderGraph = __bind(this.renderGraph, this);
     this.reset = __bind(this.reset, this);
+    this.fetchData = __bind(this.fetchData, this);
     this.render = __bind(this.render, this);
     return BPGraphView.__super__.constructor.apply(this, arguments);
   }
@@ -2000,16 +2005,26 @@ BPGraphView = (function(_super) {
         return _this.reset();
       };
     })(this));
+    this.fetchData();
     return _.bindAll(this, 'render');
   };
 
   BPGraphView.prototype.render = function() {
     BPGraphView.__super__.render.apply(this, arguments);
     this.$el.empty();
-    this.collection.fetch();
     this.$el.html("<div class=\"legend\"></div><div class=\"plot flotPlaceholder\"></div>");
     this.renderGraph();
     return this;
+  };
+
+  BPGraphView.prototype.fetchData = function() {
+    var self, url;
+    self = this;
+    this.collection.reset();
+    url = this.collection.url;
+    return $.getJSON(url, function(data) {
+      return self.collection.reset(data);
+    });
   };
 
   BPGraphView.prototype.reset = function() {
@@ -2019,7 +2034,6 @@ BPGraphView = (function(_super) {
   BPGraphView.prototype.renderGraph = function(e) {
     var a, aC, b, bC, data, diastolic, i, options, sC, series, systolic;
     data = this.collection.toJSON();
-    console.log(data);
     sC = this.seriesColumn;
     aC = this.aColumn;
     bC = this.bColumn;
