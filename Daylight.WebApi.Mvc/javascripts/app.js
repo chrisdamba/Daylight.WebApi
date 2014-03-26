@@ -425,7 +425,7 @@ Application = (function(_super) {
   };
 
   Application.prototype.showPatient = function(id, index, subIndex, editMode) {
-    var patientModel, _ref;
+    var patientModel;
     if (index == null) {
       index = 0;
     }
@@ -435,15 +435,13 @@ Application = (function(_super) {
     if (editMode == null) {
       editMode = false;
     }
-    if (!(this.currentPatient && ((_ref = this.currentPatient) != null ? _ref.id : void 0) === id)) {
-      patientModel = window.IoC.get('PatientModel', {
-        id: id
-      }, {
-        parse: true
-      });
-      window.App.currentPatient = this.currentPatient = patientModel;
-      this.currentPatient.on('navigate', this.onPatientPageChanged);
-    }
+    patientModel = window.IoC.get('PatientModel', {
+      id: id
+    }, {
+      parse: true
+    });
+    window.App.currentPatient = this.currentPatient = patientModel;
+    this.currentPatient.on('navigate', this.onPatientPageChanged);
     return this.currentPatient.fetch({
       success: (function(_this) {
         return function(model, response, options) {
@@ -2573,19 +2571,21 @@ PatientCreateView = (function(_super) {
       address: address,
       email: email
     }));
-    console.log(JSON.stringify(this.model.toJSON()));
-    this.model.save(null, {
+    return this.model.save(null, {
       wait: true,
       success: (function(_this) {
         return function(model, response, options) {
-          console.log(model);
-          return $.smallBox({
-            title: "Patient " + (_this.model.get('firstName' + _this.model.get('lastName'))) + " details have been successfully saved!",
+          $.smallBox({
+            title: "Patient " + (model.get('firstName' + model.get('lastName'))) + " details have been successfully saved!",
             content: "<i class='fa fa-clock-o'></i> <i>3 seconds ago...</i>",
             color: '#5F895F',
             iconSmall: 'fa fa-check bounce animated',
             timeout: 4000
           });
+          window.App.eventAggregator.trigger('navigate:patient', {
+            id: model.id
+          });
+          return _this.teardown();
         };
       })(this),
       error: (function(_this) {
@@ -2593,10 +2593,6 @@ PatientCreateView = (function(_super) {
           return window.location = '/Error/HttpError';
         };
       })(this)
-    });
-    this.teardown();
-    return window.App.eventAggregator.trigger('navigate:patient', {
-      id: this.model.get('id')
     });
   };
 
@@ -2803,18 +2799,21 @@ PatientEditView = (function(_super) {
       email: email
     }));
     console.log(JSON.stringify(this.model.toJSON()));
-    this.model.save(null, {
+    return this.model.save(null, {
       wait: true,
       success: (function(_this) {
         return function(model, response, options) {
-          console.log(model);
-          return $.smallBox({
+          $.smallBox({
             title: "Patient " + (model.get('firstName' + model.get('lastName'))) + " has been successfully edited!",
             content: "<i class='fa fa-clock-o'></i> <i>3 seconds ago...</i>",
             color: '#5F895F',
             iconSmall: 'fa fa-check bounce animated',
             timeout: 4000
           });
+          window.App.eventAggregator.trigger('navigate:patient', {
+            id: model.id
+          });
+          return _this.teardown();
         };
       })(this),
       error: (function(_this) {
@@ -2822,10 +2821,6 @@ PatientEditView = (function(_super) {
           return window.location = '/Error/HttpError';
         };
       })(this)
-    });
-    this.teardown();
-    return window.App.eventAggregator.trigger('navigate:patient', {
-      id: this.model.id
     });
   };
 
@@ -3850,8 +3845,6 @@ VitalsAddView = (function(_super) {
     bloodGlucose = this.$('#bloodGlucose').val();
     temperature = this.$('#temperature').val();
     pulse = this.$('#pulse').val();
-    console.log('date dateRecorded', dateRecorded);
-    console.log('blood glucose', bloodGlucose);
     collection = window.IoC.get('VitalCollection');
     this.model.collection = collection;
     this.model.set(this.model.parse({
@@ -3864,7 +3857,6 @@ VitalsAddView = (function(_super) {
       bodyTemperature: temperature,
       bloodGlucose: bloodGlucose
     }));
-    console.log(JSON.stringify(this.model.toJSON()));
     this.model.save(null, {
       wait: true,
       success: (function(_this) {
