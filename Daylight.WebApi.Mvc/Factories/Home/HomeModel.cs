@@ -1,4 +1,6 @@
-﻿namespace Daylight.WebApi.Mvc.Factories.Home
+﻿using Daylight.WebApi.Mvc.Models.Security;
+
+namespace Daylight.WebApi.Mvc.Factories.Home
 {
     public class HomeModel
     {
@@ -9,5 +11,7 @@
         public string RedirectUrl { get; set; }
 
         public bool IsDefaultCulture { get; set; }
+
+        public LoginViewModel LoginModel { get; set; }
     }
 }

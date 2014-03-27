@@ -1,4 +1,6 @@
-﻿namespace Daylight.WebApi.Mvc.Models.Security
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Daylight.WebApi.Mvc.Models.Security
 {
     /// <summary>
     /// Describes a View Model for a Login
@@ -8,11 +10,13 @@
         /// <summary>
         /// Gets or sets the unique name of the user.
         /// </summary>
+        [Required]
         public string UserName { get; set; }
 
         /// <summary>
         /// Gets or sets the password for the user.
         /// </summary>
+        [Required]
         public string Password { get; set; }
 
         /// <summary>
