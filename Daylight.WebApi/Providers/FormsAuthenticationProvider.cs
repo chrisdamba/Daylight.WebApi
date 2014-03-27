@@ -21,23 +21,19 @@ namespace Daylight.WebApi.Providers
         /// <param name="rememberMe">if set to <c>true</c> [remember me].</param>
         public void Authenticate(string userName, bool rememberMe = false)
         {
-            var serializeModel = new CustomPrincipalSerializeModel
-            {
-                UserName = userName
-            };
-            
-
+            var serializeModel = new CustomPrincipalSerializeModel { UserName = userName };
             var userData = JsonConvert.SerializeObject(serializeModel);
             var authTicket = new FormsAuthenticationTicket(
                 1,
                 userName,
                 DateTime.Now,
-                DateTime.Now.AddMinutes(15),
-                false,
+                DateTime.Now.AddMinutes(20),
+                rememberMe,
                 userData);
 
             var encTicket = FormsAuthentication.Encrypt(authTicket);
             var authCookie = new HttpCookie(FormsAuthentication.FormsCookieName, encTicket);
+            if (authTicket.IsPersistent) { authCookie.Expires = authTicket.Expiration; } 
             
             HttpContext.Current.Response.Cookies.Add(authCookie);
             FormsAuthentication.SetAuthCookie(userName, rememberMe);
