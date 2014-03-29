@@ -322,7 +322,6 @@
     <Content Include="img\clear.png" />
     <Content Include="img\demo\64x64.png" />
     <Content Include="img\demo\basic.png" />
-    <Content Include="img\demo\copyright.txt" />
     <Content Include="img\demo\demo-smartbig-alert.png" />
     <Content Include="img\demo\demo-smartmedium-alert.png" />
     <Content Include="img\demo\demo-smartsmall-alert.png" />
@@ -1120,6 +1119,7 @@
     <Content Include="js\plugin\datatables\media\images\psd\printer.psd" />
     <Content Include="js\plugin\datatables\media\js\TableTools.min.js.gz" />
     <Content Include="js\plugin\slickgrid\slick.editors.js--" />
+    <None Include="Properties\PublishProfiles\Daylight.pubxml" />
     <None Include="Scripts\jquery-1.7.1.intellisense.js" />
     <Content Include="javascripts\app.js" />
     <Content Include="javascripts\vendor.js" />

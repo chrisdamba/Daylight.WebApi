@@ -33,7 +33,7 @@ namespace Daylight.WebApi.Mvc.Models
             Phone = patient.Phone;
             Email = patient.Email;
             Age = GetAge(patient.DateOfBirth);
-            Conditions = patient.Conditions.Select(x => new ConditionViewModel(x)).ToArray();
+            Conditions = patient.Conditions.Where(c => c.FinishedAt == null).Select(x => new ConditionViewModel(x)).ToArray();
             Vitals = patient.Vitals.Select(x => new VitalsViewModel(x)).OrderByDescending(x => x.DateRecorded).ToArray();
         }
 

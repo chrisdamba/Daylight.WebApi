@@ -970,6 +970,22 @@ ConditionModel = (function(_super) {
     return "/API/Patients/" + (this.patientId()) + "/Conditions";
   };
 
+  ConditionModel.prototype.getSafeDateStarted = function() {
+    var arrays, dateArray, dateString, safeDate, timeArray, timeString;
+    safeDate = this.get('startedAt');
+    if (safeDate) {
+      arrays = safeDate.split('T');
+      dateArray = arrays[0].split('-');
+      timeArray = arrays[1].split(':');
+      timeString = "" + timeArray[0] + ":" + timeArray[1];
+      dateString = "" + dateArray[2] + "/" + dateArray[1] + "/" + dateArray[0];
+      safeDate = "" + dateString + " " + timeString;
+    } else {
+      safeDate = '';
+    }
+    return safeDate;
+  };
+
   ConditionModel.prototype.toJSON = function() {
     var json;
     json = ConditionModel.__super__.toJSON.apply(this, arguments);
@@ -1323,11 +1339,6 @@ module.exports = VitalModel;
 
 });
 
-;require.register("daylight/models/vitals_graph_model", function(exports, require, module) {
-
-
-});
-
 ;require.register("daylight/views/add_widget_view", function(exports, require, module) {
 var AddWidgetModalView, AddWidgetTemplate,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -1432,9 +1443,9 @@ ConditionListItemView = (function(_super) {
     return ConditionListItemView.__super__.constructor.apply(this, arguments);
   }
 
-  ConditionListItemView.prototype.tagName = 'li';
+  ConditionListItemView.prototype.tagName = 'tr';
 
-  ConditionListItemView.prototype.className = 'parent_li';
+  ConditionListItemView.prototype.className = 'parent-tr';
 
   ConditionListItemView.prototype.events = {
     'click .js-delete-condition': 'onDeleteCondition',
@@ -1540,9 +1551,9 @@ ConditionListView = (function(_super) {
     return ConditionListView.__super__.constructor.apply(this, arguments);
   }
 
-  ConditionListView.prototype.tagName = 'ul';
+  ConditionListView.prototype.tagName = 'tbody';
 
-  ConditionListView.prototype.className = 'condition-tree';
+  ConditionListView.prototype.className = 'condition-rows';
 
   ConditionListView.prototype.template = ConditionListTemplate;
 
@@ -1917,6 +1928,181 @@ if (typeof module !== "undefined" && module !== null) {
 
 });
 
+;require.register("daylight/views/graphs/bg_graph_view", function(exports, require, module) {
+var BGGraphView,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+BGGraphView = (function(_super) {
+  __extends(BGGraphView, _super);
+
+  function BGGraphView() {
+    this.renderGraph = __bind(this.renderGraph, this);
+    this.reset = __bind(this.reset, this);
+    this.fetchData = __bind(this.fetchData, this);
+    this.render = __bind(this.render, this);
+    this.onPlotHover = __bind(this.onPlotHover, this);
+    this.onPlotClick = __bind(this.onPlotClick, this);
+    return BGGraphView.__super__.constructor.apply(this, arguments);
+  }
+
+  BGGraphView.prototype.attributes = {
+    "class": 'graph'
+  };
+
+  BGGraphView.prototype.events = {
+    'plotclick .plot-bg': 'onPlotClick',
+    'plothover .plot-bg': 'onPlotHover'
+  };
+
+  BGGraphView.prototype.xColumn = 'timeStamp';
+
+  BGGraphView.prototype.yColumn = 'bloodGlucose';
+
+  BGGraphView.prototype.plotOptions = {
+    legend: {
+      show: true,
+      container: '.bglegend'
+    },
+    series: {
+      lines: {
+        show: true,
+        lineWidth: 1,
+        fill: true,
+        fillColor: {
+          colors: [
+            {
+              opacity: 0.2
+            }, {
+              opacity: 0.3
+            }
+          ]
+        }
+      },
+      points: {
+        show: true
+      },
+      shadowSize: 0
+    },
+    xaxis: {
+      mode: 'time',
+      timeformat: "%d/%m/%y",
+      minTicksSize: [1, "month"]
+    },
+    yaxes: [
+      {
+        min: 0,
+        tickLength: 5
+      }
+    ],
+    grid: {
+      hoverable: true,
+      clickable: true,
+      tickColor: "#efefef",
+      borderWidth: 0,
+      borderColor: "#efefef"
+    },
+    tooltip: true,
+    tooltipOpts: {
+      content: "%s on <b>%x</b> was %y",
+      dateFormat: "%d/%m/%y %H:%M",
+      defaultTheme: false
+    },
+    colors: ["#BD362F"]
+  };
+
+  BGGraphView.prototype.initialize = function(options) {
+    BGGraphView.__super__.initialize.call(this, options);
+    this.listenTo(this.collection, 'add', this.renderGraph());
+    this.listenTo(this.collection, 'reset', (function(_this) {
+      return function(collection, options) {
+        return _this.reset();
+      };
+    })(this));
+    this.fetchData();
+    return _.bindAll(this, 'render');
+  };
+
+  BGGraphView.prototype.onPlotClick = function(event, pos, item) {
+    if (item) {
+      console.log(item.series.label);
+      return console.log(pos);
+    }
+  };
+
+  BGGraphView.prototype.onPlotHover = function(event, pos, item) {
+    if (item) {
+      return document.body.style.cursor = 'pointer';
+    } else {
+      return document.body.style.cursor = 'default';
+    }
+  };
+
+  BGGraphView.prototype.render = function() {
+    BGGraphView.__super__.render.apply(this, arguments);
+    this.$el.empty();
+    this.$el.html("<div class=\"bglegend\"></div><div class=\"plot-bg\"></div>");
+    this.renderGraph();
+    return this;
+  };
+
+  BGGraphView.prototype.fetchData = function() {
+    var self, url;
+    self = this;
+    this.collection.reset();
+    url = this.collection.url;
+    return $.getJSON(url, function(data) {
+      return self.collection.reset(data);
+    });
+  };
+
+  BGGraphView.prototype.reset = function() {
+    return this.render();
+  };
+
+  BGGraphView.prototype.renderGraph = function(e) {
+    var a, data, glucose, i, options, series, xC, yC;
+    data = this.collection.toJSON();
+    xC = this.xColumn;
+    yC = this.yColumn;
+    series = [];
+    glucose = [];
+    options = _.clone(this.plotOptions);
+    i = void 0;
+    if (data.length > 0) {
+      i = 0;
+      while (i < data.length) {
+        if (typeof data[i][xC] !== "undefined") {
+          glucose[i] = [];
+          glucose[i][0] = data[i][xC];
+          glucose[i][1] = data[i][yC];
+        }
+        i++;
+      }
+      i = 0;
+      a = {
+        data: _.clone(glucose),
+        label: 'Blood Glucose'
+      };
+      series.push(a);
+      this.$(".plot-bg").css('min-height', "150px");
+      this.$(".plot-bg").css('height', "100%");
+      this.$(".plot-bg").css('width', "100%");
+      return $.plot(this.$(".plot-bg"), series, options);
+    }
+  };
+
+  return BGGraphView;
+
+})(support.View);
+
+if (typeof module !== "undefined" && module !== null) {
+  module.exports = BGGraphView;
+}
+
+});
+
 ;require.register("daylight/views/graphs/bp_graph_view", function(exports, require, module) {
 var BPGraphView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -1931,12 +2117,18 @@ BPGraphView = (function(_super) {
     this.reset = __bind(this.reset, this);
     this.fetchData = __bind(this.fetchData, this);
     this.render = __bind(this.render, this);
-    this.bindPlot = __bind(this.bindPlot, this);
+    this.onPlotHover = __bind(this.onPlotHover, this);
+    this.onPlotClick = __bind(this.onPlotClick, this);
     return BPGraphView.__super__.constructor.apply(this, arguments);
   }
 
   BPGraphView.prototype.attributes = {
     "class": 'graph'
+  };
+
+  BPGraphView.prototype.events = {
+    'plotclick .plot-bp': 'onPlotClick',
+    'plothover .plot-bp': 'onPlotHover'
   };
 
   BPGraphView.prototype.seriesColumn = 'timeStamp';
@@ -1948,7 +2140,7 @@ BPGraphView = (function(_super) {
   BPGraphView.prototype.plotOptions = {
     legend: {
       show: true,
-      container: '.legend'
+      container: '.bplegend'
     },
     series: {
       lines: {
@@ -1973,7 +2165,7 @@ BPGraphView = (function(_super) {
     xaxis: {
       mode: 'time',
       timeformat: "%d/%m/%y",
-      minTicksSize: [1, "day"]
+      minTicksSize: [1, "month"]
     },
     yaxes: [
       {
@@ -1990,7 +2182,7 @@ BPGraphView = (function(_super) {
     },
     tooltip: true,
     tooltipOpts: {
-      content: "%s on <b>%x</b> was %y .<br/> Click for more info.",
+      content: "%s on <b>%x</b> was %y",
       dateFormat: "%d/%m/%y %H:%M",
       defaultTheme: false
     },
@@ -2006,34 +2198,28 @@ BPGraphView = (function(_super) {
       };
     })(this));
     this.fetchData();
-    this.bindPlot();
     return _.bindAll(this, 'render');
   };
 
-  BPGraphView.prototype.bindPlot = function() {
-    var placeholder;
-    placeholder = this.$(".plot");
-    placeholder.on('plotclick', (function(_this) {
-      return function(event, pos, item) {
-        if (item) {
-          console.log(item.series.label);
-          return console.log(pos);
-        }
-      };
-    })(this));
-    return placeholder.on('plothover', (function(_this) {
-      return function(event, pos, item) {
-        if (item) {
-          return document.body.style.cursor = 'pointer';
-        }
-      };
-    })(this));
+  BPGraphView.prototype.onPlotClick = function(event, pos, item) {
+    if (item) {
+      console.log(item.series.label);
+      return console.log(pos);
+    }
+  };
+
+  BPGraphView.prototype.onPlotHover = function(event, pos, item) {
+    if (item) {
+      return document.body.style.cursor = 'pointer';
+    } else {
+      return document.body.style.cursor = 'default';
+    }
   };
 
   BPGraphView.prototype.render = function() {
     BPGraphView.__super__.render.apply(this, arguments);
     this.$el.empty();
-    this.$el.html("<div class=\"legend\"></div><div class=\"plot flotPlaceholder\"></div>");
+    this.$el.html("<div class=\"bplegend\"></div><div class=\"plot-bp\"></div>");
     this.renderGraph();
     return this;
   };
@@ -2086,10 +2272,10 @@ BPGraphView = (function(_super) {
         label: 'Systolic BP'
       };
       series.push(a, b);
-      this.$(".flotPlaceholder").css('min-height', "200px");
-      this.$(".flotPlaceholder").css('height', "100%");
-      this.$(".flotPlaceholder").css('width', "100%");
-      return $.plot(this.$(".plot"), series, options);
+      this.$(".plot-bp").css('min-height', "150px");
+      this.$(".plot-bp").css('height', "100%");
+      this.$(".plot-bp").css('width', "100%");
+      return $.plot(this.$(".plot-bp"), series, options);
     }
   };
 
@@ -2099,6 +2285,181 @@ BPGraphView = (function(_super) {
 
 if (typeof module !== "undefined" && module !== null) {
   module.exports = BPGraphView;
+}
+
+});
+
+;require.register("daylight/views/graphs/weight_graph_view", function(exports, require, module) {
+var WeightGraphView,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+WeightGraphView = (function(_super) {
+  __extends(WeightGraphView, _super);
+
+  function WeightGraphView() {
+    this.renderGraph = __bind(this.renderGraph, this);
+    this.reset = __bind(this.reset, this);
+    this.fetchData = __bind(this.fetchData, this);
+    this.render = __bind(this.render, this);
+    this.onPlotHover = __bind(this.onPlotHover, this);
+    this.onPlotClick = __bind(this.onPlotClick, this);
+    return WeightGraphView.__super__.constructor.apply(this, arguments);
+  }
+
+  WeightGraphView.prototype.attributes = {
+    "class": 'graph'
+  };
+
+  WeightGraphView.prototype.events = {
+    'plotclick .plot-weight': 'onPlotClick',
+    'plothover .plot-weight': 'onPlotHover'
+  };
+
+  WeightGraphView.prototype.xColumn = 'timeStamp';
+
+  WeightGraphView.prototype.yColumn = 'weight';
+
+  WeightGraphView.prototype.plotOptions = {
+    legend: {
+      show: true,
+      container: '.weightlegend'
+    },
+    series: {
+      lines: {
+        show: true,
+        lineWidth: 1,
+        fill: true,
+        fillColor: {
+          colors: [
+            {
+              opacity: 0.1
+            }, {
+              opacity: 0.15
+            }
+          ]
+        }
+      },
+      points: {
+        show: true
+      },
+      shadowSize: 0
+    },
+    xaxis: {
+      mode: 'time',
+      timeformat: "%d/%m/%y",
+      minTicksSize: [1, "month"]
+    },
+    yaxes: [
+      {
+        min: 20,
+        tickLength: 5
+      }
+    ],
+    grid: {
+      hoverable: true,
+      clickable: true,
+      tickColor: "#efefef",
+      borderWidth: 0,
+      borderColor: "#efefef"
+    },
+    tooltip: true,
+    tooltipOpts: {
+      content: "%s on <b>%x</b> was %y kg",
+      dateFormat: "%d/%m/%y %H:%M",
+      defaultTheme: false
+    },
+    colors: ["#7e9d3a"]
+  };
+
+  WeightGraphView.prototype.initialize = function(options) {
+    WeightGraphView.__super__.initialize.call(this, options);
+    this.listenTo(this.collection, 'add', this.renderGraph());
+    this.listenTo(this.collection, 'reset', (function(_this) {
+      return function(collection, options) {
+        return _this.reset();
+      };
+    })(this));
+    this.fetchData();
+    return _.bindAll(this, 'render');
+  };
+
+  WeightGraphView.prototype.onPlotClick = function(event, pos, item) {
+    if (item) {
+      console.log(item.series.label);
+      return console.log(pos);
+    }
+  };
+
+  WeightGraphView.prototype.onPlotHover = function(event, pos, item) {
+    if (item) {
+      return document.body.style.cursor = 'pointer';
+    } else {
+      return document.body.style.cursor = 'default';
+    }
+  };
+
+  WeightGraphView.prototype.render = function() {
+    WeightGraphView.__super__.render.apply(this, arguments);
+    this.$el.empty();
+    this.$el.html("<div class=\"weightlegend\"></div><div class=\"plot-weight\"></div>");
+    this.renderGraph();
+    return this;
+  };
+
+  WeightGraphView.prototype.fetchData = function() {
+    var self, url;
+    self = this;
+    this.collection.reset();
+    url = this.collection.url;
+    return $.getJSON(url, function(data) {
+      return self.collection.reset(data);
+    });
+  };
+
+  WeightGraphView.prototype.reset = function() {
+    return this.render();
+  };
+
+  WeightGraphView.prototype.renderGraph = function(e) {
+    var a, data, i, options, series, weight, xC, yC;
+    data = this.collection.toJSON();
+    xC = this.xColumn;
+    yC = this.yColumn;
+    series = [];
+    weight = [];
+    options = _.clone(this.plotOptions);
+    i = void 0;
+    if (data.length > 0) {
+      i = 0;
+      while (i < data.length) {
+        if (typeof data[i][xC] !== "undefined") {
+          weight[i] = [];
+          weight[i][0] = data[i][xC];
+          weight[i][1] = data[i][yC];
+        }
+        i++;
+      }
+      i = 0;
+      a = {
+        data: _.clone(weight),
+        label: 'Weight'
+      };
+      series.push(a);
+      this.$(".plot-weight").css('min-height', "150px");
+      this.$(".plot-weight").css('height', "100%");
+      this.$(".plot-weight").css('width', "100%");
+      return $.plot(this.$(".plot-weight"), series, options);
+    }
+  };
+
+  return WeightGraphView;
+
+})(support.View);
+
+if (typeof module !== "undefined" && module !== null) {
+  module.exports = WeightGraphView;
 }
 
 });
@@ -3193,7 +3554,7 @@ if (typeof module !== "undefined" && module !== null) {
 });
 
 ;require.register("daylight/views/patient_view", function(exports, require, module) {
-var BPGraphView, ConditionCollection, ConditionListView, ConditionModel, ConditionsView, PatientEditView, PatientView, PatientViewTemplate, VitalCollection, VitalModel, VitalsAddView,
+var BGGraphView, BPGraphView, ConditionCollection, ConditionListView, ConditionModel, ConditionsView, PatientEditView, PatientView, PatientViewTemplate, VitalCollection, VitalModel, VitalsAddView, WeightGraphView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -3216,7 +3577,11 @@ VitalModel = require('daylight/models/vital_model');
 
 VitalCollection = require('daylight/collections/vital_collection');
 
+BGGraphView = require('daylight/views/graphs/bg_graph_view');
+
 BPGraphView = require('daylight/views/graphs/bp_graph_view');
+
+WeightGraphView = require('daylight/views/graphs/weight_graph_view');
 
 PatientView = (function(_super) {
   __extends(PatientView, _super);
@@ -3233,7 +3598,7 @@ PatientView = (function(_super) {
     this.onSaveStart = __bind(this.onSaveStart, this);
     this.onNavigate = __bind(this.onNavigate, this);
     this.onDestroy = __bind(this.onDestroy, this);
-    this.renderBpGraph = __bind(this.renderBpGraph, this);
+    this.renderGraphs = __bind(this.renderGraphs, this);
     this.renderConditions = __bind(this.renderConditions, this);
     this.render = __bind(this.render, this);
     this.template = __bind(this.template, this);
@@ -3263,7 +3628,7 @@ PatientView = (function(_super) {
   PatientView.prototype.render = function() {
     this.$el.html(this.template(this.model.toJSON()));
     this.renderConditions();
-    this.renderBpGraph();
+    this.renderGraphs();
     this.setupTree();
     this.setupWidgets();
     return this;
@@ -3280,14 +3645,22 @@ PatientView = (function(_super) {
     return this;
   };
 
-  PatientView.prototype.renderBpGraph = function() {
-    var collection, view;
+  PatientView.prototype.renderGraphs = function() {
+    var bg, bp, collection, wv;
     collection = new VitalCollection;
     collection.url = "API/Patients/" + (this.model.get('id')) + "/vitals";
-    view = new BPGraphView({
+    bg = new BGGraphView({
       collection: collection
     });
-    return this.$('#bp-stats').append(this.renderChild(view).el);
+    bp = new BPGraphView({
+      collection: collection
+    });
+    wv = new WeightGraphView({
+      collection: collection
+    });
+    this.$('#bg-stats').append(this.renderChild(bg).el);
+    this.$('#bp-stats').append(this.renderChild(bp).el);
+    return this.$('#weight-stats').append(this.renderChild(wv).el);
   };
 
   PatientView.prototype.editMode = function(mode) {
@@ -4268,29 +4641,37 @@ module.exports = function (__obj) {
     (function() {
       var med, _i, _len, _ref, _ref1;
     
-      __out.push('<span title="Add medication" class="js-medication-add"><i class="fa fa-lg fa-plus-circle"></i> ');
+      __out.push('<td>\n\t');
     
       __out.push(__sanitize(this.name));
     
-      __out.push('</span>\n<a class="remove label label-danger pull-right padding-5 js-delete-condition" href="#"  data-id="');
+      __out.push('\n</td>\n<td class="hidden-xs hidden-sm">\n\t');
     
-      __out.push(__sanitize(this.id));
+      __out.push(__sanitize(this.startedAt));
     
-      __out.push('">\n\t\t<i class="glyphicon glyphicon-remove"></i> remove\n</a>\n');
+      __out.push('\n</td>\n<td class="hidden-xs hidden-sm">\n');
     
       if ((_ref = this.medications) != null ? _ref.length : void 0) {
-        __out.push('\n\t<ul role="group">\n\t');
+        __out.push('\n\t');
         _ref1 = this.medications;
         for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
           med = _ref1[_i];
-          __out.push('\n\t\t<li class="parent_li" role="treeitem">\t\t\t\n\t\t\t<span class="label label-success" title="Expand this branch"><i class="fa fa-lg fa-plus-circle"></i> ');
+          __out.push('\n\t\t');
           __out.push(__sanitize(med.name));
-          __out.push('</span>\t\t\t\n\t\t</li>    \n\t');
+          __out.push('<br/>\n\t');
         }
-        __out.push('\n\t</ul>\n');
+        __out.push('\n');
       }
     
-      __out.push('\t\t\t\t\t\t\t\t\t\t\t\t\n\n\n<!-- <ul role="group">\n\t\t<li class="parent_li" role="treeitem">\n\t\t\t<span class="label label-success" title="Expand this branch"><i class="fa fa-lg fa-plus-circle"></i> Monday, January 7: 8.00 hours</span>\n\t\t\t<ul role="group">\n\t\t\t\t<li style="display: none;">\n\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 8.00</span> &ndash; <a href="javascript:void(0);">Changed CSS to accomodate...</a>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</li>\n\t\t<li class="parent_li" role="treeitem">\n\t\t\t<span class="label label-success" title="Expand this branch"><i class="fa fa-lg fa-plus-circle"></i> Tuesday, January 8: 8.00 hours</span>\n\t\t\t<ul role="group">\n\t\t\t\t<li style="display: none;">\n\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 6.00</span> &ndash; <a href="javascript:void(0);">Altered code...</a>\n\t\t\t\t</li>\n\t\t\t\t<li style="display: none;">\n\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 2.00</span> &ndash; <a href="javascript:void(0);">Simplified our approach to...</a>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</li>\n\t\t<li class="parent_li" role="treeitem">\n\t\t\t<span class="label label-warning" title="Collapse this branch"><i class="fa fa-lg fa-minus-circle"></i> Wednesday, January 9: 6.00 hours</span>\n\t\t\t<ul role="group">\n\t\t\t\t<li>\n\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 3.00</span> &ndash; <a href="javascript:void(0);">Fixed bug caused by...</a>\n\t\t\t\t</li>\n\t\t\t\t<li>\n\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 3.00</span> &ndash; <a href="javascript:void(0);">Comitting latest code to Git...</a>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</li>\n\t\t<li class="parent_li" role="treeitem">\n\t\t\t<span class="label label-danger" title="Collapse this branch"><i class="fa fa-lg fa-minus-circle"></i> Wednesday, January 9: 4.00 hours</span>\n\t\t\t<ul role="group">\n\t\t\t\t<li>\n\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 2.00</span> &ndash; <a href="javascript:void(0);">Create component that...</a>\n\t\t\t\t</li>\n\t\t\t</ul>\n\t\t</li>\n\t</ul> \n\t<li class="parent_li" role="treeitem">\n\t\t<span title="Collapse this branch"><i class="fa fa-lg fa-folder-open"></i> Carpal hygroma</span>\n\t\t<ul role="group">\n\t\t\t<li class="parent_li" role="treeitem">\n\t\t\t\t<span class="label label-success" title="Collapse this branch"><i class="fa fa-lg fa-minus-circle"></i> Monday, January 14: 8.00 hours</span>\n\t\t\t\t<ul role="group">\n\t\t\t\t\t<li>\n\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 7.75</span> &ndash; <a href="javascript:void(0);">Writing documentation...</a>\n\t\t\t\t\t</li>\n\t\t\t\t\t<li>\n\t\t\t\t\t\t<span><i class="fa fa-clock-o"></i> 0.25</span> &ndash; <a href="javascript:void(0);">Reverting code back to...</a>\n\t\t\t\t\t</li>\n\t\t\t\t</ul>\n\t\t\t</li>\n\t\t</ul> \n\t</li> -->');
+      __out.push('\n</td>\n<td class="hidden-xs hidden-sm">\n\t<a class="remove label label-danger pull-right padding-5 js-delete-condition" href="#"  data-id="');
+    
+      __out.push(__sanitize(this.id));
+    
+      __out.push('">\n\t\t<i class="glyphicon glyphicon-remove"></i> remove\n\t</a>\t\n\t<a class="remove label label-primary padding-5 js-medication-add" href="#" data-id="');
+    
+      __out.push(__sanitize(this.id));
+    
+      __out.push('">\n\t\t<i class="fa fa-plus-square"></i> add meds\n\t</a>\n</td>');
     
     }).call(this);
     
@@ -4340,7 +4721,7 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<ul role="tree" class="condition-tree"></ul>\n\n');
+      __out.push('<tbody>\n</tbody>\n');
     
     }).call(this);
     
@@ -5178,7 +5559,7 @@ module.exports = function (__obj) {
     
       __out.push(__sanitize(this.address));
     
-      __out.push('</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<p class="text-muted">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-calendar"></i>&nbsp;&nbsp;<span class="txt-color-darken">Next appointment on <a href="javascript:void(0);" rel="tooltip" title="" data-placement="top" data-original-title="Create an Appointment">4:30 PM</a></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<p class="font-md">\n\t\t\t\t\t\t\t\t\t\t\t\t<i>Patient summary...</i>\n\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t<p>\n\n\t\t\t\t\t\t\t\t\t\t\t\tEt harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio\n\t\t\t\t\t\t\t\t\t\t\t\tcumque nihil impedit quo minus id quod maxime placeat facere\n\n\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);" class="btn btn-default btn-xs"><i class="fa fa-envelope-o"></i> Send Message</a>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="col-sm-3">\n\t\t\t\t\t\t\t\t\t\t\t<h1><small>Healthcare team:</small></h1>\n\t\t\t\t\t\t\t\t\t\t\t<ul class="list-inline friends-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/1.png" alt="friend-1">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/2.png" alt="friend-2">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/3.png" alt="friend-3">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/4.png" alt="friend-4">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/5.png" alt="friend-5">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/male.png" alt="friend-6">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\n\t\t\t\t\t\t\t\t\t<hr>\n\n\t\t\t\t\t\t\t\t\t<div class="padding-10">\n\n\t\t\t\t\t\t\t\t\t\t<ul class="nav nav-tabs tabs-pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li class="active">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#a1" data-toggle="tab">Conditions</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#a2" data-toggle="tab">Visits</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="pull-left">\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="margin-top-10 display-inline"><i class="fa fa-plus-circle text-success"></i> Metrics</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\n\t\t\t\t\t\t\t\t\t\t<div class="tab-content padding-top-10">\n\t\t\t\t\t\t\t\t\t\t\t<div class="tab-pane fade in active" id="a1">\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="p-wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body">\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="tree js-conditions-list">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success condition-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t</article>\n\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<div class="tab-pane fade" id="a2">\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="alert alert-info fade in">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<button class="close" data-dismiss="alert">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t×\n\t\t\t\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<i class="fa-fw fa fa-info"></i>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<strong>51 new members </strong>joined today!\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/female.png"><a href="javascript:void(0);">Jenn Wilson</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\ttravis@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Marshall Hitt</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmarshall@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Joe Cadena</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tjoe@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Mike McBride</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmike@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Travis Wilson</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\ttravis@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Marshall Hitt</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmarshall@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="Joe Cadena joe@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Joe Cadena</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tjoe@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Mike McBride</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmike@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Marshall Hitt</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmarshall@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);">Joe Cadena</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tjoe@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="user" title="email@company.com">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/avatars/male.png"><a href="javascript:void(0);"> Mike McBride</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="email">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tmike@company.com\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="text-center">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<ul class="pagination pagination-sm">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li class="disabled">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Prev</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li class="active">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">1</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">2</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">3</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">...</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">99</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Next</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t</div><!-- end tab -->\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end row -->\n\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="col-sm-12 col-md-12 col-lg-6">\n\t\t\t\t\t\t<!-- widget grid -->\n\t\t\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t\t\t<!-- row -->\n\t\t\t\t\t\t\t<div class="row">\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t\t\t<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12">\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="wid-id-bpgraph" data-widget-colorbutton="false" data-widget-editbutton="false">\n\t\t\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-bar-chart-o"></i> </span>\n\t\t\t\t\t\t\t\t\t\t\t<h2>Blood Pressure</h2>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body no-padding">\n\t\t\t\t\t\t\t\t\t\t\t\t<div id="bp-stats" class="chart has-legend"></div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget content -->\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget -->\n\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="wid-id-bglucose" data-widget-colorbutton="false" data-widget-editbutton="false">\n\t\t\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-bar-chart-o"></i> </span>\n\t\t\t\t\t\t\t\t\t\t\t<h2>Blood Glucose</h2>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</header>\n\n\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t\t\t<!-- This area used as dropdown edit box -->\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t<p class="alert alert-success"> <i class="fa fa-lock"></i> Locked widgets lock the widget to the base grid (<i>you will not be able to drag this widget</i> ). This also allows you to append and use input text elmenets on the widget header. </p>\n\t\t\t\t\t\t\t\t\t\t\t\t<code>data-widget-sortable="<strong>false</strong>"</code>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget content -->\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t\t</article>\n\t\t\t\t\t\t\t\t<!-- WIDGET END -->\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</section>\n\t\t\t\t\t\t<!-- end widget grid -->\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n<!-- end row -->\n\n\n<script type="text/javascript">\n// DO NOT REMOVE : GLOBAL FUNCTIONS!\npageSetUp()\n\n// PAGE RELATED SCRIPTS\n\n</script>\n');
+      __out.push('</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<p class="text-muted">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-calendar"></i>&nbsp;&nbsp;<span class="txt-color-darken">Next appointment on <a href="javascript:void(0);" rel="tooltip" title="" data-placement="top" data-original-title="Create an Appointment">4:30 PM</a></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<p class="font-md">\n\t\t\t\t\t\t\t\t\t\t\t\t<i>Patient summary...</i>\n\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t<p>\n\n\t\t\t\t\t\t\t\t\t\t\t\tEt harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio\n\t\t\t\t\t\t\t\t\t\t\t\tcumque nihil impedit quo minus id quod maxime placeat facere\n\n\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);" class="btn btn-default btn-xs"><i class="fa fa-envelope-o"></i> Send Message</a>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="col-sm-3">\n\t\t\t\t\t\t\t\t\t\t\t<h1><small>Healthcare team:</small></h1>\n\t\t\t\t\t\t\t\t\t\t\t<ul class="list-inline friends-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/1.png" alt="friend-1">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/2.png" alt="friend-2">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/3.png" alt="friend-3">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/4.png" alt="friend-4">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/5.png" alt="friend-5">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/male.png" alt="friend-6">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\n\t\t\t\t\t\t\t\t\t<hr>\n\n\t\t\t\t\t\t\t\t\t<div class="padding-10">\n\n\t\t\t\t\t\t\t\t\t\t<ul class="nav nav-tabs tabs-pull-left">\n\t\t\t\t\t\t\t\t\t\t\t<li class="active">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#a1" data-toggle="tab">Conditions</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#a2" data-toggle="tab">Medications</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#a2" data-toggle="tab">Contact Details</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</ul>\n\n\t\t\t\t\t\t\t\t\t\t<div class="tab-content padding-top-10">\n\t\t\t\t\t\t\t\t\t\t\t<div class="tab-pane fade in active" id="a1">\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="p-wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body">\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<table class="table table-striped table-forum js-conditions-list">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<thead>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Condition</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Diagnosed</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Medications</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span2 sortable align-left">Action</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</thead>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="tree js-conditions-list">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</table>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success condition-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t</article>\n\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<div class="tab-pane fade" id="a2">\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="p-wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body">\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<table class="table table-striped table-forum js-medications-list">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<thead>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Medication</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Prescription Date</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Finished</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span2 sortable align-left">Action</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</thead>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="tree js-medications-list">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</table>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success medication-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t</article>\n\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t</div><!-- end tab -->\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end row -->\n\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="col-sm-12 col-md-12 col-lg-6">\n\t\t\t\t\t\t<!-- widget grid -->\n\t\t\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t\t\t<!-- row -->\n\t\t\t\t\t\t\t<div class="row">\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t\t\t<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12 sortable-grid ui-sortable">\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="wid-id-bpgraph" data-widget-colorbutton="false" data-widget-editbutton="false">\n\t\t\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-bar-chart-o"></i> </span>\n\t\t\t\t\t\t\t\t\t\t\t<h2>Blood Pressure</h2>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body no-padding">\n\t\t\t\t\t\t\t\t\t\t\t\t<div id="bp-stats" class="chart has-legend"></div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget content -->\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget -->\n\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="wid-id-bggraph" data-widget-colorbutton="false" data-widget-editbutton="false">\n\t\t\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-bar-chart-o"></i> </span>\n\t\t\t\t\t\t\t\t\t\t\t<h2>Blood Glucose</h2>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</header>\n\n\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t\t\t<!-- This area used as dropdown edit box -->\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t\t\t<div id="bg-stats" class="chart has-legend"></div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget content -->\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget -->\n\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="wid-id-weightgraph" data-widget-colorbutton="false" data-widget-editbutton="false">\n\t\t\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-bar-chart-o"></i> </span>\n\t\t\t\t\t\t\t\t\t\t\t<h2>Weight</h2>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</header>\n\n\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t\t\t<!-- This area used as dropdown edit box -->\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t\t\t<div id="weight-stats" class="chart has-legend"></div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget content -->\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget -->\n\t\t\t\t\t\t\t\t</article>\n\t\t\t\t\t\t\t\t<!-- WIDGET END -->\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</section>\n\t\t\t\t\t\t<!-- end widget grid -->\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n<!-- end row -->\n\n\n<script type="text/javascript">\n// DO NOT REMOVE : GLOBAL FUNCTIONS!\npageSetUp()\n\n// PAGE RELATED SCRIPTS\n\n</script>\n');
     
     }).call(this);
     

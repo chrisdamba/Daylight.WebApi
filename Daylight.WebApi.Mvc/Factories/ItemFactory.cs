@@ -65,12 +65,14 @@ namespace Daylight.WebApi.Mvc.Factories
             {
                 foreach (var med in medications)
                 {
-                    med.State = EntityState.Deleted;
+                    med.State = EntityState.Modified;
+                    med.FinishedAt = DateTime.UtcNow;
                 }
             }
 
             // Delete condition
-            condition.State = EntityState.Deleted;
+            condition.State = EntityState.Modified;
+            condition.FinishedAt = DateTime.UtcNow;
             foreach (var c in patient.Conditions.Where(x => x.ConditionId != conditionId))
             {
                 c.State = EntityState.Modified;

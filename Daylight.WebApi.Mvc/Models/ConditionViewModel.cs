@@ -28,7 +28,7 @@ namespace Daylight.WebApi.Mvc.Models
             this.PatientId = condition.PatientId;
             this.ConceptId = condition.ConceptId;
             this.Name = condition.Name;
-            this.StartedAt = condition.StartedAt;
+            this.StartedAt = condition.StartedAt.ToString("dddd, dd MMMM yyyy hh:mm"); ;
             this.FinishedAt = condition.FinishedAt;
             this.Medications = condition.Medications.Select(m => new MedicationViewModel(m)).ToArray();
         }
@@ -71,7 +71,7 @@ namespace Daylight.WebApi.Mvc.Models
         /// Gets or sets when the patient condition started.
         /// </summary>
         [DataMember]
-        public DateTime StartedAt { get; set; }
+        public string StartedAt { get; set; }
 
         /// <summary>
         /// Gets or sets when the patient condition ended/treated.
@@ -93,7 +93,7 @@ namespace Daylight.WebApi.Mvc.Models
             else
             {
                 condition.State = EntityState.Modified;
-                condition.StartedAt = StartedAt;
+                condition.StartedAt =  Convert.ToDateTime(StartedAt);
             }
             
             // Populate properties
