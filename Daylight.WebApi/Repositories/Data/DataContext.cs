@@ -63,5 +63,13 @@ namespace Daylight.WebApi.Repositories.Data
         {
             get { return base.Vitals; }
         }
+
+        /// <summary>
+        /// Gets the event table.
+        /// </summary>
+        public IDbSet<Event> Events
+        {
+            get { return base.Events;  }
+        }
     }
 }

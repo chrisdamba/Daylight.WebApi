@@ -104,12 +104,14 @@
       <DependentUpon>Model.edmx</DependentUpon>
     </Compile>
     <Compile Include="Repositories\Data\RepositoryBase.cs" />
+    <Compile Include="Repositories\EventRepository.cs" />
     <Compile Include="Repositories\PatientRepository.cs" />
     <Compile Include="Security\BaseViewPage.cs" />
     <Compile Include="Security\Crypto.cs" />
     <Compile Include="Security\CustomPrincipal.cs" />
     <Compile Include="Security\Factories\DataContextSecurityFactory.cs" />
     <Compile Include="Security\Factories\SecurityFactory.cs" />
+    <Compile Include="Services\EventService.cs" />
     <Compile Include="Services\LoginService.cs" />
     <Compile Include="Services\PatientService.cs" />
   </ItemGroup>

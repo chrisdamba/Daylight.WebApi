@@ -149,6 +149,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\ConditionController.cs" />
+    <Compile Include="Api\EventController.cs" />
     <Compile Include="Api\LoginController.cs" />
     <Compile Include="Api\MedicationController.cs" />
     <Compile Include="Api\PatientController.cs" />

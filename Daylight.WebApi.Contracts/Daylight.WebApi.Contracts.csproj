@@ -45,6 +45,8 @@
     <Compile Include="Entities\AuditAction.cs" />
     <Compile Include="Entities\Condition.cs" />
     <Compile Include="Entities\Condition.Local.cs" />
+    <Compile Include="Entities\Event.cs" />
+    <Compile Include="Entities\Event.Local.cs" />
     <Compile Include="Entities\IStateEntity.cs" />
     <Compile Include="Entities\Medication.cs" />
     <Compile Include="Entities\Medication.Local.cs" />
@@ -59,7 +61,10 @@
     <Compile Include="Entities\User.Local.cs" />
     <Compile Include="Entities\Vital.cs" />
     <Compile Include="Entities\Vital.Local.cs" />
+    <Compile Include="EventFilter.cs" />
     <Compile Include="IConditionRepository.cs" />
+    <Compile Include="IEventRepository.cs" />
+    <Compile Include="IEventService.cs" />
     <Compile Include="IPatientRepository.cs" />
     <Compile Include="IPatientService.cs" />
     <Compile Include="PatientEventArgs.cs" />

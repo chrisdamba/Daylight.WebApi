@@ -13,6 +13,7 @@
         <EntityTypeShape EntityType="DaylightModel.User" Width="1.5" PointX="3.375" PointY="0.875" />
         <EntityTypeShape EntityType="DaylightModel.Vital" Width="1.5" PointX="8.125" PointY="3.875" />
         <AssociationConnector Association="DaylightModel.FK_Vitals_Patient" />
+        <EntityTypeShape EntityType="DaylightModel.Event" Width="1.5" PointX="0.75" PointY="0.75" />
         </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
