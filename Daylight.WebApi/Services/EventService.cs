@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq.Expressions;
 using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Contracts.Entities;
 using Daylight.WebApi.Core.IoC;
@@ -28,7 +29,14 @@ namespace Daylight.WebApi.Services
 
         public IEnumerable<Event> List(out int totalCount, EventFilter filter, string search, int skip = 0, int take = 100)
         {
-            throw new NotImplementedException();
+            int page = (skip/take) + 1;
+
+            Expression<Func<Event, bool>> query = null;
+
+            if (!string.IsNullOrEmpty(search))
+                query = x => (x.Title.Contains(search) || x.Colour.Contains(search) || x.Description.Contains(search) || x.Location.Contains(search));
+            var results = eventRepository.List(out totalCount, query, page, take);
+            return totalCount == 0 ? new Event[0] : eventRepository.Get(results);
         }
 
         public void Delete(Guid id)

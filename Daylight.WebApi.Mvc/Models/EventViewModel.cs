@@ -26,8 +26,8 @@ namespace Daylight.WebApi.Mvc.Models
             Description = calendarEvent.Description;
             Location = calendarEvent.Location;
             Colour = calendarEvent.Colour;
-            StartDate = calendarEvent.StartDate.ToString("dddd, dd MMMM yyyy hh:mm"); ;
-            EndDate = calendarEvent.EndDate.ToString("dddd, dd MMMM yyyy hh:mm");
+            StartDate = calendarEvent.StartDate;
+            EndDate = calendarEvent.EndDate;
         }
 
         /// <summary>
@@ -64,13 +64,13 @@ namespace Daylight.WebApi.Mvc.Models
         /// Gets or sets the start date.
         /// </summary>
         [DataMember]
-        public string StartDate { get; set; }
+        public DateTime StartDate { get; set; }
 
         /// <summary>
         /// Gets or sets the end date.
         /// </summary>
         [DataMember]
-        public string EndDate { get; set; }
+        public DateTime EndDate { get; set; }
 
         public Event ToEntity(Event calendarEvent)
         {
@@ -81,7 +81,7 @@ namespace Daylight.WebApi.Mvc.Models
             else
             {
                 calendarEvent.State = EntityState.Modified;
-                calendarEvent.StartDate = Convert.ToDateTime(StartDate);
+                calendarEvent.StartDate = StartDate;
             }
 
             // Populate properties
@@ -90,7 +90,7 @@ namespace Daylight.WebApi.Mvc.Models
             calendarEvent.Description = Description;
             calendarEvent.Location = Location;
             calendarEvent.Colour = Colour;
-            calendarEvent.EndDate = Convert.ToDateTime(EndDate);
+            calendarEvent.EndDate = EndDate;
 
             return calendarEvent;
         }
