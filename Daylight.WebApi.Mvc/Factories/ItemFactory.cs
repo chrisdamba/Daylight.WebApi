@@ -11,10 +11,12 @@ namespace Daylight.WebApi.Mvc.Factories
     public class ItemFactory : IItemFactory
     {
         private readonly IPatientService patientService;
+        private readonly IEventService eventService;
 
-        public ItemFactory(IPatientService patientService)
+        public ItemFactory(IPatientService patientService, IEventService eventService)
         {
             this.patientService = patientService;
+            this.eventService = eventService;
         }
 
         public virtual void Delete(Guid patientId)
@@ -43,6 +45,11 @@ namespace Daylight.WebApi.Mvc.Factories
             }
 
             patientService.Save(patient);
+        }
+
+        public void DeleteEvent(Guid eventId)
+        {
+            eventService.Delete(eventId);
         }
 
 
@@ -222,6 +229,15 @@ namespace Daylight.WebApi.Mvc.Factories
 
             patientService.Save(patient);
             return medication;
+        }
+
+        public Event Save(EventViewModel model)
+        {
+            var calendarEvent = model.Id != Guid.Empty ? eventService.Get(model.Id) : null;
+            calendarEvent = model.ToEntity(calendarEvent);
+
+            eventService.Save(calendarEvent);
+            return calendarEvent;
         }
     }
 }

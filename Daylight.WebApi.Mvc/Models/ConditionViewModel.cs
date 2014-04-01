@@ -28,7 +28,7 @@ namespace Daylight.WebApi.Mvc.Models
             this.PatientId = condition.PatientId;
             this.ConceptId = condition.ConceptId;
             this.Name = condition.Name;
-            this.StartedAt = condition.StartedAt.ToString("dddd, dd MMMM yyyy hh:mm"); ;
+            this.StartedAt = condition.StartedAt.ToString("dddd, dd MMMM yyyy hh:mm"); 
             this.FinishedAt = condition.FinishedAt;
             this.Medications = condition.Medications.Select(m => new MedicationViewModel(m)).ToArray();
         }

@@ -165,8 +165,10 @@
     <Compile Include="Controllers\ErrorController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LoginControllerBase.cs" />
+    <Compile Include="Factories\EventViewFactory.cs" />
     <Compile Include="Factories\Home\HomeModel.cs" />
     <Compile Include="Factories\Home\IViewFactory.cs" />
+    <Compile Include="Factories\IEventViewFactory.cs" />
     <Compile Include="Factories\IItemFactory.cs" />
     <Compile Include="Factories\ItemFactory.cs" />
     <Compile Include="Factories\IViewFactory.cs" />
@@ -175,6 +177,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\ConditionViewModel.cs" />
+    <Compile Include="Models\EventViewModel.cs" />
     <Compile Include="Models\MedicationViewModel.cs" />
     <Compile Include="Models\PatientViewModel.cs" />
     <Compile Include="Models\Security\LoginViewModel.cs" />

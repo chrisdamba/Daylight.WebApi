@@ -31,6 +31,9 @@ namespace Daylight.WebApi.Mvc
             container.RegisterType<IPatientService, PatientService>();
             container.RegisterType<IItemFactory, ItemFactory>();
             container.RegisterType<IViewFactory, PatientViewFactory>();
+            container.RegisterType<IEventRepository, EventRepository>();
+            container.RegisterType<IEventService, EventService>();
+            container.RegisterType<IEventViewFactory, EventViewFactory>();
 
             return container;
         }

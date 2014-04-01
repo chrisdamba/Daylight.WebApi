@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using Daylight.WebApi.Contracts.Entities;
 using Daylight.WebApi.Mvc.Models;
 
@@ -12,6 +9,8 @@ namespace Daylight.WebApi.Mvc.Factories
         void Delete(Guid patientId);
 
         void DeleteVital(Guid observationId, Guid patientId);
+
+        void DeleteEvent(Guid eventId);
 
         void Delete(Guid conditionId, Guid patientId);
 
@@ -24,5 +23,7 @@ namespace Daylight.WebApi.Mvc.Factories
         Condition Save(ConditionViewModel model, Guid patientId);
 
         Medication Save(MedicationViewModel model, Guid patientId, Guid conditionId);
+
+        Event Save(EventViewModel model);
     }
 }

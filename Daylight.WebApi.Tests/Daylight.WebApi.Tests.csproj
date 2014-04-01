@@ -115,6 +115,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Domain\Repositories\EventRepositoryTests.cs" />
     <Compile Include="Domain\Repositories\FakeDbSet.cs" />
     <Compile Include="Domain\Repositories\PatientRepositoryTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
