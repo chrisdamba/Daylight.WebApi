@@ -85,7 +85,7 @@ namespace Daylight.WebApi.Repositories
                 if (criteria == null) criteria = a => true;
 
                 // Establish a LINQ to SQL Query
-                var query = context.Events.Where(criteria).OrderByDescending(a => a.StartDate);
+                var query = context.Events.Where(criteria).OrderByDescending(a => a.Start);
 
                 // Execute for Total Count
                 totalCount = query.Count();

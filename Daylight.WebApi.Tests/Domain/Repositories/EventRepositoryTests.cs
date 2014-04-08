@@ -43,7 +43,7 @@ namespace Daylight.WebApi.Tests.Domain.Repositories
                 target.Create(entity);
 
                 Assert.AreNotEqual(Guid.Empty, entity.EventId);
-                Assert.AreApproximatelyEqual(DateTime.Now, entity.StartDate, TimeSpan.FromSeconds(1));
+                Assert.AreApproximatelyEqual(DateTime.Now, entity.Start, TimeSpan.FromSeconds(1));
             }
         }
     }

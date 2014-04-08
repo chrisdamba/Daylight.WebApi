@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Data;
+using System.Data.Common;
+using System.Drawing;
 using System.Runtime.Serialization;
 using Daylight.WebApi.Contracts.Entities;
 
@@ -26,8 +28,10 @@ namespace Daylight.WebApi.Mvc.Models
             Description = calendarEvent.Description;
             Location = calendarEvent.Location;
             Colour = calendarEvent.Colour;
-            StartDate = calendarEvent.StartDate;
-            EndDate = calendarEvent.EndDate;
+            Start = calendarEvent.Start;
+            End = calendarEvent.End;
+            AllDay = calendarEvent.AllDay;
+            ClassName = new[] {"event", calendarEvent.Colour};
         }
 
         /// <summary>
@@ -64,24 +68,41 @@ namespace Daylight.WebApi.Mvc.Models
         /// Gets or sets the start date.
         /// </summary>
         [DataMember]
-        public DateTime StartDate { get; set; }
+        public DateTime Start { get; set; }
 
         /// <summary>
         /// Gets or sets the end date.
         /// </summary>
         [DataMember]
-        public DateTime EndDate { get; set; }
+        public DateTime End { get; set; }
+
+        /// <summary>
+        /// Gets or sets the icon.
+        /// </summary>
+        [DataMember]
+        public string Icon { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [all day].
+        /// </summary>
+        [DataMember]
+        public bool AllDay { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the class.
+        /// </summary>
+        [DataMember]
+        public string[] ClassName { get; set; }
 
         public Event ToEntity(Event calendarEvent)
         {
             if (calendarEvent == null)
             {
-                calendarEvent = new Event { State = EntityState.Added, StartDate = DateTime.Now };
+                calendarEvent = new Event { State = EntityState.Added, Start = DateTime.Now, End = DateTime.Now.AddMinutes(1) };
             }
             else
             {
                 calendarEvent.State = EntityState.Modified;
-                calendarEvent.StartDate = StartDate;
             }
 
             // Populate properties
@@ -90,7 +111,8 @@ namespace Daylight.WebApi.Mvc.Models
             calendarEvent.Description = Description;
             calendarEvent.Location = Location;
             calendarEvent.Colour = Colour;
-            calendarEvent.EndDate = EndDate;
+            calendarEvent.Icon = Icon;
+            calendarEvent.AllDay = AllDay;
 
             return calendarEvent;
         }

@@ -283,7 +283,7 @@ module.exports = ConfigMerger;
 });
 
 ;require.register("daylight/application", function(exports, require, module) {
-var Application, ApplicationModel, DashboardView, PatientCollection, PatientCreateView, PatientEditView, PatientListView, PatientModel, PatientView, Router,
+var Application, ApplicationModel, DashboardView, EventCollection, EventModel, EventsCalendarView, PatientCollection, PatientCreateView, PatientEditView, PatientListView, PatientModel, PatientView, Router,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -306,6 +306,12 @@ Router = require('router/router');
 
 PatientCollection = require('daylight/collections/patient_collection');
 
+EventCollection = require('daylight/collections/event_collection');
+
+EventModel = require('daylight/models/event_model');
+
+EventsCalendarView = require('daylight/views/events/events_calendar_view');
+
 Application = (function(_super) {
   __extends(Application, _super);
 
@@ -313,6 +319,7 @@ Application = (function(_super) {
     this.$el = $el;
     this.onPatientPageChanged = __bind(this.onPatientPageChanged, this);
     this.showPatientCreate = __bind(this.showPatientCreate, this);
+    this.showCalendar = __bind(this.showCalendar, this);
     this.showDefault = __bind(this.showDefault, this);
     Application.__super__.constructor.call(this, this.$el);
     this.router = new Router();
@@ -334,6 +341,11 @@ Application = (function(_super) {
     window.App.eventAggregator.on('navigate:addpatient', (function(_this) {
       return function(e) {
         return _this.showPatientCreate(e || {});
+      };
+    })(this));
+    window.App.eventAggregator.on('navigate:calendar', (function(_this) {
+      return function(e) {
+        return _this.showCalendar(e || {});
       };
     })(this));
     window.App.eventAggregator.on('navigate:patient', (function(_this) {
@@ -378,6 +390,21 @@ Application = (function(_super) {
     route = this.appModel.get('routes')["default"];
     route = "" + route;
     this.doShow(DashboardView);
+    return this.router.navigate(route);
+  };
+
+  Application.prototype.showCalendar = function(e) {
+    var collection, model, route, view;
+    route = this.appModel.get('routes').calendar;
+    route = "" + route;
+    collection = new EventCollection;
+    collection.fetch();
+    model = new EventModel;
+    view = new EventsCalendarView({
+      collection: collection,
+      model: model
+    });
+    this.showView(view);
     return this.router.navigate(route);
   };
 
@@ -594,6 +621,71 @@ ConditionSearchCollection = (function(_super) {
 })(support.Collection);
 
 module.exports = ConditionSearchCollection;
+
+});
+
+;require.register("daylight/collections/event_collection", function(exports, require, module) {
+var EventCollection, EventModel,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+EventModel = require('daylight/models/event_model');
+
+EventCollection = (function(_super) {
+  __extends(EventCollection, _super);
+
+  function EventCollection() {
+    return EventCollection.__super__.constructor.apply(this, arguments);
+  }
+
+  EventCollection.prototype.model = EventModel;
+
+  EventCollection.prototype.url = function() {
+    if (this.model) {
+      return "API/Events";
+    } else {
+      return '';
+    }
+  };
+
+  EventCollection.prototype.initialize = function(models, options) {
+    EventCollection.__super__.initialize.call(this, models, options);
+    this.on('index-up', this.onIndexUp);
+    return this.on('index-down', this.onIndexDown);
+  };
+
+  EventCollection.prototype.fetch = function(options) {
+    options = options ? _.clone(options) : {};
+    return EventCollection.__super__.fetch.call(this, options);
+  };
+
+  EventCollection.prototype.changeIndex = function(model, to) {
+    var from;
+    from = this.models.indexOf(model);
+    this.models.splice(to, 0, this.models.splice(from, 1)[0]);
+    return this.trigger('reorder', {
+      from: {
+        index: from
+      },
+      to: {
+        index: to
+      }
+    });
+  };
+
+  EventCollection.prototype.onIndexUp = function(model) {
+    return this.changeIndex(model, this.indexOf(model) + 1);
+  };
+
+  EventCollection.prototype.onIndexDown = function(model) {
+    return this.changeIndex(model, this.indexOf(model) - 1);
+  };
+
+  return EventCollection;
+
+})(support.Collection);
+
+module.exports = EventCollection;
 
 });
 
@@ -905,7 +997,8 @@ ApplicationModel = (function(_super) {
       "default": '',
       addwidget: 'addwidget',
       patients: 'view/patients',
-      patient: 'view/patients/:id'
+      patient: 'view/patients/:id',
+      calendar: 'view/events'
     }
   };
 
@@ -937,17 +1030,8 @@ ConditionModel = (function(_super) {
       name: void 0,
       synonyms: void 0,
       startedAt: void 0,
-      finishedAt: void 0,
-      medications: void 0
+      finishedAt: void 0
     };
-  };
-
-  ConditionModel.prototype.conceptId = function() {
-    return this.get('conceptId');
-  };
-
-  ConditionModel.prototype.patientId = function() {
-    return this.get('patientId');
   };
 
   ConditionModel.prototype.value = function() {
@@ -962,28 +1046,8 @@ ConditionModel = (function(_super) {
     return this.get('synonyms');
   };
 
-  ConditionModel.prototype.initialize = function(options) {
-    return ConditionModel.__super__.initialize.call(this, options);
-  };
-
   ConditionModel.prototype.urlRoot = function() {
-    return "/API/Patients/" + (this.patientId()) + "/Conditions";
-  };
-
-  ConditionModel.prototype.getSafeDateStarted = function() {
-    var arrays, dateArray, dateString, safeDate, timeArray, timeString;
-    safeDate = this.get('startedAt');
-    if (safeDate) {
-      arrays = safeDate.split('T');
-      dateArray = arrays[0].split('-');
-      timeArray = arrays[1].split(':');
-      timeString = "" + timeArray[0] + ":" + timeArray[1];
-      dateString = "" + dateArray[2] + "/" + dateArray[1] + "/" + dateArray[0];
-      safeDate = "" + dateString + " " + timeString;
-    } else {
-      safeDate = '';
-    }
-    return safeDate;
+    return "/API/Patients/" + (this.get('patientId')) + "/Conditions";
   };
 
   ConditionModel.prototype.toJSON = function() {
@@ -992,11 +1056,69 @@ ConditionModel = (function(_super) {
     return json;
   };
 
+  ConditionModel.prototype.initialize = function(options) {
+    return ConditionModel.__super__.initialize.call(this, options);
+  };
+
   return ConditionModel;
 
 })(support.Model);
 
 module.exports = ConditionModel;
+
+});
+
+;require.register("daylight/models/event_model", function(exports, require, module) {
+var EventModel,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+EventModel = (function(_super) {
+  __extends(EventModel, _super);
+
+  function EventModel() {
+    this.urlRoot = __bind(this.urlRoot, this);
+    return EventModel.__super__.constructor.apply(this, arguments);
+  }
+
+  EventModel.prototype.defaults = function() {
+    return {
+      title: void 0,
+      description: void 0,
+      location: void 0,
+      colour: void 0,
+      start: void 0,
+      end: void 0,
+      icon: void 0,
+      allDay: void 0,
+      className: void 0
+    };
+  };
+
+  EventModel.prototype.value = function() {
+    return this.get('id');
+  };
+
+  EventModel.prototype.initialize = function(options) {
+    return EventModel.__super__.initialize.call(this, options);
+  };
+
+  EventModel.prototype.urlRoot = function() {
+    return "/API/Events";
+  };
+
+  EventModel.prototype.toJSON = function() {
+    var json;
+    json = EventModel.__super__.toJSON.apply(this, arguments);
+    return json;
+  };
+
+  return EventModel;
+
+})(support.Model);
+
+module.exports = EventModel;
 
 });
 
@@ -1418,65 +1540,51 @@ module.exports = AddWidgetModalView;
 });
 
 ;require.register("daylight/views/condition/condition_list_item_view", function(exports, require, module) {
-var ConditionCollection, ConditionListItemTemplate, ConditionListItemView, MedicationModel, MedicationsView,
+var ConditionListItemView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-ConditionCollection = require('daylight/collections/condition_collection');
-
-ConditionListItemTemplate = require('templates/condition/condition_list_item_template');
-
-MedicationModel = require('daylight/models/medication_model');
-
-MedicationsView = require('daylight/views/medication/medications_view');
 
 ConditionListItemView = (function(_super) {
   __extends(ConditionListItemView, _super);
 
   function ConditionListItemView() {
-    this.onAddMedicationClick = __bind(this.onAddMedicationClick, this);
-    this.onDeleteCondition = __bind(this.onDeleteCondition, this);
     this.onDestroy = __bind(this.onDestroy, this);
+    this.onDeleteConditionClick = __bind(this.onDeleteConditionClick, this);
     this.render = __bind(this.render, this);
-    this.template = __bind(this.template, this);
     return ConditionListItemView.__super__.constructor.apply(this, arguments);
   }
 
-  ConditionListItemView.prototype.tagName = 'tr';
+  ConditionListItemView.prototype.tagName = 'li';
 
-  ConditionListItemView.prototype.className = 'parent-tr';
+  ConditionListItemView.prototype.className = 'dd-item';
+
+  ConditionListItemView.prototype.template = "<div class='dd-handle'><%= label %> <a href='#' class='remove label label-danger pull-right padding-5 condition-delete' data-id='<%= value %>> <i class='glyphicon glyphicon-remove'></i> remove </a> </div>";
 
   ConditionListItemView.prototype.events = {
-    'click .js-delete-condition': 'onDeleteCondition',
-    'click .js-medication-add': 'onAddMedicationClick'
-  };
-
-  ConditionListItemView.prototype.template = function(data) {
-    return ConditionListItemTemplate(data);
+    'click .condition-delete': 'onDeleteConditionClick'
   };
 
   ConditionListItemView.prototype.initialize = function(options) {
-    ConditionListItemView.__super__.initialize.call(this, options);
-    this.bindTo(this.model, 'change', this.render);
-    return this.bindTo(this.model, 'destroy', this.onDestroy);
+    return ConditionListItemView.__super__.initialize.call(this, options);
   };
 
   ConditionListItemView.prototype.render = function() {
-    this.$el.html(this.template(this.model.toJSON()));
+    this.$el.html(_.template(this.template, {
+      label: this.model.label(),
+      value: this.model.value()
+    }));
     return this;
   };
 
-  ConditionListItemView.prototype.onDestroy = function() {
-    return this.$el.remove();
-  };
-
-  ConditionListItemView.prototype.onDeleteCondition = function(e) {
+  ConditionListItemView.prototype.onDeleteConditionClick = function(e) {
     var _model;
+    e.preventDefault();
+    e.stopPropagation();
     _model = this.model;
-    $.SmartMessageBox({
-      title: 'Shekhinah Surgery Condition Remove Alert!',
-      content: 'Removing this condition will also remove the underlying medications for that condition. Are you sure you want to remove this condition?',
+    return $.SmartMessageBox({
+      title: 'Shekinah Surgery Condition Remove Alert!',
+      content: 'Are you sure you want to remove this condition?',
       buttons: '[No][Yes]'
     }, function(ButtonPressed) {
       if (ButtonPressed === 'Yes') {
@@ -1484,40 +1592,34 @@ ConditionListItemView = (function(_super) {
           wait: true
         });
         $.smallBox({
-          title: 'Shekhinah Surgery Condition Remove',
+          title: 'Shekinah Surgery Condition Remove',
           content: "<i class='fa fa-clock-o'></i> <i>Condition successfully removed...</i>",
           color: '#659265',
           iconSmall: 'fa fa-times fa-2x fadeInRight animated',
           timeout: 4000
         });
-        window.App.eventAggregator.trigger('navigate:patient', {
-          id: _model.patientId()
-        });
+
+        /*window.App.eventAggregator.trigger 'navigate:patient',
+        					id: _model.id
+        					index: Math.min _model.get('_index'), _model.get('conditions').length-1
+        					subIndex: 0
+        					editMode: _model.get '_editMode'
+         */
       }
       if (ButtonPressed === 'No') {
         return $.smallBox({
-          title: 'Shekhinah Surgery Condition Remove',
-          content: "<i class='fa fa-clock-o'></i> <i>The application encountered an error. Condition has not been removed...</i>",
+          title: 'Shekinah Surgery Condition Remove',
+          content: "<i class='fa fa-clock-o'></i> <i>Condition has not been removed...</i>",
           color: '#C46A69',
           iconSmall: 'fa fa-times fa-2x fadeInRight animated',
           timeout: 4000
         });
       }
     });
-    return e.preventDefault();
   };
 
-  ConditionListItemView.prototype.onAddMedicationClick = function(e) {
-    var model, view;
-    e.preventDefault();
-    model = new MedicationModel;
-    model.set({
-      conditionId: this.model.value()
-    });
-    view = new MedicationsView({
-      model: model
-    });
-    return view.show();
+  ConditionListItemView.prototype.onDestroy = function() {
+    return this.leave();
   };
 
   return ConditionListItemView;
@@ -1529,105 +1631,94 @@ module.exports = ConditionListItemView;
 });
 
 ;require.register("daylight/views/condition/condition_list_view", function(exports, require, module) {
-var ConditionListItemView, ConditionListTemplate, ConditionListView,
+var ConditionListItemView, ConditionListView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 ConditionListItemView = require('daylight/views/condition/condition_list_item_view');
 
-ConditionListTemplate = require('templates/condition/condition_list_template');
-
 ConditionListView = (function(_super) {
   __extends(ConditionListView, _super);
 
   function ConditionListView() {
-    this.reset = __bind(this.reset, this);
-    this.removeCondition = __bind(this.removeCondition, this);
-    this.conditionEvent = __bind(this.conditionEvent, this);
     this.renderCondition = __bind(this.renderCondition, this);
     this.render = __bind(this.render, this);
-    this.dispose = __bind(this.dispose, this);
     return ConditionListView.__super__.constructor.apply(this, arguments);
   }
 
-  ConditionListView.prototype.tagName = 'tbody';
-
-  ConditionListView.prototype.className = 'condition-rows';
-
-  ConditionListView.prototype.template = ConditionListTemplate;
+  ConditionListView.prototype.tagName = 'ol';
 
   ConditionListView.prototype.itemView = ConditionListItemView;
 
-  ConditionListView.prototype.dispose = function() {
-    ConditionListView.__super__.dispose.apply(this, arguments);
-    return delete this.collection;
-  };
+  ConditionListView.prototype.className = 'dd-list';
 
   ConditionListView.prototype.initialize = function(options) {
-    ConditionListView.__super__.initialize.call(this, options);
-    this.listenTo(this.collection, 'add', this.renderCondition);
-    this.listenTo(this.collection, 'remove', (function(_this) {
-      return function(model, collection, options) {
-        return _this.removeCondition(model);
-      };
-    })(this));
-    this.listenTo(this.collection, 'reset', (function(_this) {
-      return function(collection, options) {
-        return _this.reset();
-      };
-    })(this));
-    return _.bindAll(this, 'render');
+    return _.extend(this, options);
   };
 
   ConditionListView.prototype.render = function() {
-    ConditionListView.__super__.render.apply(this, arguments);
-    this.$el.empty();
-    this.replaceElement(this.template());
-    this.collection.fetch();
-    this.collection.forEach(this.renderCondition, this);
+    this.addConditions(this.model);
     return this;
   };
 
-  ConditionListView.prototype.renderCondition = function(model) {
-    var view;
-    view = new ConditionListItemView({
-      model: model
-    });
-    this.conditionEvent('conditionAdded', view);
-    this.conditionEvent('conditionRendered', view);
-    return this.$el.append(this.renderChild(view).$el);
-  };
-
-  ConditionListView.prototype.conditionEvent = function(type, conditionView) {
-    return this.trigger(type, {
-      target: this,
-      conditionView: conditionView
-    });
-  };
-
-  ConditionListView.prototype.removeCondition = function(model) {
-    var view;
-    view = new ConditionListItemView({
-      model: model
-    });
-    if (view.model.id === model.id) {
-      view.leave();
-      return this.conditionEvent('conditionRemoved', view);
+  ConditionListView.prototype.displayCondition = function(index) {
+    var newCondition;
+    newCondition = this.model.get('conditions').at(index);
+    if (!this._conditionView || this._conditionView.model.id !== newCondition.id) {
+      return this.renderCondition(newCondition);
     }
   };
 
-  ConditionListView.prototype.reset = function() {
-    return this.render();
+  ConditionListView.prototype.rendersCondition = function(conditionModel) {
+    return this.$el.append(new this.itemView({
+      model: conditionModel,
+      parent: this
+    }).render().$el);
+  };
+
+  ConditionListView.prototype.renderCondition = function(conditionModel) {
+    var _ref;
+    if ((_ref = this._conditionView) != null) {
+      _ref.leave();
+    }
+    this._conditionView = new ConditionListItemView({
+      model: conditionModel
+    });
+    this.renderChild(this._conditionView);
+    this.$el.append(this._conditionView.el);
+    _.defer((function(_this) {
+      return function() {
+        return _this._conditionView.layout();
+      };
+    })(this));
+  };
+
+  ConditionListView.prototype.addConditions = function(model) {
+    this.$el.empty();
+    if (model.length) {
+      _.forEach(model, this.rendersCondition, this);
+      return this.show();
+    } else {
+      return this.hide();
+    }
+  };
+
+  ConditionListView.prototype.hide = function() {
+    this.$el.hide();
+    return this;
+  };
+
+  ConditionListView.prototype.show = function() {
+    this.$el.show();
+    return this;
   };
 
   return ConditionListView;
 
 })(support.View);
 
-if (typeof module !== "undefined" && module !== null) {
-  module.exports = ConditionListView;
-}
+module.exports = ConditionListView;
 
 });
 
@@ -1656,7 +1747,7 @@ ConditionSearchView = (function(_super) {
   ConditionSearchView.prototype.className = 'condition-search';
 
   ConditionSearchView.prototype.events = {
-    'focus #c2_condition': 'renderAutoComplete'
+    'focus #c2_condition': 'conditionsAutoComplete'
   };
 
   ConditionSearchView.prototype.initialize = function(options) {
@@ -1671,7 +1762,7 @@ ConditionSearchView = (function(_super) {
     return this;
   };
 
-  ConditionSearchView.prototype.renderAutoComplete = function() {
+  ConditionSearchView.prototype.conditionsAutoComplete = function() {
     return new AutocompleteView({
       input: $("#c2_condition"),
       model: this._collection,
@@ -1736,14 +1827,13 @@ ConditionsView = (function(_super) {
   };
 
   ConditionsView.prototype.validationOptions = {
-    ignore: [],
     rules: {
-      conceptId: {
+      condition: {
         required: true
       }
     },
     messages: {
-      conceptId: 'Please enter a condition to search'
+      condition: 'Please enter a condition to search'
     },
     highlight: function(el) {
       return $(el).closest(".form-group").removeClass("has-success").addClass("has-error");
@@ -1764,7 +1854,7 @@ ConditionsView = (function(_super) {
 
   ConditionsView.prototype.initialize = function(options) {
     ConditionsView.__super__.initialize.call(this, options);
-    window.App.eventAggregator.on('click:addentity', (function(_this) {
+    window.App.eventAggregator.on('click:addcondition', (function(_this) {
       return function(e) {
         var conceptId, name, synonyms;
         conceptId = e.get('snomed_concept_id');
@@ -1813,8 +1903,8 @@ ConditionsView = (function(_super) {
       })(this)
     });
     this.teardown();
-    return window.App.eventAggregator.trigger('navigate:patient', {
-      id: this.model.patientId()
+    return window.App.eventAggregator.trigger('navigate:pageCondition', {
+      id: this.model.patientId
     });
   };
 
@@ -1832,16 +1922,7 @@ ConditionsView = (function(_super) {
   };
 
   ConditionsView.prototype.onSaveClick = function(e) {
-    var $valid, $validator;
-    e.preventDefault();
-    $validator = $("#searchcondition").validate(this.validationOptions);
-    $valid = $('#searchcondition').valid();
-    if (!$valid) {
-      $validator.focusInvalid();
-      return false;
-    } else {
-      return this.save();
-    }
+    return this.save();
   };
 
   ConditionsView.prototype.onCancelClick = function(e) {
@@ -1924,6 +2005,483 @@ DashboardView = (function(_super) {
 
 if (typeof module !== "undefined" && module !== null) {
   module.exports = DashboardView;
+}
+
+});
+
+;require.register("daylight/views/event_add_view", function(exports, require, module) {
+
+
+});
+
+;require.register("daylight/views/events/event_add_view", function(exports, require, module) {
+
+
+});
+
+;require.register("daylight/views/events/events_calendar_view", function(exports, require, module) {
+var EventsCalendarTemplate, EventsCalendarView,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+EventsCalendarTemplate = require('templates/event/events_calendar_view_template');
+
+EventsCalendarView = (function(_super) {
+  __extends(EventsCalendarView, _super);
+
+  function EventsCalendarView() {
+    this.onAddEventClick = __bind(this.onAddEventClick, this);
+    this.onChangeViewAgendaDayClick = __bind(this.onChangeViewAgendaDayClick, this);
+    this.onChangeViewAgendaWeekClick = __bind(this.onChangeViewAgendaWeekClick, this);
+    this.onChangeViewMonthClick = __bind(this.onChangeViewMonthClick, this);
+    this.onSaveSuccess = __bind(this.onSaveSuccess, this);
+    this.onSaveStart = __bind(this.onSaveStart, this);
+    this.onRadioBtnClick = __bind(this.onRadioBtnClick, this);
+    this.onNavigate = __bind(this.onNavigate, this);
+    this.onDestroy = __bind(this.onDestroy, this);
+    this.addOne = __bind(this.addOne, this);
+    this.addAll = __bind(this.addAll, this);
+    this.renderCalendar = __bind(this.renderCalendar, this);
+    this.change = __bind(this.change, this);
+    this.initDrag = __bind(this.initDrag, this);
+    this.render = __bind(this.render, this);
+    this.template = __bind(this.template, this);
+    return EventsCalendarView.__super__.constructor.apply(this, arguments);
+  }
+
+  EventsCalendarView.prototype.events = {
+    'click #add-event': 'onAddEventClick',
+    'click #mt': 'onChangeViewMonthClick',
+    'click #ag': 'onChangeViewAgendaWeekClick',
+    'click #td': 'onChangeViewAgendaDayClick',
+    'click .js-add-vitals': 'onAddVitalsClick',
+    'click .js-btn-priority': 'onRadioBtnClick',
+    'click .js-btn-iconselect': 'onRadioBtnClick'
+  };
+
+  EventsCalendarView.prototype.template = function(data) {
+    return EventsCalendarTemplate(data);
+  };
+
+  EventsCalendarView.prototype.initialize = function(options) {
+    EventsCalendarView.__super__.initialize.call(this, options);
+    this.listenTo(this.collection, 'reset', (function(_this) {
+      return function(collection, options) {
+        return _this.addAll();
+      };
+    })(this));
+    return this.listenTo(this.collection, 'change', (function(_this) {
+      return function(collection, options) {
+        return _this.change();
+      };
+    })(this));
+  };
+
+  EventsCalendarView.prototype.render = function() {
+    this.$el.html(this.template());
+    this.renderCalendar();
+    return this;
+  };
+
+  EventsCalendarView.prototype.initDrag = function(e) {
+    var eventObject;
+    eventObject = {
+      title: $.trim(e.children().text()),
+      description: $.trim(e.children("span").attr("data-description")),
+      icon: $.trim(e.children("span").attr("data-icon")),
+      className: $.trim(e.children("span").attr("class"))
+    };
+    e.data('eventObject', eventObject);
+    e.draggable({
+      zIndex: 999,
+      revert: true,
+      revertDuration: 0
+    });
+  };
+
+  EventsCalendarView.prototype.change = function(model) {
+    var fcEvent;
+    fcEvent = this.$('#calendar').fullCalendar('clientEvents', model.get('id'))[0];
+    fcEvent.title = model.get('title');
+    fcEvent.colour = model.get('colour');
+    return this.$('#calendar').fullCalendar('updateEvent', fcEvent);
+  };
+
+  EventsCalendarView.prototype.renderCalendar = function() {
+    var hdr, self;
+    self = this;
+    this.$("#external-events > li").each(function() {
+      return self.initDrag($(this));
+    });
+    hdr = {
+      left: 'title',
+      center: 'month,agendaWeek,agendaDay',
+      right: 'prev,today,next'
+    };
+    this.$('#calendar').fullCalendar({
+      header: hdr,
+      buttonText: {
+        prev: "<i class=\"fa fa-chevron-left\"></i>",
+        next: "<i class=\"fa fa-chevron-right\"></i>"
+      },
+      editable: true,
+      droppable: true,
+      eventResize: self.eventDropOrResize,
+      events: this.collection.toJSON(),
+      drop: function(date, allDay) {
+        var copiedEventObject, model, originalEventObject;
+        console.log(self.collection);
+        originalEventObject = $(this).data('eventObject');
+        copiedEventObject = $.extend({}, originalEventObject);
+        copiedEventObject.start = date;
+        copiedEventObject.allDay = allDay;
+        $("#calendar").fullCalendar("renderEvent", copiedEventObject, true);
+        if ($("#drop-remove").is(":checked")) {
+          return model = new $(this).remove();
+        }
+      },
+      select: function(start, end, allDay) {
+        var obj, title;
+        title = prompt('Event Title:');
+        obj = {
+          title: title,
+          start: start,
+          end: end,
+          allDay: allDay
+        };
+        if (title) {
+          calendar.fullCalendar('renderEvent', obj, true);
+        }
+        return calendar.fullCalendar('unselect');
+      },
+      eventRender: function(event, element, icon) {
+        if (event.description) {
+          element.find(".fc-event-title").append("<br/><span class='ultra-light'>" + event.description + "</span>");
+        }
+        if (event.icon) {
+          return element.find(".fc-event-title").append("<i class='air air-top-right fa " + event.icon + " '></i>");
+        }
+      },
+      windowResize: function(event, ui) {
+        return $("#calendar").fullCalendar("render");
+      }
+    });
+    return this;
+  };
+
+  EventsCalendarView.prototype.addAll = function() {
+    return this.$('#calendar').fullCalendar('addEventSource', this.collection.toJSON());
+  };
+
+  EventsCalendarView.prototype.addOne = function(model) {
+    return this.$('#calendar').fullCalendar('renderEvent', model.toJSON());
+  };
+
+  EventsCalendarView.prototype.eventDropOrResize = function(e) {
+    console.log(e.id);
+    return console.log(this.model);
+  };
+
+  EventsCalendarView.prototype.editMode = function(mode) {
+    return this.model.editMode(mode);
+  };
+
+  EventsCalendarView.prototype.onDestroy = function() {
+    return window.App.eventAggregator.trigger('navigate:patients');
+  };
+
+  EventsCalendarView.prototype.onNavigate = function(e) {
+    return this.editMode(e.to.editMode);
+  };
+
+  EventsCalendarView.prototype.onRadioBtnClick = function(e) {
+    var name, val;
+    e.preventDefault();
+    name = e.currentTarget.children[0].name;
+    val = e.currentTarget.children[0].value;
+    return $("#add-event-form input[name=" + name + "]").val(val);
+  };
+
+  EventsCalendarView.prototype.onSaveStart = function(model, response, options) {};
+
+  EventsCalendarView.prototype.onSaveSuccess = function(model, response, options) {};
+
+  EventsCalendarView.prototype.onChangeViewMonthClick = function(e) {
+    e.preventDefault();
+    return this.$('#calendar').fullCalendar('changeView', 'month');
+  };
+
+  EventsCalendarView.prototype.onChangeViewAgendaWeekClick = function(e) {
+    e.preventDefault();
+    return this.$('#calendar').fullCalendar('changeView', 'agendaWeek');
+  };
+
+  EventsCalendarView.prototype.onChangeViewAgendaDayClick = function(e) {
+    e.preventDefault();
+    return this.$('#calendar').fullCalendar('changeView', 'agendaDay');
+  };
+
+  EventsCalendarView.prototype.onAddEventClick = function(e) {
+    var description, icon, location, priority, title;
+    e.preventDefault();
+    title = $("#title").val();
+    priority = $("#add-event-form input[name=priority]").val();
+    description = $("#description").val();
+    location = $("#location").val();
+    icon = $("#add-event-form input[name=iconselect]").val();
+    return this.addEvent(title, priority, description, location, icon);
+  };
+
+  EventsCalendarView.prototype.addEvent = function(title, priority, description, location, icon) {
+    var html;
+    title = !title ? "Untitled Event" : title;
+    description = !description ? "No Description" : description;
+    location = !location ? "No Location" : location;
+    icon = !icon ? " " : icon;
+    priority = !priority ? "label label-default" : priority;
+    this.model.set(this.model.parse({
+      title: title,
+      description: description,
+      location: location,
+      colour: priority,
+      icon: icon,
+      allDay: true
+    }));
+    if (this.model.isNew()) {
+      this.collection.create(this.model);
+    } else {
+      this.model.save();
+    }
+    html = $("<li><span class=\"" + priority + "\" data-description=\"" + description + "\" data-icon=\"" + icon + "\">" + title + "</span></li>").prependTo("ul#external-events").hide().fadeIn();
+    this.$("#event-container").effect("highlight", 800);
+    return this.initDrag(html);
+  };
+
+  return EventsCalendarView;
+
+})(support.View);
+
+if (typeof module !== "undefined" && module !== null) {
+  module.exports = EventsCalendarView;
+}
+
+});
+
+;require.register("daylight/views/events_calendar_view", function(exports, require, module) {
+var EventsCalendarTemplate, EventsCalendarView,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+EventsCalendarTemplate = require('templates/event/events_calendar_view_template');
+
+EventsCalendarView = (function(_super) {
+  __extends(EventsCalendarView, _super);
+
+  function EventsCalendarView() {
+    this.onAddEventClick = __bind(this.onAddEventClick, this);
+    this.onChangeViewAgendaDayClick = __bind(this.onChangeViewAgendaDayClick, this);
+    this.onChangeViewAgendaWeekClick = __bind(this.onChangeViewAgendaWeekClick, this);
+    this.onChangeViewMonthClick = __bind(this.onChangeViewMonthClick, this);
+    this.onSaveSuccess = __bind(this.onSaveSuccess, this);
+    this.onSaveStart = __bind(this.onSaveStart, this);
+    this.onNavigate = __bind(this.onNavigate, this);
+    this.onDestroy = __bind(this.onDestroy, this);
+    this.addOne = __bind(this.addOne, this);
+    this.addAll = __bind(this.addAll, this);
+    this.renderCalendar = __bind(this.renderCalendar, this);
+    this.change = __bind(this.change, this);
+    this.initDrag = __bind(this.initDrag, this);
+    this.render = __bind(this.render, this);
+    this.template = __bind(this.template, this);
+    return EventsCalendarView.__super__.constructor.apply(this, arguments);
+  }
+
+  EventsCalendarView.prototype.events = {
+    'click #add-event': 'onAddEventClick',
+    'click #mt': 'onChangeViewMonthClick',
+    'click #ag': 'onChangeViewAgendaWeekClick',
+    'click #td': 'onChangeViewAgendaDayClick',
+    'click .js-add-vitals': 'onAddVitalsClick'
+  };
+
+  EventsCalendarView.prototype.template = function(data) {
+    return EventsCalendarTemplate(data);
+  };
+
+  EventsCalendarView.prototype.initialize = function(options) {
+    EventsCalendarView.__super__.initialize.call(this, options);
+    this.listenTo(this.collection, 'reset', (function(_this) {
+      return function(collection, options) {
+        return _this.addAll();
+      };
+    })(this));
+    this.listenTo(this.collection, 'add', (function(_this) {
+      return function(collection, options) {
+        return _this.addOne();
+      };
+    })(this));
+    return this.listenTo(this.collection, 'change', (function(_this) {
+      return function(collection, options) {
+        return _this.change();
+      };
+    })(this));
+  };
+
+  EventsCalendarView.prototype.render = function() {
+    this.$el.html(this.template());
+    this.renderCalendar();
+    return this;
+  };
+
+  EventsCalendarView.prototype.initDrag = function(e) {
+    var eventObject;
+    eventObject = {
+      title: $.trim(e.children().text()),
+      description: $.trim(e.children("span").attr("data-description")),
+      icon: $.trim(e.children("span").attr("data-icon")),
+      className: $.trim(e.children("span").attr("class"))
+    };
+    e.data('eventObject', eventObject);
+    e.draggable({
+      zIndex: 999,
+      revert: true,
+      revertDuration: 0
+    });
+  };
+
+  EventsCalendarView.prototype.change = function(model) {
+    var fcEvent;
+    fcEvent = this.$('#calendar').fullCalendar('clientEvents', model.get('id'))[0];
+    fcEvent.title = model.get('title');
+    fcEvent.colour = model.get('colour');
+    return this.$('#calendar').fullCalendar('updateEvent', fcEvent);
+  };
+
+  EventsCalendarView.prototype.renderCalendar = function() {
+    var hdr, self;
+    self = this;
+    this.$("#external-events > li").each(function() {
+      return self.initDrag($(this));
+    });
+    hdr = {
+      left: 'title',
+      center: 'month,agendaWeek,agendaDay',
+      right: 'prev,today,next'
+    };
+    this.$('#calendar').fullCalendar({
+      header: hdr,
+      buttonText: {
+        prev: "<i class=\"fa fa-chevron-left\"></i>",
+        next: "<i class=\"fa fa-chevron-right\"></i>"
+      },
+      editable: true,
+      droppable: true,
+      drop: function(date, allDay) {
+        var copiedEventObject, originalEventObject;
+        originalEventObject = $(this).data('eventObject');
+        copiedEventObject = $.extend({}, originalEventObject);
+        copiedEventObject.start = date;
+        copiedEventObject.allDay = allDay;
+        $("#calendar").fullCalendar("renderEvent", copiedEventObject, true);
+        console.log(copiedEventObject);
+        if ($("#drop-remove").is(":checked")) {
+          return $(this).remove();
+        }
+      },
+      select: function(start, end, allDay) {
+        var obj, title;
+        title = prompt('Event Title:');
+        obj = {
+          title: title,
+          start: start,
+          end: end,
+          allDay: allDay
+        };
+        if (title) {
+          calendar.fullCalendar('renderEvent', obj, true);
+        }
+        return calendar.fullCalendar('unselect');
+      }
+    });
+    return this;
+  };
+
+  EventsCalendarView.prototype.addAll = function() {
+    return this.$('#calendar').fullCalendar('addEventSource', this.collection.toJSON());
+  };
+
+  EventsCalendarView.prototype.addOne = function(model) {
+    return this.$('#calendar').fullCalendar('renderEvent', model.toJSON());
+  };
+
+  EventsCalendarView.prototype.eventDropOrResize = function(fcEvent) {
+    return this.collection.get(fcEvent.id).save({
+      start: fcEvent.start,
+      end: fcEvent.end
+    });
+  };
+
+  EventsCalendarView.prototype.editMode = function(mode) {
+    return this.model.editMode(mode);
+  };
+
+  EventsCalendarView.prototype.onDestroy = function() {
+    return window.App.eventAggregator.trigger('navigate:patients');
+  };
+
+  EventsCalendarView.prototype.onNavigate = function(e) {
+    return this.editMode(e.to.editMode);
+  };
+
+  EventsCalendarView.prototype.onSaveStart = function(model, response, options) {};
+
+  EventsCalendarView.prototype.onSaveSuccess = function(model, response, options) {};
+
+  EventsCalendarView.prototype.onChangeViewMonthClick = function(e) {
+    e.preventDefault();
+    return this.$('#calendar').fullCalendar('changeView', 'month');
+  };
+
+  EventsCalendarView.prototype.onChangeViewAgendaWeekClick = function(e) {
+    e.preventDefault();
+    return this.$('#calendar').fullCalendar('changeView', 'agendaWeek');
+  };
+
+  EventsCalendarView.prototype.onChangeViewAgendaDayClick = function(e) {
+    e.preventDefault();
+    return this.$('#calendar').fullCalendar('changeView', 'agendaDay');
+  };
+
+  EventsCalendarView.prototype.onAddEventClick = function(e) {
+    var description, icon, priority, title;
+    e.preventDefault();
+    title = this.$("#title").val();
+    priority = this.$("input:radio[name=priority]:checked").val();
+    description = this.$("#description").val();
+    icon = this.$("input:radio[name=iconselect]:checked").val();
+    return this.addEvent(title, priority, description, icon);
+  };
+
+  EventsCalendarView.prototype.addEvent = function(title, priority, description, icon) {
+    var html;
+    e.preventDefault();
+    title = (title.length === 0 ? "Untitled Event" : title);
+    description = (description.length === 0 ? "No Description" : description);
+    icon = (icon.length === 0 ? " " : icon);
+    priority = (priority.length === 0 ? "label label-default" : priority);
+    html = $("<li><span class=\"" + priority + "\" data-description=\"" + description + "\" data-icon=\"" + icon + "\">" + title + "</span></li>").prependTo("ul#external-events").hide().fadeIn();
+    this.$("#event-container").effect("highlight", 800);
+    return this.initDrag(html);
+  };
+
+  return EventsCalendarView;
+
+})(support.View);
+
+if (typeof module !== "undefined" && module !== null) {
+  module.exports = EventsCalendarView;
 }
 
 });
@@ -3554,7 +4112,7 @@ if (typeof module !== "undefined" && module !== null) {
 });
 
 ;require.register("daylight/views/patient_view", function(exports, require, module) {
-var BGGraphView, BPGraphView, ConditionCollection, ConditionListView, ConditionModel, ConditionsView, PatientEditView, PatientView, PatientViewTemplate, VitalCollection, VitalModel, VitalsAddView, WeightGraphView,
+var ConditionListView, ConditionModel, ConditionsView, PatientEditView, PatientView, PatientViewTemplate,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -3565,40 +4123,23 @@ PatientEditView = require('daylight/views/patient_edit_view');
 
 ConditionsView = require('daylight/views/condition/conditions_view');
 
-ConditionModel = require('daylight/models/condition_model');
-
 ConditionListView = require('daylight/views/condition/condition_list_view');
 
-ConditionCollection = require('daylight/collections/condition_collection');
-
-VitalsAddView = require('daylight/views/vitals/vitals_add_view');
-
-VitalModel = require('daylight/models/vital_model');
-
-VitalCollection = require('daylight/collections/vital_collection');
-
-BGGraphView = require('daylight/views/graphs/bg_graph_view');
-
-BPGraphView = require('daylight/views/graphs/bp_graph_view');
-
-WeightGraphView = require('daylight/views/graphs/weight_graph_view');
+ConditionModel = require('daylight/models/condition_model');
 
 PatientView = (function(_super) {
   __extends(PatientView, _super);
 
   function PatientView() {
+    this.onConditionDelete = __bind(this.onConditionDelete, this);
+    this.onConditionsReset = __bind(this.onConditionsReset, this);
     this.onDeletePatientClick = __bind(this.onDeletePatientClick, this);
-    this.onTreeNodeClick = __bind(this.onTreeNodeClick, this);
-    this.setupWidgets = __bind(this.setupWidgets, this);
-    this.setupTree = __bind(this.setupTree, this);
-    this.onAddVitalsClick = __bind(this.onAddVitalsClick, this);
     this.onAddConditionClick = __bind(this.onAddConditionClick, this);
     this.onEditPatientClick = __bind(this.onEditPatientClick, this);
     this.onSaveSuccess = __bind(this.onSaveSuccess, this);
     this.onSaveStart = __bind(this.onSaveStart, this);
     this.onNavigate = __bind(this.onNavigate, this);
     this.onDestroy = __bind(this.onDestroy, this);
-    this.renderGraphs = __bind(this.renderGraphs, this);
     this.renderConditions = __bind(this.renderConditions, this);
     this.render = __bind(this.render, this);
     this.template = __bind(this.template, this);
@@ -3610,7 +4151,7 @@ PatientView = (function(_super) {
     'click .js-edit': 'onEditPatientClick',
     'click .condition-add': 'onAddConditionClick',
     'click .condition-edit': 'onEditConditionClick',
-    'click .js-add-vitals': 'onAddVitalsClick'
+    'click .condition-delete': 'onDeleteConditionClick'
   };
 
   PatientView.prototype.template = function(data) {
@@ -3618,49 +4159,39 @@ PatientView = (function(_super) {
   };
 
   PatientView.prototype.initialize = function(options) {
+    var collection;
     PatientView.__super__.initialize.call(this, options);
-    this.bindTo(this.model, 'destroy', this.onDestroy);
-    this.bindTo(this.model, 'navigate', this.onNavigate);
-    this.bindTo(this.model, 'save:start', this.onSaveStart);
-    return this.bindTo(this.model, 'save:success', this.onSaveSuccess);
+    collection = this.model.get('conditions');
+    this._conditions = collection.map(function(m) {
+      return new ConditionModel(m);
+    });
+    this.listenTo(this.model, 'destroy', this.onDestroy);
+    this.listenTo(this.model, 'navigate', this.onNavigate);
+    this.listenTo(this.model, 'save:start', this.onSaveStart);
+    this.listenTo(this.model, 'save:success', this.onSaveSuccess);
+    return _.bindAll(this, 'render');
   };
 
   PatientView.prototype.render = function() {
     this.$el.html(this.template(this.model.toJSON()));
     this.renderConditions();
-    this.renderGraphs();
-    this.setupTree();
-    this.setupWidgets();
     return this;
   };
 
   PatientView.prototype.renderConditions = function() {
-    var collection, view;
-    collection = new ConditionCollection;
-    collection.url = "API/Patients/" + (this.model.get('id')) + "/conditions";
+    var view;
     view = new ConditionListView({
-      collection: collection
+      model: this._conditions
     });
-    this.$('.js-conditions-list').append(this.renderChild(view).el);
-    return this;
+    return this.$('.js-conditions').append(view.el);
   };
 
-  PatientView.prototype.renderGraphs = function() {
-    var bg, bp, collection, wv;
-    collection = new VitalCollection;
-    collection.url = "API/Patients/" + (this.model.get('id')) + "/vitals";
-    bg = new BGGraphView({
-      collection: collection
-    });
-    bp = new BPGraphView({
-      collection: collection
-    });
-    wv = new WeightGraphView({
-      collection: collection
-    });
-    this.$('#bg-stats').append(this.renderChild(bg).el);
-    this.$('#bp-stats').append(this.renderChild(bp).el);
-    return this.$('#weight-stats').append(this.renderChild(wv).el);
+  PatientView.prototype.displayCondition = function(index, subIndex) {
+    var _ref;
+    if (subIndex == null) {
+      subIndex = 0;
+    }
+    return (_ref = this.conditionsView) != null ? _ref.displayCondition(index) : void 0;
   };
 
   PatientView.prototype.editMode = function(mode) {
@@ -3701,94 +4232,6 @@ PatientView = (function(_super) {
     return view.show();
   };
 
-  PatientView.prototype.onAddVitalsClick = function(e) {
-    var view, vmodel;
-    e.preventDefault();
-    vmodel = new VitalModel;
-    vmodel.set({
-      patientId: this.model.id
-    });
-    view = new VitalsAddView({
-      model: vmodel
-    });
-    return view.show();
-  };
-
-  PatientView.prototype.setupTree = function() {
-    return this.$(".tree > ul").attr("role", "tree").find("ul").attr("role", "group");
-  };
-
-  PatientView.prototype.setupWidgets = function() {
-    return this.$("#widget-grid").jarvisWidgets({
-      grid: "article",
-      widgets: ".jarviswidget",
-      localStorage: true,
-      deleteSettingsKey: "#deletesettingskey-options",
-      settingsKeyLabel: "Reset settings?",
-      deletePositionKey: "#deletepositionkey-options",
-      positionKeyLabel: "Reset position?",
-      sortable: true,
-      buttonsHidden: false,
-      toggleButton: true,
-      toggleClass: "fa fa-minus | fa fa-plus",
-      toggleSpeed: 200,
-      onToggle: function() {},
-      deleteButton: true,
-      deleteClass: "fa fa-times",
-      deleteSpeed: 200,
-      onDelete: function() {},
-      editButton: true,
-      editPlaceholder: ".jarviswidget-editbox",
-      editClass: "fa fa-cog | fa fa-save",
-      editSpeed: 200,
-      onEdit: function() {},
-      colorButton: true,
-      fullscreenButton: true,
-      fullscreenClass: "fa fa-resize-full | fa fa-resize-small",
-      fullscreenDiff: 3,
-      onFullscreen: function() {},
-      customButton: false,
-      customClass: "folder-10 | next-10",
-      customStart: function() {
-        alert("Hello you, this is a custom button...");
-      },
-      customEnd: function() {
-        alert("bye, till next time...");
-      },
-      buttonOrder: "%refresh% %custom% %edit% %toggle% %fullscreen% %delete%",
-      opacity: 1.0,
-      dragHandle: "> header",
-      placeholderClass: "jarviswidget-placeholder",
-      indicator: true,
-      indicatorTime: 600,
-      ajax: true,
-      timestampPlaceholder: ".jarviswidget-timestamp",
-      timestampFormat: "Last update: %d%/%m%/%y% %h%:%i%:%s%",
-      refreshButton: true,
-      refreshButtonClass: "fa fa-refresh",
-      labelError: "Sorry but there was a error:",
-      labelUpdated: "Last Update:",
-      labelRefresh: "Refresh",
-      labelDelete: "Delete widget:",
-      afterLoad: function() {},
-      rtl: false
-    });
-  };
-
-  PatientView.prototype.onTreeNodeClick = function(e) {
-    var children;
-    children = $(this).parent("li.parent_li").find(" > ul > li");
-    console.log(children.is(":visible"));
-    if (children.is(":visible")) {
-      children.hide("fast");
-      $(this).attr("title", "Expand this branch").find(" > i").removeClass().addClass("fa fa-lg fa-plus-circle");
-    } else {
-      children.show("fast");
-      $(this).attr("title", "Collapse this branch").find(" > i").removeClass().addClass("fa fa-lg fa-minus-circle");
-    }
-    return e.stopPropagation();
-  };
-
   PatientView.prototype.onDeletePatientClick = function(e) {
     var _model;
     _model = this.model;
@@ -3821,6 +4264,23 @@ PatientView = (function(_super) {
       }
     });
     return e.preventDefault();
+  };
+
+  PatientView.prototype.onConditionsReset = function() {
+    return _.defer((function(_this) {
+      return function() {
+        return _this.displayCondition(_this.model.get('_index'));
+      };
+    })(this));
+  };
+
+  PatientView.prototype.onConditionDelete = function() {
+    return window.App.eventAggregator.trigger('navigate:patient', {
+      id: this.model.id,
+      index: Math.min(this.model.get('_index'), this.model.get('conditions').length - 1),
+      subIndex: 0,
+      editMode: this.model.get('_editMode')
+    });
   };
 
   return PatientView;
@@ -4470,13 +4930,20 @@ Router = (function(_super) {
     ':id/condition:index.:subIndex': 'patient',
     ':id/condition:index': 'patient',
     'view/patients?*query': 'patients',
-    'view/patients': 'patients'
+    'view/patients': 'patients',
+    'view/events': 'calendar'
   };
 
   Router.prototype["default"] = function(query) {
     var params;
     params = this.getParams(query) || {};
     return App.eventAggregator.trigger('navigate:home', params);
+  };
+
+  Router.prototype.calendar = function(query) {
+    var params;
+    params = this.getParams(query) || {};
+    return App.eventAggregator.trigger('navigate:calendar', params);
   };
 
   Router.prototype.patients = function(query) {
@@ -4597,6 +5064,74 @@ Router = (function(_super) {
 
 module.exports = Router;
 
+});
+
+;require.register("templates/condition/condition_detail_template", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      var condition, _i, _len, _ref, _ref1;
+    
+      __out.push('<div class="jarviswidget" id="wid-id-1" role="widget">\n    <header>\n        <h2><strong>Conditions</strong></h2>\n    </header>\n    <div>                                           \n        <div class="widget-body">\n            <div class="dd" id="nestable">\n                <ol class="dd-list">\n                    ');
+    
+      if ((_ref = this.conditions) != null ? _ref.length : void 0) {
+        __out.push('\n                        ');
+        _ref1 = this.conditions;
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          condition = _ref1[_i];
+          __out.push('\n                            <li class="dd-item" data-id="');
+          __out.push(__sanitize(condition.id));
+          __out.push('">\n                                <!--<button type="button" data-action="collapse" class="condition-delete" data-original-title="Delete condition" data-placement="left" title="" rel="tooltip" style="display: block;">Delete</button>-->\n                                <div class="dd-handle">\n                                    ');
+          __out.push(__sanitize(condition.name));
+          __out.push('\n                                    <a href="#close" class="remove label label-danger"><i class="glyphicon glyphicon-remove"></i> remove</a>\n                                    <!--<a class="condition-delete"><em data-original-title="Delete condition" data-placement="left" title="" rel="tooltip" class="pull-right padding-5"><i class="fa fa-trash-o fa-lg"></i></em></a>-->\n                                </div>\n                            </li>       \n                        ');
+        }
+        __out.push('\n                    ');
+      }
+    
+      __out.push('                                               \n                </ol>\n            </div>\n            <button class="btn btn-sm btn-success condition-add" type="button">\n                Add +\n            </button>   \n             <i class="fa fa-plus-o fa-lg"></i>\n        </div>                                  \n    </div>    \n</div>\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
 });
 
 ;require.register("templates/condition/condition_list_item_template", function(exports, require, module) {
@@ -4938,6 +5473,106 @@ module.exports = function (__obj) {
   (function() {
     (function() {
       __out.push('<div class="row">\n\t<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">\n\t\t<h1 class="page-title txt-color-blueDark"><i class="fa-fw fa fa-home"></i> Dashboard <span>> My Dashboard</span></h1>\n\t</div>\n\t<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">\n\t\t<ul id="sparks" class="">\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> My Income <span class="txt-color-blue">$47,171</span></h5>\n\t\t\t\t<div class="sparkline txt-color-blue hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t1300, 1877, 2500, 2577, 2000, 2100, 3000, 2700, 3631, 2471, 2700, 3631, 2471\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> Site Traffic <span class="txt-color-purple"><i class="fa fa-arrow-circle-up" data-rel="bootstrap-tooltip" title="Increased"></i>&nbsp;45%</span></h5>\n\t\t\t\t<div class="sparkline txt-color-purple hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t110,150,300,130,400,240,220,310,220,300, 270, 210\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> Site Orders <span class="txt-color-greenDark"><i class="fa fa-shopping-cart"></i>&nbsp;2447</span></h5>\n\t\t\t\t<div class="sparkline txt-color-greenDark hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t110,150,300,130,400,240,220,310,220,300, 270, 210\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t</ul>\n\t</div>\n</div>\n<!-- widget grid -->\n<section id="widget-grid" class="">\n\n\t<!-- row -->\n\t<div class="row">\n\t\t<article class="col-sm-12">\n\t\t\t<!-- new widget -->\n\t\t\t<div class="jarviswidget" id="wid-id-0" data-widget-togglebutton="false" data-widget-editbutton="false" data-widget-fullscreenbutton="false" data-widget-colorbutton="false" data-widget-deletebutton="false">\n\t\t\t\t<!-- widget options:\n\t\t\t\tusage: <div class="jarviswidget" id="wid-id-0" data-widget-editbutton="false">\n\n\t\t\t\tdata-widget-colorbutton="false"\n\t\t\t\tdata-widget-editbutton="false"\n\t\t\t\tdata-widget-togglebutton="false"\n\t\t\t\tdata-widget-deletebutton="false"\n\t\t\t\tdata-widget-fullscreenbutton="false"\n\t\t\t\tdata-widget-custombutton="false"\n\t\t\t\tdata-widget-collapsed="true"\n\t\t\t\tdata-widget-sortable="false"\n\n\t\t\t\t-->\n\t\t\t\t<header>\n\t\t\t\t\t<span class="widget-icon"> <i class="glyphicon glyphicon-stats txt-color-darken"></i> </span>\n\t\t\t\t\t<h2>Live Feeds </h2>\n\n\t\t\t\t\t<ul class="nav nav-tabs pull-right in" id="myTab">\n\t\t\t\t\t\t<li class="active">\n\t\t\t\t\t\t\t<a data-toggle="tab" href="#s1"><i class="fa fa-clock-o"></i> <span class="hidden-mobile hidden-tablet">Live Stats</span></a>\n\t\t\t\t\t\t</li>\n\n\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t<a data-toggle="tab" href="#s2"><i class="fa fa-facebook"></i> <span class="hidden-mobile hidden-tablet">Social Network</span></a>\n\t\t\t\t\t\t</li>\n\n\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t<a data-toggle="tab" href="#s3"><i class="fa fa-dollar"></i> <span class="hidden-mobile hidden-tablet">Revenue</span></a>\n\t\t\t\t\t\t</li>\n\t\t\t\t\t</ul>\n\n\t\t\t\t</header>\n\n\t\t\t\t<!-- widget div-->\n\t\t\t\t<div class="no-padding">\n\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t<div class="jarviswidget-editbox">\n\n\t\t\t\t\t\ttest\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- end widget edit box -->\n\n\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t<!-- content -->\n\t\t\t\t\t\t<div id="myTabContent" class="tab-content">\n\t\t\t\t\t\t\t<div class="tab-pane fade active in padding-10 no-padding-bottom" id="s1">\n\t\t\t\t\t\t\t\t<div class="row no-space">\n\t\t\t\t\t\t\t\t\t<div class="col-xs-12 col-sm-12 col-md-8 col-lg-8">\n\t\t\t\t\t\t\t\t\t\t<span class="demo-liveupdate-1"> <span class="onoffswitch-title">Live switch</span> <span class="onoffswitch">\n\t\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="start_interval" class="onoffswitch-checkbox" id="start_interval">\n\t\t\t\t\t\t\t\t\t\t\t\t<label class="onoffswitch-label" for="start_interval"> <div class="onoffswitch-inner" data-swchon-text="ON" data-swchoff-text="OFF"></div> <div class="onoffswitch-switch"></div> </label> </span> </span>\n\t\t\t\t\t\t\t\t\t\t<div id="updating-chart" class="chart-large txt-color-blue"></div>\n\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="col-xs-12 col-sm-12 col-md-4 col-lg-4 show-stats">\n\n\t\t\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t\t\t<span class="col-xs-6 col-sm-6 col-md-12 col-lg-12"> <span class="text"> My Tasks <span class="pull-right">130/200</span> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="progress">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="progress-bar bg-color-blueDark" style="width: 65%;"></div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div> </span>\n\t\t\t\t\t\t\t\t\t\t\t<span class="col-xs-6 col-sm-6 col-md-12 col-lg-12"> <span class="text"> Transfered <span class="pull-right">440 GB</span> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="progress">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="progress-bar bg-color-blue" style="width: 34%;"></div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div> </span>\n\t\t\t\t\t\t\t\t\t\t\t<span class="col-xs-6 col-sm-6 col-md-12 col-lg-12"> <span class="text"> Bugs Squashed<span class="pull-right">77%</span> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="progress">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="progress-bar bg-color-blue" style="width: 77%;"></div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div> </span>\n\t\t\t\t\t\t\t\t\t\t\t<span class="col-xs-6 col-sm-6 col-md-12 col-lg-12"> <span class="text"> User Testing <span class="pull-right">7 Days</span> </span>\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="progress">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="progress-bar bg-color-greenLight" style="width: 84%;"></div>\n\t\t\t\t\t\t\t\t\t\t\t\t</div> </span>\n\n\t\t\t\t\t\t\t\t\t\t\t<span class="show-stat-buttons"> <span class="col-xs-12 col-sm-6 col-md-6 col-lg-6"> <a href="javascript:void(0);" class="btn btn-default btn-block hidden-xs">Generate PDF</a> </span> <span class="col-xs-12 col-sm-6 col-md-6 col-lg-6"> <a href="javascript:void(0);" class="btn btn-default btn-block hidden-xs">Report a bug</a> </span> </span>\n\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="show-stat-microcharts">\n\t\t\t\t\t\t\t\t\t<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">\n\n\t\t\t\t\t\t\t\t\t\t<div class="easy-pie-chart txt-color-orangeDark" data-percent="33" data-pie-size="50">\n\t\t\t\t\t\t\t\t\t\t\t<span class="percent percent-sign">35</span>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<span class="easy-pie-title"> Server Load <i class="fa fa-caret-up icon-color-bad"></i> </span>\n\t\t\t\t\t\t\t\t\t\t<ul class="smaller-stat hidden-sm pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="label bg-color-greenLight"><i class="fa fa-caret-up"></i> 97%</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="label bg-color-blueLight"><i class="fa fa-caret-down"></i> 44%</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-greenLight hidden-sm hidden-md pull-right" data-sparkline-type="line" data-sparkline-height="33px" data-sparkline-width="70px" data-fill-color="transparent">\n\t\t\t\t\t\t\t\t\t\t\t130, 187, 250, 257, 200, 210, 300, 270, 363, 247, 270, 363, 247\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">\n\t\t\t\t\t\t\t\t\t\t<div class="easy-pie-chart txt-color-greenLight" data-percent="78.9" data-pie-size="50">\n\t\t\t\t\t\t\t\t\t\t\t<span class="percent percent-sign">78.9 </span>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<span class="easy-pie-title"> Disk Space <i class="fa fa-caret-down icon-color-good"></i></span>\n\t\t\t\t\t\t\t\t\t\t<ul class="smaller-stat hidden-sm pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="label bg-color-blueDark"><i class="fa fa-caret-up"></i> 76%</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="label bg-color-blue"><i class="fa fa-caret-down"></i> 3%</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-blue hidden-sm hidden-md pull-right" data-sparkline-type="line" data-sparkline-height="33px" data-sparkline-width="70px" data-fill-color="transparent">\n\t\t\t\t\t\t\t\t\t\t\t257, 200, 210, 300, 270, 363, 130, 187, 250, 247, 270, 363, 247\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">\n\t\t\t\t\t\t\t\t\t\t<div class="easy-pie-chart txt-color-blue" data-percent="23" data-pie-size="50">\n\t\t\t\t\t\t\t\t\t\t\t<span class="percent percent-sign">23 </span>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<span class="easy-pie-title"> Transfered <i class="fa fa-caret-up icon-color-good"></i></span>\n\t\t\t\t\t\t\t\t\t\t<ul class="smaller-stat hidden-sm pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="label bg-color-darken">10GB</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="label bg-color-blueDark"><i class="fa fa-caret-up"></i> 10%</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-darken hidden-sm hidden-md pull-right" data-sparkline-type="line" data-sparkline-height="33px" data-sparkline-width="70px" data-fill-color="transparent">\n\t\t\t\t\t\t\t\t\t\t\t200, 210, 363, 247, 300, 270, 130, 187, 250, 257, 363, 247, 270\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">\n\t\t\t\t\t\t\t\t\t\t<div class="easy-pie-chart txt-color-darken" data-percent="36" data-pie-size="50">\n\t\t\t\t\t\t\t\t\t\t\t<span class="percent degree-sign">36 <i class="fa fa-caret-up"></i></span>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<span class="easy-pie-title"> Temperature <i class="fa fa-caret-down icon-color-good"></i></span>\n\t\t\t\t\t\t\t\t\t\t<ul class="smaller-stat hidden-sm pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="label bg-color-red"><i class="fa fa-caret-up"></i> 124</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class="label bg-color-blue"><i class="fa fa-caret-down"></i> 40 F</span>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-red hidden-sm hidden-md pull-right" data-sparkline-type="line" data-sparkline-height="33px" data-sparkline-width="70px" data-fill-color="transparent">\n\t\t\t\t\t\t\t\t\t\t\t2700, 3631, 2471, 2700, 3631, 2471, 1300, 1877, 2500, 2577, 2000, 2100, 3000\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end s1 tab pane -->\n\n\t\t\t\t\t\t\t<div class="tab-pane fade" id="s2">\n\t\t\t\t\t\t\t\t<div class="widget-body-toolbar bg-color-white">\n\n\t\t\t\t\t\t\t\t\t<form class="form-inline" role="form">\n\n\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t<label class="sr-only" for="s123">Show From</label>\n\t\t\t\t\t\t\t\t\t\t\t<input type="email" class="form-control input-sm" id="s123" placeholder="Show From">\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t\t\t<input type="email" class="form-control input-sm" id="s124" placeholder="To">\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t<div class="btn-group hidden-phone pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<a class="btn dropdown-toggle btn-xs btn-default" data-toggle="dropdown"><i class="fa fa-cog"></i> More <span class="caret"> </span> </a>\n\t\t\t\t\t\t\t\t\t\t\t<ul class="dropdown-menu pull-right">\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-file-text-alt"></i> Export to PDF</a>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-question-sign"></i> Help</a>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t</form>\n\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<div class="padding-10">\n\t\t\t\t\t\t\t\t\t<div id="statsChart" class="chart-large has-legend-unique"></div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end s2 tab pane -->\n\n\t\t\t\t\t\t\t<div class="tab-pane fade" id="s3">\n\n\t\t\t\t\t\t\t\t<div class="widget-body-toolbar bg-color-white smart-form" id="rev-toggles">\n\n\t\t\t\t\t\t\t\t\t<div class="inline-group">\n\n\t\t\t\t\t\t\t\t\t\t<label for="gra-0" class="checkbox">\n\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="gra-0" id="gra-0" checked="checked">\n\t\t\t\t\t\t\t\t\t\t\t<i></i> Target </label>\n\t\t\t\t\t\t\t\t\t\t<label for="gra-1" class="checkbox">\n\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="gra-1" id="gra-1" checked="checked">\n\t\t\t\t\t\t\t\t\t\t\t<i></i> Actual </label>\n\t\t\t\t\t\t\t\t\t\t<label for="gra-2" class="checkbox">\n\t\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="gra-2" id="gra-2" checked="checked">\n\t\t\t\t\t\t\t\t\t\t\t<i></i> Signups </label>\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t<div class="btn-group hidden-phone pull-right">\n\t\t\t\t\t\t\t\t\t\t<a class="btn dropdown-toggle btn-xs btn-default" data-toggle="dropdown"><i class="fa fa-cog"></i> More <span class="caret"> </span> </a>\n\t\t\t\t\t\t\t\t\t\t<ul class="dropdown-menu pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-file-text-alt"></i> Export to PDF</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-question-sign"></i> Help</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="padding-10">\n\t\t\t\t\t\t\t\t\t<div id="flotcontainer" class="chart-large has-legend-unique"></div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end s3 tab pane -->\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<!-- end content -->\n\t\t\t\t\t</div>\n\n\t\t\t\t</div>\n\t\t\t\t<!-- end widget div -->\n\t\t\t</div>\n\t\t\t<!-- end widget -->\n\n\t\t</article>\n\t</div>\n\n\t<!-- end row -->\n\n\t<!-- row -->\n\n\t<div class="row">\n\n\t\t<article class="col-sm-12 col-md-12 col-lg-6">\n\n\t\t\t<!-- new widget -->\n\t\t\t<div class="jarviswidget jarviswidget-color-blueDark" id="wid-id-1" data-widget-editbutton="false" data-widget-fullscreenbutton="false">\n\n\t\t\t\t<!-- widget options:\n\t\t\t\tusage: <div class="jarviswidget" id="wid-id-0" data-widget-editbutton="false">\n\n\t\t\t\tdata-widget-colorbutton="false"\n\t\t\t\tdata-widget-editbutton="false"\n\t\t\t\tdata-widget-togglebutton="false"\n\t\t\t\tdata-widget-deletebutton="false"\n\t\t\t\tdata-widget-fullscreenbutton="false"\n\t\t\t\tdata-widget-custombutton="false"\n\t\t\t\tdata-widget-collapsed="true"\n\t\t\t\tdata-widget-sortable="false"\n\n\t\t\t\t-->\n\n\t\t\t\t<header>\n\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-comments txt-color-white"></i> </span>\n\t\t\t\t\t<h2> SmartChat </h2>\n\t\t\t\t\t<div class="widget-toolbar">\n\t\t\t\t\t\t<!-- add: non-hidden - to disable auto hide -->\n\n\t\t\t\t\t\t<div class="btn-group">\n\t\t\t\t\t\t\t<button class="btn dropdown-toggle btn-xs btn-success" data-toggle="dropdown">\n\t\t\t\t\t\t\t\tStatus <i class="fa fa-caret-down"></i>\n\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t<ul class="dropdown-menu pull-right js-status-update">\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-circle txt-color-green"></i> Online</a>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-circle txt-color-red"></i> Busy</a>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-circle txt-color-orange"></i> Away</a>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li class="divider"></li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-power-off"></i> Log Off</a>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</header>\n\n\t\t\t\t<!-- widget div-->\n\t\t\t\t<div>\n\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Title:</label>\n\t\t\t\t\t\t\t<input type="text" />\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- end widget edit box -->\n\n\t\t\t\t\t<div class="widget-body widget-hide-overflow no-padding">\n\t\t\t\t\t\t<!-- content goes here -->\n\n\t\t\t\t\t\t<!-- CHAT CONTAINER -->\n\t\t\t\t\t\t<div id="chat-container">\n\t\t\t\t\t\t\t<span class="chat-list-open-close"><i class="fa fa-user"></i><b>!</b></span>\n\n\t\t\t\t\t\t\t<div class="chat-list-body custom-scroll">\n\t\t\t\t\t\t\t\t<ul id="chat-users">\n\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><img src="img/avatars/5.png">Robin Berry <span class="badge badge-inverse">23</span><span class="state"><i class="fa fa-circle txt-color-green pull-right"></i></span></a>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><img src="img/avatars/male.png">Mark Zeukartech <span class="state"><i class="last-online pull-right">2hrs</i></span></a>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><img src="img/avatars/male.png">Belmain Dolson <span class="state"><i class="last-online pull-right">45m</i></span></a>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><img src="img/avatars/male.png">Galvitch Drewbery <span class="state"><i class="fa fa-circle txt-color-green pull-right"></i></span></a>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><img src="img/avatars/male.png">Sadi Orlaf <span class="state"><i class="fa fa-circle txt-color-green pull-right"></i></span></a>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><img src="img/avatars/male.png">Markus <span class="state"><i class="last-online pull-right">2m</i></span> </a>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><img src="img/avatars/sunny.png">Sunny <span class="state"><i class="last-online pull-right">2m</i></span> </a>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><img src="img/avatars/male.png">Denmark <span class="state"><i class="last-online pull-right">2m</i></span> </a>\n\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<div class="chat-list-footer">\n\n\t\t\t\t\t\t\t\t<div class="control-group">\n\n\t\t\t\t\t\t\t\t\t<form class="smart-form">\n\n\t\t\t\t\t\t\t\t\t\t<section>\n\t\t\t\t\t\t\t\t\t\t\t<label class="input">\n\t\t\t\t\t\t\t\t\t\t\t\t<input type="text" id="filter-chat-list" placeholder="Filter">\n\t\t\t\t\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t\t\t\t\t</section>\n\n\t\t\t\t\t\t\t\t\t</form>\n\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<!-- CHAT BODY -->\n\t\t\t\t\t\t<div id="chat-body" class="chat-body custom-scroll">\n\t\t\t\t\t\t\t<ul>\n\t\t\t\t\t\t\t\t<li class="message">\n\t\t\t\t\t\t\t\t\t<img src="img/avatars/5.png" class="online">\n\t\t\t\t\t\t\t\t\t<span class="message-text">\n\t\t\t\t\t\t\t\t\t\t<time>\n\t\t\t\t\t\t\t\t\t\t\t12:23pm\n\t\t\t\t\t\t\t\t\t\t</time> <a href="javascript:void(0);" class="username">Sadi Orlaf</a> Hey did you see the new elected board of director? He\'s a bit of a arse if you ask me...anyway here is the report you requested. I am off to launch Lisa and Andrew, you wanna join?\n\t\t\t\t\t\t\t\t\t\t<p class="chat-file row">\n\t\t\t\t\t\t\t\t\t\t\t<b class="pull-left col-sm-6"> <!--<i class="fa fa-spinner fa-spin"></i>--> <i class="fa fa-file"></i> report-2013-demographic-report-annual-earnings.xls </b>\n\t\t\t\t\t\t\t\t\t\t\t<span class="col-sm-6 pull-right"> <a href="javascript:void(0);" class="btn btn-xs btn-default">cancel</a> <a href="javascript:void(0);" class="btn btn-xs btn-success">save</a> </span>\n\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t<p class="chat-file row">\n\t\t\t\t\t\t\t\t\t\t\t<b class="pull-left col-sm-6"> <i class="fa fa-ok txt-color-green"></i> tobacco-report-2012.doc </b>\n\t\t\t\t\t\t\t\t\t\t\t<span class="col-sm-6 pull-right"> <a href="javascript:void(0);" class="btn btn-xs btn-primary">open</a> </span>\n\t\t\t\t\t\t\t\t\t\t</p> </span>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li class="message">\n\t\t\t\t\t\t\t\t\t<img src="img/avatars/sunny.png" class="online">\n\t\t\t\t\t\t\t\t\t<span class="message-text">\n\t\t\t\t\t\t\t\t\t\t<time>\n\t\t\t\t\t\t\t\t\t\t\t12:23pm\n\t\t\t\t\t\t\t\t\t\t</time> <a href="javascript:void(0);" class="username">John Doe</a> Haha! Yeah I know what you mean. Thanks for the file Sadi! <i class="fa fa-smile-o txt-color-orange"></i> </span>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t</ul>\n\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<!-- CHAT FOOTER -->\n\t\t\t\t\t\t<div class="chat-footer">\n\n\t\t\t\t\t\t\t<!-- CHAT TEXTAREA -->\n\t\t\t\t\t\t\t<div class="textarea-div">\n\n\t\t\t\t\t\t\t\t<div class="typearea">\n\t\t\t\t\t\t\t\t\t<textarea placeholder="Write a reply..." id="textarea-expand" class="custom-scroll"></textarea>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<!-- CHAT REPLY/SEND -->\n\t\t\t\t\t\t\t<span class="textarea-controls">\n\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-primary pull-right">\n\t\t\t\t\t\t\t\t\tReply\n\t\t\t\t\t\t\t\t</button> <span class="pull-right smart-form" style="margin-top: 3px; margin-right: 10px;"> <label class="checkbox pull-right">\n\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="subscription" id="subscription">\n\t\t\t\t\t\t\t\t\t\t<i></i>Press <strong> ENTER </strong> to send </label> </span> <a href="javascript:void(0);" class="pull-left"><i class="fa fa-camera fa-fw fa-lg"></i></a> </span>\n\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<!-- end content -->\n\t\t\t\t\t</div>\n\n\t\t\t\t</div>\n\t\t\t\t<!-- end widget div -->\n\t\t\t</div>\n\t\t\t<!-- end widget -->\n\n\t\t\t<!-- new widget -->\n\t\t\t<div class="jarviswidget jarviswidget-color-blueDark" id="wid-id-3" data-widget-colorbutton="false">\n\n\t\t\t\t<!-- widget options:\n\t\t\t\tusage: <div class="jarviswidget" id="wid-id-0" data-widget-editbutton="false">\n\n\t\t\t\tdata-widget-colorbutton="false"\n\t\t\t\tdata-widget-editbutton="false"\n\t\t\t\tdata-widget-togglebutton="false"\n\t\t\t\tdata-widget-deletebutton="false"\n\t\t\t\tdata-widget-fullscreenbutton="false"\n\t\t\t\tdata-widget-custombutton="false"\n\t\t\t\tdata-widget-collapsed="true"\n\t\t\t\tdata-widget-sortable="false"\n\n\t\t\t\t-->\n\t\t\t\t<header>\n\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-calendar"></i> </span>\n\t\t\t\t\t<h2> My Events </h2>\n\t\t\t\t\t<div class="widget-toolbar">\n\t\t\t\t\t\t<!-- add: non-hidden - to disable auto hide -->\n\t\t\t\t\t\t<div class="btn-group">\n\t\t\t\t\t\t\t<button class="btn dropdown-toggle btn-xs btn-default" data-toggle="dropdown">\n\t\t\t\t\t\t\t\tShowing <i class="fa fa-caret-down"></i>\n\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t<ul class="dropdown-menu js-status-update pull-right">\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);" id="mt">Month</a>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);" id="ag">Agenda</a>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);" id="td">Today</a>\n\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</header>\n\n\t\t\t\t<!-- widget div-->\n\t\t\t\t<div>\n\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t<div class="jarviswidget-editbox">\n\n\t\t\t\t\t\t<input class="form-control" type="text">\n\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- end widget edit box -->\n\n\t\t\t\t\t<div class="widget-body no-padding">\n\t\t\t\t\t\t<!-- content goes here -->\n\t\t\t\t\t\t<div class="widget-body-toolbar">\n\n\t\t\t\t\t\t\t<div id="calendar-buttons">\n\n\t\t\t\t\t\t\t\t<div class="btn-group">\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0)" class="btn btn-default btn-xs" id="btn-prev"><i class="fa fa-chevron-left"></i></a>\n\t\t\t\t\t\t\t\t\t<a href="javascript:void(0)" class="btn btn-default btn-xs" id="btn-next"><i class="fa fa-chevron-right"></i></a>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div id="calendar"></div>\n\n\t\t\t\t\t\t<!-- end content -->\n\t\t\t\t\t</div>\n\n\t\t\t\t</div>\n\t\t\t\t<!-- end widget div -->\n\t\t\t</div>\n\t\t\t<!-- end widget -->\n\n\t\t</article>\n\n\t\t<article class="col-sm-12 col-md-12 col-lg-6">\n\n\t\t\t<!-- new widget -->\n\t\t\t<div class="jarviswidget" id="wid-id-2" data-widget-colorbutton="false" data-widget-editbutton="false">\n\n\t\t\t\t<!-- widget options:\n\t\t\t\tusage: <div class="jarviswidget" id="wid-id-0" data-widget-editbutton="false">\n\n\t\t\t\tdata-widget-colorbutton="false"\n\t\t\t\tdata-widget-editbutton="false"\n\t\t\t\tdata-widget-togglebutton="false"\n\t\t\t\tdata-widget-deletebutton="false"\n\t\t\t\tdata-widget-fullscreenbutton="false"\n\t\t\t\tdata-widget-custombutton="false"\n\t\t\t\tdata-widget-collapsed="true"\n\t\t\t\tdata-widget-sortable="false"\n\n\t\t\t\t-->\n\n\t\t\t\t<header>\n\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-map-marker"></i> </span>\n\t\t\t\t\t<h2>Birds Eye</h2>\n\t\t\t\t\t<div class="widget-toolbar hidden-mobile">\n\t\t\t\t\t\t<span class="onoffswitch-title"><i class="fa fa-location-arrow"></i> Realtime</span>\n\t\t\t\t\t\t<span class="onoffswitch">\n\t\t\t\t\t\t\t<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" checked="checked" id="myonoffswitch">\n\t\t\t\t\t\t\t<label class="onoffswitch-label" for="myonoffswitch"> <div class="onoffswitch-inner" data-swchon-text="YES" data-swchoff-text="NO"></div> <div class="onoffswitch-switch"></div> </label> </span>\n\t\t\t\t\t</div>\n\t\t\t\t</header>\n\n\t\t\t\t<!-- widget div-->\n\t\t\t\t<div>\n\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Title:</label>\n\t\t\t\t\t\t\t<input type="text" />\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- end widget edit box -->\n\n\t\t\t\t\t<div class="widget-body no-padding">\n\t\t\t\t\t\t<!-- content goes here -->\n\n\t\t\t\t\t\t<div id="vector-map" class="vector-map"></div>\n\t\t\t\t\t\t<div id="heat-fill">\n\t\t\t\t\t\t\t<span class="fill-a">0</span>\n\n\t\t\t\t\t\t\t<span class="fill-b">5,000</span>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<table class="table table-striped table-hover table-condensed">\n\t\t\t\t\t\t\t<thead>\n\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t<th>Country</th>\n\t\t\t\t\t\t\t\t\t<th>Visits</th>\n\t\t\t\t\t\t\t\t\t<th class="text-align-center">User Activity</th>\n\t\t\t\t\t\t\t\t\t<th class="text-align-center">Online</th>\n\t\t\t\t\t\t\t\t\t<th class="text-align-center">Demographic</th>\n\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t</thead>\n\t\t\t\t\t\t\t<tbody>\n\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t<td><a href="javascript:void(0);">USA</a></td>\n\t\t\t\t\t\t\t\t\t<td>4,977</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-blue text-align-center" data-sparkline-height="22px" data-sparkline-width="90px" data-sparkline-barwidth="2">\n\t\t\t\t\t\t\t\t\t\t2700, 3631, 2471, 1300, 1877, 2500, 2577, 2700, 3631, 2471, 2000, 2100, 3000\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">143</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline display-inline" data-sparkline-type=\'pie\' data-sparkline-piecolor=\'["#E979BB", "#57889C"]\' data-sparkline-offset="90" data-sparkline-piesize="23px">\n\t\t\t\t\t\t\t\t\t\t17,83\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="btn-group display-inline pull-right text-align-left hidden-tablet">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-cog fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t\t<ul class="dropdown-menu dropdown-menu-xs pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-file fa-lg fa-fw txt-color-greenLight"></i> <u>P</u>DF</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-times fa-lg fa-fw txt-color-red"></i> <u>D</u>elete</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="divider"></li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="text-align-center">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Cancel</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t<td><a href="javascript:void(0);">Australia</a></td>\n\t\t\t\t\t\t\t\t\t<td>4,873</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-blue text-align-center" data-sparkline-height="22px" data-sparkline-width="90px" data-sparkline-barwidth="2">\n\t\t\t\t\t\t\t\t\t\t1000, 1100, 3030, 1300, -1877, -2500, -2577, -2700, 3631, 2471, 4700, 1631, 2471\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">247</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline display-inline" data-sparkline-type=\'pie\' data-sparkline-piecolor=\'["#E979BB", "#57889C"]\' data-sparkline-offset="90" data-sparkline-piesize="23px">\n\t\t\t\t\t\t\t\t\t\t22,88\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="btn-group display-inline pull-right text-align-left hidden-tablet">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-cog fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t\t<ul class="dropdown-menu dropdown-menu-xs pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-file fa-lg fa-fw txt-color-greenLight"></i> <u>P</u>DF</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-times fa-lg fa-fw txt-color-red"></i> <u>D</u>elete</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="divider"></li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="text-align-center">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Cancel</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t<td><a href="javascript:void(0);">India</a></td>\n\t\t\t\t\t\t\t\t\t<td>3,671</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-blue text-align-center" data-sparkline-height="22px" data-sparkline-width="90px" data-sparkline-barwidth="2">\n\t\t\t\t\t\t\t\t\t\t3631, 1471, 2400, 3631, 471, 1300, 1177, 2500, 2577, 3000, 4100, 3000, 7700\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">373</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline display-inline" data-sparkline-type=\'pie\' data-sparkline-piecolor=\'["#E979BB", "#57889C"]\' data-sparkline-offset="90" data-sparkline-piesize="23px">\n\t\t\t\t\t\t\t\t\t\t10,90\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="btn-group display-inline pull-right text-align-left hidden-tablet">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-cog fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t\t<ul class="dropdown-menu dropdown-menu-xs pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-file fa-lg fa-fw txt-color-greenLight"></i> <u>P</u>DF</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-times fa-lg fa-fw txt-color-red"></i> <u>D</u>elete</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="divider"></li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="text-align-center">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Cancel</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t<td><a href="javascript:void(0);">Brazil</a></td>\n\t\t\t\t\t\t\t\t\t<td>2,476</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-blue text-align-center" data-sparkline-height="22px" data-sparkline-width="90px" data-sparkline-barwidth="2">\n\t\t\t\t\t\t\t\t\t\t2700, 1877, 2500, 2577, 2000, 3631, 2471, -2700, -3631, 2471, 1300, 2100, 3000,\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">741</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline display-inline" data-sparkline-type=\'pie\' data-sparkline-piecolor=\'["#E979BB", "#57889C"]\' data-sparkline-offset="90" data-sparkline-piesize="23px">\n\t\t\t\t\t\t\t\t\t\t34,66\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="btn-group display-inline pull-right text-align-left hidden-tablet">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-cog fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t\t<ul class="dropdown-menu dropdown-menu-xs pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-file fa-lg fa-fw txt-color-greenLight"></i> <u>P</u>DF</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-times fa-lg fa-fw txt-color-red"></i> <u>D</u>elete</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="divider"></li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="text-align-center">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Cancel</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t<td><a href="javascript:void(0);">Turkey</a></td>\n\t\t\t\t\t\t\t\t\t<td>1,476</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-blue text-align-center" data-sparkline-height="22px" data-sparkline-width="90px" data-sparkline-barwidth="2">\n\t\t\t\t\t\t\t\t\t\t1300, 1877, 2500, 2577, 2000, 2100, 3000, -2471, -2700, -3631, -2471, 2700, 3631\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">123</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline display-inline" data-sparkline-type=\'pie\' data-sparkline-piecolor=\'["#E979BB", "#57889C"]\' data-sparkline-offset="90" data-sparkline-piesize="23px">\n\t\t\t\t\t\t\t\t\t\t75,25\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="btn-group display-inline pull-right text-align-left hidden-tablet">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-cog fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t\t<ul class="dropdown-menu dropdown-menu-xs pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-file fa-lg fa-fw txt-color-greenLight"></i> <u>P</u>DF</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-times fa-lg fa-fw txt-color-red"></i> <u>D</u>elete</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="divider"></li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="text-align-center">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Cancel</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t<td><a href="javascript:void(0);">Canada</a></td>\n\t\t\t\t\t\t\t\t\t<td>146</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline txt-color-orange text-align-center" data-sparkline-height="22px" data-sparkline-width="90px" data-sparkline-barwidth="2">\n\t\t\t\t\t\t\t\t\t\t5, 34, 10, 1, 4, 6, -9, -1, 0, 0, 5, 6, 7\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">23</td>\n\t\t\t\t\t\t\t\t\t<td class="text-align-center">\n\t\t\t\t\t\t\t\t\t<div class="sparkline display-inline" data-sparkline-type=\'pie\' data-sparkline-piecolor=\'["#E979BB", "#57889C"]\' data-sparkline-offset="90" data-sparkline-piesize="23px">\n\t\t\t\t\t\t\t\t\t\t50,50\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<div class="btn-group display-inline pull-right text-align-left hidden-tablet">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-xs btn-default dropdown-toggle" data-toggle="dropdown">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-cog fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t\t<ul class="dropdown-menu dropdown-menu-xs pull-right">\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-file fa-lg fa-fw txt-color-greenLight"></i> <u>P</u>DF</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);"><i class="fa fa-times fa-lg fa-fw txt-color-red"></i> <u>D</u>elete</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="divider"></li>\n\t\t\t\t\t\t\t\t\t\t\t<li class="text-align-center">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Cancel</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t</div></td>\n\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t</tbody>\n\t\t\t\t\t\t\t<tfoot>\n\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t<td colspan=5>\n\t\t\t\t\t\t\t\t\t<ul class="pagination pagination-xs no-margin">\n\t\t\t\t\t\t\t\t\t\t<li class="prev disabled">\n\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Previous</a>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t<li class="active">\n\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">1</a>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">2</a>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">3</a>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t<li class="next">\n\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);">Next</a>\n\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t</ul></td>\n\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t</tfoot>\n\t\t\t\t\t\t</table>\n\n\t\t\t\t\t\t<!-- end content -->\n\n\t\t\t\t\t</div>\n\n\t\t\t\t</div>\n\t\t\t\t<!-- end widget div -->\n\t\t\t</div>\n\t\t\t<!-- end widget -->\n\n\t\t\t<!-- new widget -->\n\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="wid-id-4" data-widget-editbutton="false" data-widget-colorbutton="false">\n\n\t\t\t\t<!-- widget options:\n\t\t\t\tusage: <div class="jarviswidget" id="wid-id-0" data-widget-editbutton="false">\n\n\t\t\t\tdata-widget-colorbutton="false"\n\t\t\t\tdata-widget-editbutton="false"\n\t\t\t\tdata-widget-togglebutton="false"\n\t\t\t\tdata-widget-deletebutton="false"\n\t\t\t\tdata-widget-fullscreenbutton="false"\n\t\t\t\tdata-widget-custombutton="false"\n\t\t\t\tdata-widget-collapsed="true"\n\t\t\t\tdata-widget-sortable="false"\n\n\t\t\t\t-->\n\n\t\t\t\t<header>\n\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-check txt-color-white"></i> </span>\n\t\t\t\t\t<h2> ToDo\'s </h2>\n\t\t\t\t\t<!-- <div class="widget-toolbar">\n\t\t\t\t\tadd: non-hidden - to disable auto hide\n\n\t\t\t\t\t</div>-->\n\t\t\t\t</header>\n\n\t\t\t\t<!-- widget div-->\n\t\t\t\t<div>\n\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t<label>Title:</label>\n\t\t\t\t\t\t\t<input type="text" />\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- end widget edit box -->\n\n\t\t\t\t\t<div class="widget-body no-padding smart-form">\n\t\t\t\t\t\t<!-- content goes here -->\n\t\t\t\t\t\t<h5 class="todo-group-title"><i class="fa fa-warning"></i> Critical Tasks (<small class="num-of-tasks">1</small>)</h5>\n\t\t\t\t\t\t<ul id="sortable1" class="todo">\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t<span class="handle"> <label class="checkbox">\n\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t<i></i> </label> </span>\n\t\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\t\t\t\t<strong>Ticket #17643</strong> - Hotfix for WebApp interface issue [<a href="javascript:void(0);" class="font-xs">More Details</a>] <span class="text-muted">Sea deep blessed bearing under darkness from God air living isn\'t. </span>\n\t\t\t\t\t\t\t\t\t<span class="date">Jan 1, 2014</span>\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t<h5 class="todo-group-title"><i class="fa fa-exclamation"></i> Important Tasks (<small class="num-of-tasks">3</small>)</h5>\n\t\t\t\t\t\t<ul id="sortable2" class="todo">\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t<span class="handle"> <label class="checkbox">\n\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t<i></i> </label> </span>\n\t\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\t\t\t\t<strong>Ticket #1347</strong> - Inbox email is being sent twice <small>(bug fix)</small> [<a href="javascript:void(0);" class="font-xs">More Details</a>] <span class="date">Nov 22, 2013</span>\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t<span class="handle"> <label class="checkbox">\n\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t<i></i> </label> </span>\n\t\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\t\t\t\t<strong>Ticket #1314</strong> - Call customer support re: Issue <a href="javascript:void(0);" class="font-xs">#6134</a><small>(code review)</small>\n\t\t\t\t\t\t\t\t\t<span class="date">Nov 22, 2013</span>\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t<span class="handle"> <label class="checkbox">\n\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="checkbox-inline">\n\t\t\t\t\t\t\t\t\t\t<i></i> </label> </span>\n\t\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\t\t\t\t<strong>Ticket #17643</strong> - Hotfix for WebApp interface issue [<a href="javascript:void(0);" class="font-xs">More Details</a>] <span class="text-muted">Sea deep blessed bearing under darkness from God air living isn\'t. </span>\n\t\t\t\t\t\t\t\t\t<span class="date">Jan 1, 2014</span>\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t</ul>\n\n\t\t\t\t\t\t<h5 class="todo-group-title"><i class="fa fa-check"></i> Completed Tasks (<small class="num-of-tasks">1</small>)</h5>\n\t\t\t\t\t\t<ul id="sortable3" class="todo">\n\t\t\t\t\t\t\t<li class="complete">\n\t\t\t\t\t\t\t\t<span class="handle" style="display:none"> <label class="checkbox state-disabled">\n\t\t\t\t\t\t\t\t\t\t<input type="checkbox" name="checkbox-inline" checked="checked" disabled="disabled">\n\t\t\t\t\t\t\t\t\t\t<i></i> </label> </span>\n\t\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\t\t\t\t<strong>Ticket #17643</strong> - Hotfix for WebApp interface issue [<a href="javascript:void(0);" class="font-xs">More Details</a>] <span class="text-muted">Sea deep blessed bearing under darkness from God air living isn\'t. </span>\n\t\t\t\t\t\t\t\t\t<span class="date">Jan 1, 2014</span>\n\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t</ul>\n\n\t\t\t\t\t\t<!-- end content -->\n\t\t\t\t\t</div>\n\n\t\t\t\t</div>\n\t\t\t\t<!-- end widget div -->\n\t\t\t</div>\n\t\t\t<!-- end widget -->\n\n\t\t</article>\n\n\t</div>\n\n\t<!-- end row -->\n\n</section>\n<!-- end widget grid -->\n\n<script type="text/javascript">\n\t// DO NOT REMOVE : GLOBAL FUNCTIONS!\n\tpageSetUp();\n\n\t/*\n\t * PAGE RELATED SCRIPTS\n\t */\n\n\t$(".js-status-update a").click(function() {\n\t\tvar selText = $(this).text();\n\t\t$this = $(this);\n\t\t$this.parents(\'.btn-group\').find(\'.dropdown-toggle\').html(selText + \' <span class="caret"></span>\');\n\t\t$this.parents(\'.dropdown-menu\').find(\'li\').removeClass(\'active\');\n\t\t$this.parent().addClass(\'active\');\n\t});\n\n\t/*\n\t* TODOs\n\t* TODO: add a way to add more todo\'s to list\n\t*/\n\n\t// initialize sortable\n\t$(function() {\n\t\t$("#sortable1, #sortable2").sortable({\n\t\t\thandle : \'.handle\',\n\t\t\tconnectWith : ".todo",\n\t\t\tupdate : countTasks\n\t\t}).disableSelection();\n\t});\n\n\t// check and uncheck\n\t$(\'.todo .checkbox > input[type="checkbox"]\').click(function() {\n\t\t$this = $(this).parent().parent().parent();\n\n\t\tif ($(this).prop(\'checked\')) {\n\t\t\t$this.addClass("complete");\n\n\t\t\t// remove this if you want to undo a check list once checked\n\t\t\t//$(this).attr("disabled", true);\n\t\t\t$(this).parent().hide();\n\n\t\t\t// once clicked - add class, copy to memory then remove and add to sortable3\n\t\t\t$this.slideUp(500, function() {\n\t\t\t\t$this.clone().prependTo("#sortable3").effect("highlight", {}, 800);\n\t\t\t\t$this.remove();\n\t\t\t\tcountTasks();\n\t\t\t});\n\t\t} else {\n\t\t\t// insert undo code here...\n\t\t}\n\n\t})\n\t// count tasks\n\tfunction countTasks() {\n\n\t\t$(\'.todo-group-title\').each(function() {\n\t\t\t$this = $(this);\n\t\t\t$this.find(".num-of-tasks").text($this.next().find("li").size());\n\t\t});\n\n\t}\n\n\t/*\n\t* RUN PAGE GRAPHS\n\t*/\n\n\t// Load FLOAT dependencies (related to page)\n\tloadScript("js/plugin/flot/jquery.flot.cust.js", loadFlotResize);\n\n\tfunction loadFlotResize() {\n\t\tloadScript("js/plugin/flot/jquery.flot.resize.js", loadFlotToolTip);\n\t}\n\n\tfunction loadFlotToolTip() {\n\t\tloadScript("js/plugin/flot/jquery.flot.tooltip.js", generatePageGraphs);\n\t}\n\n\tfunction generatePageGraphs() {\n\n\t\t/* TAB 1: UPDATING CHART */\n\t\t// For the demo we use generated data, but normally it would be coming from the server\n\n\t\tvar data = [], totalPoints = 200, $UpdatingChartColors = $("#updating-chart").css(\'color\');\n\t\tfunction getRandomData() {\n\t\t\tif (data.length > 0)\n\t\t\t\tdata = data.slice(1);\n\n\t\t\t// do a random walk\n\t\t\twhile (data.length < totalPoints) {\n\t\t\t\tvar prev = data.length > 0 ? data[data.length - 1] : 50;\n\t\t\t\tvar y = prev + Math.random() * 10 - 5;\n\t\t\t\tif (y < 0)\n\t\t\t\t\ty = 0;\n\t\t\t\tif (y > 100)\n\t\t\t\t\ty = 100;\n\t\t\t\tdata.push(y);\n\t\t\t}\n\n\t\t\t// zip the generated y values with the x values\n\t\t\tvar res = [];\n\t\t\tfor (var i = 0; i < data.length; ++i)\n\t\t\t\tres.push([i, data[i]])\n\t\t\treturn res;\n\t\t}\n\n\t\t// setup control widget\n\t\tvar updateInterval = 1500;\n\t\t$("#updating-chart").val(updateInterval).change(function() {\n\n\t\t\tvar v = $(this).val();\n\t\t\tif (v && !isNaN(+v)) {\n\t\t\t\tupdateInterval = +v;\n\t\t\t\t$(this).val("" + updateInterval);\n\t\t\t}\n\n\t\t});\n\n\t\t// setup plot\n\t\tvar options = {\n\t\t\tyaxis : {\n\t\t\t\tmin : 0,\n\t\t\t\tmax : 100\n\t\t\t},\n\t\t\txaxis : {\n\t\t\t\tmin : 0,\n\t\t\t\tmax : 100\n\t\t\t},\n\t\t\tcolors : [$UpdatingChartColors],\n\t\t\tseries : {\n\t\t\t\tlines : {\n\t\t\t\t\tlineWidth : 1,\n\t\t\t\t\tfill : true,\n\t\t\t\t\tfillColor : {\n\t\t\t\t\t\tcolors : [{\n\t\t\t\t\t\t\topacity : 0.4\n\t\t\t\t\t\t}, {\n\t\t\t\t\t\t\topacity : 0\n\t\t\t\t\t\t}]\n\t\t\t\t\t},\n\t\t\t\t\tsteps : false\n\n\t\t\t\t}\n\t\t\t}\n\t\t};\n\n\t\tvar plot = $.plot($("#updating-chart"), [getRandomData()], options);\n\n\t\t/* live switch */\n\t\t$(\'input[type="checkbox"]#start_interval\').click(function() {\n\t\t\tif ($(this).prop(\'checked\')) {\n\t\t\t\t$on = true;\n\t\t\t\tvar updateInterval = 1500;\n\t\t\t\tupdate();\n\t\t\t} else {\n\t\t\t\tclearInterval(updateInterval);\n\t\t\t\t$on = false;\n\t\t\t}\n\t\t});\n\n\t\tfunction update() {\n\t\t\tif ($on == true) {\n\t\t\t\tplot.setData([getRandomData()]);\n\t\t\t\tplot.draw();\n\t\t\t\tsetTimeout(update, updateInterval);\n\n\t\t\t} else {\n\t\t\t\tclearInterval(updateInterval)\n\t\t\t}\n\n\t\t}\n\n\t\tvar $on = false;\n\n\t\t/*end updating chart*/\n\n\t\t/* TAB 2: Social Network  */\n\n\t\t$(function() {\n\t\t\t// jQuery Flot Chart\n\t\t\tvar twitter = [[1, 27], [2, 34], [3, 51], [4, 48], [5, 55], [6, 65], [7, 61], [8, 70], [9, 65], [10, 75], [11, 57], [12, 59], [13, 62]], facebook = [[1, 25], [2, 31], [3, 45], [4, 37], [5, 38], [6, 40], [7, 47], [8, 55], [9, 43], [10, 50], [11, 47], [12, 39], [13, 47]], data = [{\n\t\t\t\tlabel : "Twitter",\n\t\t\t\tdata : twitter,\n\t\t\t\tlines : {\n\t\t\t\t\tshow : true,\n\t\t\t\t\tlineWidth : 1,\n\t\t\t\t\tfill : true,\n\t\t\t\t\tfillColor : {\n\t\t\t\t\t\tcolors : [{\n\t\t\t\t\t\t\topacity : 0.1\n\t\t\t\t\t\t}, {\n\t\t\t\t\t\t\topacity : 0.13\n\t\t\t\t\t\t}]\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\tpoints : {\n\t\t\t\t\tshow : true\n\t\t\t\t}\n\t\t\t}, {\n\t\t\t\tlabel : "Facebook",\n\t\t\t\tdata : facebook,\n\t\t\t\tlines : {\n\t\t\t\t\tshow : true,\n\t\t\t\t\tlineWidth : 1,\n\t\t\t\t\tfill : true,\n\t\t\t\t\tfillColor : {\n\t\t\t\t\t\tcolors : [{\n\t\t\t\t\t\t\topacity : 0.1\n\t\t\t\t\t\t}, {\n\t\t\t\t\t\t\topacity : 0.13\n\t\t\t\t\t\t}]\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\tpoints : {\n\t\t\t\t\tshow : true\n\t\t\t\t}\n\t\t\t}];\n\n\t\t\tvar options = {\n\t\t\t\tgrid : {\n\t\t\t\t\thoverable : true\n\t\t\t\t},\n\t\t\t\tcolors : ["#568A89", "#3276B1"],\n\t\t\t\ttooltip : true,\n\t\t\t\ttooltipOpts : {\n\t\t\t\t\t//content : "Value <b>$x</b> Value <span>$y</span>",\n\t\t\t\t\tdefaultTheme : false\n\t\t\t\t},\n\t\t\t\txaxis : {\n\t\t\t\t\tticks : [[1, "JAN"], [2, "FEB"], [3, "MAR"], [4, "APR"], [5, "MAY"], [6, "JUN"], [7, "JUL"], [8, "AUG"], [9, "SEP"], [10, "OCT"], [11, "NOV"], [12, "DEC"], [13, "JAN+1"]]\n\t\t\t\t},\n\t\t\t\tyaxes : {\n\n\t\t\t\t}\n\t\t\t};\n\n\t\t\tvar plot3 = $.plot($("#statsChart"), data, options);\n\t\t});\n\n\t\t// END TAB 2\n\n\t\t// TAB THREE GRAPH //\n\t\t/* TAB 3: Revenew  */\n\n\t\t$(function() {\n\n\t\t\tvar trgt = [[1354586000000, 153], [1364587000000, 658], [1374588000000, 198], [1384589000000, 663], [1394590000000, 801], [1404591000000, 1080], [1414592000000, 353], [1424593000000, 749], [1434594000000, 523], [1444595000000, 258], [1454596000000, 688], [1464597000000, 364]], prft = [[1354586000000, 53], [1364587000000, 65], [1374588000000, 98], [1384589000000, 83], [1394590000000, 980], [1404591000000, 808], [1414592000000, 720], [1424593000000, 674], [1434594000000, 23], [1444595000000, 79], [1454596000000, 88], [1464597000000, 36]], sgnups = [[1354586000000, 647], [1364587000000, 435], [1374588000000, 784], [1384589000000, 346], [1394590000000, 487], [1404591000000, 463], [1414592000000, 479], [1424593000000, 236], [1434594000000, 843], [1444595000000, 657], [1454596000000, 241], [1464597000000, 341]], toggles = $("#rev-toggles"), target = $("#flotcontainer");\n\n\t\t\tvar data = [{\n\t\t\t\tlabel : "Target Profit",\n\t\t\t\tdata : trgt,\n\t\t\t\tbars : {\n\t\t\t\t\tshow : true,\n\t\t\t\t\talign : "center",\n\t\t\t\t\tbarWidth : 30 * 30 * 60 * 1000 * 80\n\t\t\t\t}\n\t\t\t}, {\n\t\t\t\tlabel : "Actual Profit",\n\t\t\t\tdata : prft,\n\t\t\t\tcolor : \'#3276B1\',\n\t\t\t\tlines : {\n\t\t\t\t\tshow : true,\n\t\t\t\t\tlineWidth : 3\n\t\t\t\t},\n\t\t\t\tpoints : {\n\t\t\t\t\tshow : true\n\t\t\t\t}\n\t\t\t}, {\n\t\t\t\tlabel : "Actual Signups",\n\t\t\t\tdata : sgnups,\n\t\t\t\tcolor : \'#71843F\',\n\t\t\t\tlines : {\n\t\t\t\t\tshow : true,\n\t\t\t\t\tlineWidth : 1\n\t\t\t\t},\n\t\t\t\tpoints : {\n\t\t\t\t\tshow : true\n\t\t\t\t}\n\t\t\t}]\n\n\t\t\tvar options = {\n\t\t\t\tgrid : {\n\t\t\t\t\thoverable : true\n\t\t\t\t},\n\t\t\t\ttooltip : true,\n\t\t\t\ttooltipOpts : {\n\t\t\t\t\t//content: \'%x - %y\',\n\t\t\t\t\t//dateFormat: \'%b %y\',\n\t\t\t\t\tdefaultTheme : false\n\t\t\t\t},\n\t\t\t\txaxis : {\n\t\t\t\t\tmode : "time"\n\t\t\t\t},\n\t\t\t\tyaxes : {\n\t\t\t\t\ttickFormatter : function(val, axis) {\n\t\t\t\t\t\treturn "$" + val;\n\t\t\t\t\t},\n\t\t\t\t\tmax : 1200\n\t\t\t\t}\n\n\t\t\t};\n\n\t\t\tplot2 = null;\n\n\t\t\tfunction plotNow() {\n\t\t\t\tvar d = [];\n\t\t\t\ttoggles.find(\':checkbox\').each(function() {\n\t\t\t\t\tif ($(this).is(\':checked\')) {\n\t\t\t\t\t\td.push(data[$(this).attr("name").substr(4, 1)]);\n\t\t\t\t\t}\n\t\t\t\t});\n\t\t\t\tif (d.length > 0) {\n\t\t\t\t\tif (plot2) {\n\t\t\t\t\t\tplot2.setData(d);\n\t\t\t\t\t\tplot2.draw();\n\t\t\t\t\t} else {\n\t\t\t\t\t\tplot2 = $.plot(target, d, options);\n\t\t\t\t\t}\n\t\t\t\t}\n\n\t\t\t};\n\n\t\t\ttoggles.find(\':checkbox\').on(\'change\', function() {\n\t\t\t\tplotNow();\n\t\t\t});\n\t\t\tplotNow()\n\n\t\t});\n\n\t}\n\n\t/*\n\t * VECTOR MAP\n\t */\n\n\tdata_array = {\n\t\t"US" : 4977,\n\t\t"AU" : 4873,\n\t\t"IN" : 3671,\n\t\t"BR" : 2476,\n\t\t"TR" : 1476,\n\t\t"CN" : 146,\n\t\t"CA" : 134,\n\t\t"BD" : 100\n\t};\n\n\t\n\t/*\n\t * FULL CALENDAR JS\n\t */\t\n\n\tif ($("#calendar").length) {\n\t\tvar date = new Date();\n\t\tvar d = date.getDate();\n\t\tvar m = date.getMonth();\n\t\tvar y = date.getFullYear();\n\n\t\tvar calendar = $(\'#calendar\').fullCalendar({\n\n\t\t\teditable : true,\n\t\t\tdraggable : true,\n\t\t\tselectable : false,\n\t\t\tselectHelper : true,\n\t\t\tunselectAuto : false,\n\t\t\tdisableResizing : false,\n\n\t\t\theader : {\n\t\t\t\tleft : \'title\', //,today\n\t\t\t\tcenter : \'prev, next, today\',\n\t\t\t\tright : \'month, agendaWeek, agenDay\' //month, agendaDay,\n\t\t\t},\n\n\t\t\tselect : function(start, end, allDay) {\n\t\t\t\tvar title = prompt(\'Event Title:\');\n\t\t\t\tif (title) {\n\t\t\t\t\tcalendar.fullCalendar(\'renderEvent\', {\n\t\t\t\t\t\ttitle : title,\n\t\t\t\t\t\tstart : start,\n\t\t\t\t\t\tend : end,\n\t\t\t\t\t\tallDay : allDay\n\t\t\t\t\t}, true // make the event "stick"\n\t\t\t\t\t);\n\t\t\t\t}\n\t\t\t\tcalendar.fullCalendar(\'unselect\');\n\t\t\t},\n\n\t\t\tevents : [{\n\t\t\t\ttitle : \'All Day Event\',\n\t\t\t\tstart : new Date(y, m, 1),\n\t\t\t\tdescription : \'long description\',\n\t\t\t\tclassName : ["event", "bg-color-greenLight"],\n\t\t\t\ticon : \'fa-check\'\n\t\t\t}, {\n\t\t\t\ttitle : \'Long Event\',\n\t\t\t\tstart : new Date(y, m, d - 5),\n\t\t\t\tend : new Date(y, m, d - 2),\n\t\t\t\tclassName : ["event", "bg-color-red"],\n\t\t\t\ticon : \'fa-lock\'\n\t\t\t}, {\n\t\t\t\tid : 999,\n\t\t\t\ttitle : \'Repeating Event\',\n\t\t\t\tstart : new Date(y, m, d - 3, 16, 0),\n\t\t\t\tallDay : false,\n\t\t\t\tclassName : ["event", "bg-color-blue"],\n\t\t\t\ticon : \'fa-clock-o\'\n\t\t\t}, {\n\t\t\t\tid : 999,\n\t\t\t\ttitle : \'Repeating Event\',\n\t\t\t\tstart : new Date(y, m, d + 4, 16, 0),\n\t\t\t\tallDay : false,\n\t\t\t\tclassName : ["event", "bg-color-blue"],\n\t\t\t\ticon : \'fa-clock-o\'\n\t\t\t}, {\n\t\t\t\ttitle : \'Meeting\',\n\t\t\t\tstart : new Date(y, m, d, 10, 30),\n\t\t\t\tallDay : false,\n\t\t\t\tclassName : ["event", "bg-color-darken"]\n\t\t\t}, {\n\t\t\t\ttitle : \'Lunch\',\n\t\t\t\tstart : new Date(y, m, d, 12, 0),\n\t\t\t\tend : new Date(y, m, d, 14, 0),\n\t\t\t\tallDay : false,\n\t\t\t\tclassName : ["event", "bg-color-darken"]\n\t\t\t}, {\n\t\t\t\ttitle : \'Birthday Party\',\n\t\t\t\tstart : new Date(y, m, d + 1, 19, 0),\n\t\t\t\tend : new Date(y, m, d + 1, 22, 30),\n\t\t\t\tallDay : false,\n\t\t\t\tclassName : ["event", "bg-color-darken"]\n\t\t\t}, {\n\t\t\t\ttitle : \'Smartadmin Open Day\',\n\t\t\t\tstart : new Date(y, m, 28),\n\t\t\t\tend : new Date(y, m, 29),\n\t\t\t\tclassName : ["event", "bg-color-darken"]\n\t\t\t}],\n\n\t\t\teventRender : function(event, element, icon) {\n\t\t\t\tif (!event.description == "") {\n\t\t\t\t\telement.find(\'.fc-event-title\').append("<br/><span class=\'ultra-light\'>" + event.description + "</span>");\n\t\t\t\t}\n\t\t\t\tif (!event.icon == "") {\n\t\t\t\t\telement.find(\'.fc-event-title\').append("<i class=\'air air-top-right fa " + event.icon + " \'></i>");\n\t\t\t\t}\n\t\t\t}\n\t\t});\n\n\t};\n\n\t/* hide default buttons */\n\t$(\'.fc-header-right, .fc-header-center\').hide();\n\n\t\n\n\n\t$(\'#calendar-buttons #btn-prev\').click(function() {\n\t\t$(\'.fc-button-prev\').click();\n\t\treturn false;\n\t});\n\n\t$(\'#calendar-buttons #btn-next\').click(function() {\n\t\t$(\'.fc-button-next\').click();\n\t\treturn false;\n\t});\n\n\t$(\'#calendar-buttons #btn-today\').click(function() {\n\t\t$(\'.fc-button-today\').click();\n\t\treturn false;\n\t});\n\n\t$(\'#mt\').click(function() {\n\t\t$(\'#calendar\').fullCalendar(\'changeView\', \'month\');\n\t});\n\n\t$(\'#ag\').click(function() {\n\t\t$(\'#calendar\').fullCalendar(\'changeView\', \'agendaWeek\');\n\t});\n\n\t$(\'#td\').click(function() {\n\t\t$(\'#calendar\').fullCalendar(\'changeView\', \'agendaDay\');\n\t});\n\n\t/*\n\t * CHAT\n\t */\n\n\t$.filter_input = $(\'#filter-chat-list\');\n\t$.chat_users_container = $(\'#chat-container > .chat-list-body\')\n\t$.chat_users = $(\'#chat-users\')\n\t$.chat_list_btn = $(\'#chat-container > .chat-list-open-close\');\n\t$.chat_body = $(\'#chat-body\');\n\n\t/*\n\t * LIST FILTER\n\t */\n\n\t( function($) {\n\t\t\t// custom css expression for a case-insensitive contains()\n\t\t\tjQuery.expr[\':\'].Contains = function(a, i, m) {\n\t\t\t\treturn (a.textContent || a.innerText || "").toUpperCase().indexOf(m[3].toUpperCase()) >= 0;\n\t\t\t};\n\n\t\t\tfunction listFilter(list) {// header is any element, list is an unordered list\n\t\t\t\t// create and add the filter form to the header\n\n\t\t\t\t$.filter_input.change(function() {\n\t\t\t\t\tvar filter = $(this).val();\n\t\t\t\t\tif (filter) {\n\t\t\t\t\t\t// this finds all links in a list that contain the input,\n\t\t\t\t\t\t// and hide the ones not containing the input while showing the ones that do\n\t\t\t\t\t\t$.chat_users.find("a:not(:Contains(" + filter + "))").parent().slideUp();\n\t\t\t\t\t\t$.chat_users.find("a:Contains(" + filter + ")").parent().slideDown();\n\t\t\t\t\t} else {\n\t\t\t\t\t\t$.chat_users.find("li").slideDown();\n\t\t\t\t\t}\n\t\t\t\t\treturn false;\n\t\t\t\t}).keyup(function() {\n\t\t\t\t\t// fire the above change event after every letter\n\t\t\t\t\t$(this).change();\n\n\t\t\t\t});\n\n\t\t\t}\n\n\t\t\t//ondomready\n\t\t\t$(function() {\n\t\t\t\tlistFilter($.chat_users);\n\t\t\t});\n\n\t\t}(jQuery));\n\n\t$.chat_list_btn.click(function() {\n\t\t$(this).parent(\'#chat-container\').toggleClass(\'open\');\n\t})\n\n\t$.chat_body.animate({\n\t\tscrollTop : $.chat_body[0].scrollHeight\n\t}, 500);\n\n</script>\n');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("templates/event/event_add_view_template", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      __out.push('<form id="add-event-form">\n\t<fieldset>\n\t\t<div class="form-group">\n\t\t\t<label>Select Event Icon</label>\n\t\t\t<div class="btn-group btn-group-sm btn-group-justified" data-toggle="buttons">\n\t\t\t\t<label class="btn btn-default active">\n\t\t\t\t\t<input type="radio" name="iconselect" id="icon-1" value="fa-info" checked>\n\t\t\t\t\t<i class="fa fa-info text-muted"></i> </label>\n\t\t\t\t<label class="btn btn-default">\n\t\t\t\t\t<input type="radio" name="iconselect" id="icon-2" value="fa-warning">\n\t\t\t\t\t<i class="fa fa-warning text-muted"></i> </label>\n\t\t\t\t<label class="btn btn-default">\n\t\t\t\t\t<input type="radio" name="iconselect" id="icon-3" value="fa-check">\n\t\t\t\t\t<i class="fa fa-check text-muted"></i> </label>\n\t\t\t\t<label class="btn btn-default">\n\t\t\t\t\t<input type="radio" name="iconselect" id="icon-4" value="fa-user">\n\t\t\t\t\t<i class="fa fa-user text-muted"></i> </label>\n\t\t\t\t<label class="btn btn-default">\n\t\t\t\t\t<input type="radio" name="iconselect" id="icon-5" value="fa-lock">\n\t\t\t\t\t<i class="fa fa-lock text-muted"></i> </label>\n\t\t\t\t<label class="btn btn-default">\n\t\t\t\t\t<input type="radio" name="iconselect" id="icon-6" value="fa-clock-o">\n\t\t\t\t\t<i class="fa fa-clock-o text-muted"></i> </label>\n\t\t\t</div>\n\t\t</div>\n\n\t\t<div class="form-group">\n\t\t\t<label>Event Title</label>\n\t\t\t<input class="form-control"  id="title" name="title" maxlength="40" type="text" placeholder="Event Title">\n\t\t</div>\n\t\t<div class="form-group">\n\t\t\t<label>Event Description</label>\n\t\t\t<textarea class="form-control" placeholder="Please be brief" rows="3" maxlength="40" id="description"></textarea>\n\t\t\t<p class="note">Maxlength is set to 40 characters</p>\n\t\t</div>\n\n\t\t<div class="form-group">\n\t\t\t<label>Select Event Color</label>\n\t\t\t<div class="btn-group btn-group-justified btn-select-tick" data-toggle="buttons">\n\t\t\t\t<label class="btn bg-color-darken active">\n\t\t\t\t\t<input type="radio" name="priority" id="option1" value="bg-color-darken txt-color-white" checked>\n\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t<label class="btn bg-color-blue">\n\t\t\t\t\t<input type="radio" name="priority" id="option2" value="bg-color-blue txt-color-white">\n\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t<label class="btn bg-color-orange">\n\t\t\t\t\t<input type="radio" name="priority" id="option3" value="bg-color-orange txt-color-white">\n\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t<label class="btn bg-color-greenLight">\n\t\t\t\t\t<input type="radio" name="priority" id="option4" value="bg-color-greenLight txt-color-white">\n\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t<label class="btn bg-color-blueLight">\n\t\t\t\t\t<input type="radio" name="priority" id="option5" value="bg-color-blueLight txt-color-white">\n\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t<label class="btn bg-color-red">\n\t\t\t\t\t<input type="radio" name="priority" id="option6" value="bg-color-red txt-color-white">\n\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t</div>\n\t\t</div>\n\n\t</fieldset>\n\t<div class="form-actions">\n\t\t<div class="row">\n\t\t\t<div class="col-md-12">\n\t\t\t\t<button class="btn btn-default" type="button" id="add-event" >\n\t\t\t\t\tAdd Event\n\t\t\t\t</button>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</form>');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
+});
+
+;require.register("templates/event/events_calendar_view_template", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      __out.push('<div class="row">\n\t<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">\n\t\t<h1 class="page-title txt-color-blueDark"><i class="fa fa-calendar fa-fw "></i>\tCalendar Events</span></h1>\n\t</div>\t\n</div>\n<!-- row -->\n\n<div class="row">\n\n\t<div class="col-sm-12 col-md-12 col-lg-3">\n\t\t<!-- new widget -->\n\t\t<div class="jarviswidget jarviswidget-color-blueDark">\n\t\t\t<header>\n\t\t\t\t<h2> Add Events </h2>\n\t\t\t</header>\n\n\t\t\t<!-- widget div-->\n\t\t\t<div>\n\n\t\t\t\t<div class="widget-body">\n\t\t\t\t\t<!-- content goes here -->\n\t\t\t\t\t<div id="js-add-event">\n\t\t\t\t\t\t<form id="add-event-form">\n\t\t\t\t\t\t\t<fieldset>\n\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t<label>Select Event Icon</label>\n\t\t\t\t\t\t\t\t\t<div class="btn-group btn-group-sm btn-group-justified" data-toggle="buttons">\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect active">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-1" value="fa-info" checked="checked">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-info text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-2" value="fa-warning" checked="">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-warning text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-3" value="fa-check" checked="">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-4" value="fa-user" checked="">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-user text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-5" value="fa-lock" checked="">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-lock text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-6" value="fa-clock-o" checked="">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-clock-o text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t<label>Event Title</label>\n\t\t\t\t\t\t\t\t\t<input class="form-control"  id="title" name="title" maxlength="40" type="text" placeholder="Event Title">\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t<label>Event Description</label>\n\t\t\t\t\t\t\t\t\t<textarea class="form-control" placeholder="Please be brief" rows="3" maxlength="40" id="description"></textarea>\n\t\t\t\t\t\t\t\t\t<p class="note">Maxlength is set to 40 characters</p>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t<label>Event Location</label>\n\t\t\t\t\t\t\t\t\t<input class="form-control"  id="location" name="location" maxlength="40" type="text" placeholder="Event Location">\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t<label>Select Event Color</label>\n\t\t\t\t\t\t\t\t\t<div class="btn-group btn-group-justified btn-select-tick" data-toggle="buttons">\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-darken js-btn-priority active" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option1" value="bg-color-darken txt-color-white" checked>\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-blue js-btn-priority" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option2" value="bg-color-blue txt-color-white">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-orange js-btn-priority" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option3" value="bg-color-orange txt-color-white">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-greenLight js-btn-priority" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option4" value="bg-color-greenLight txt-color-white">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-blueLight js-btn-priority" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option5" value="bg-color-blueLight txt-color-white">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-red js-btn-priority" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option6" value="bg-color-red txt-color-white">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</fieldset>\n\t\t\t\t\t\t\t<div class="form-actions">\n\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t<div class="col-md-12">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-default" type="button" id="add-event" >\n\t\t\t\t\t\t\t\t\t\t\tAdd Event\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<input type="hidden" value="fa-info" name="iconselect" />\n\t\t\t\t\t\t\t<input type="hidden" value="bg-color-darken txt-color-white" name="priority" />\n\t\t\t\t\t\t</form>\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- end content -->\n\t\t\t\t</div>\n\n\t\t\t</div>\n\t\t\t<!-- end widget div -->\n\t\t</div>\n\t\t<!-- end widget -->\n\n\t\t<div class="well well-sm" id="event-container">\n\t\t\t<form>\n\t\t\t\t<fieldset>\n\t\t\t\t\t<legend>\n\t\t\t\t\t\tDraggable Events\n\t\t\t\t\t</legend>\n\t\t\t\t\t<ul id=\'external-events\' class="list-unstyled">\n\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t<span class="bg-color-darken txt-color-white" data-description="Currently busy" data-icon="fa-time">Office Meeting</span>\n\t\t\t\t\t\t</li>\n\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t<span class="bg-color-blue txt-color-white" data-description="No Description" data-icon="fa-pie">Lunch Break</span>\n\t\t\t\t\t\t</li>\n\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t<span class="bg-color-red txt-color-white" data-description="Urgent Tasks" data-icon="fa-alert">URGENT</span>\n\t\t\t\t\t\t</li>\n\t\t\t\t\t</ul>\n\t\t\t\t\t<div class="checkbox">\n\t\t\t\t\t\t<label>\n\t\t\t\t\t\t\t<input type="checkbox" id="drop-remove" class="checkbox style-0" checked="checked">\n\t\t\t\t\t\t\t<span>remove after drop</span> </label>\n\t\n\t\t\t\t\t</div>\n\t\t\t\t</fieldset>\n\t\t\t</form>\n\n\t\t</div>\n\t</div>\n\t<div class="col-sm-12 col-md-12 col-lg-9">\n\n\t\t<!-- new widget -->\n\t\t<div class="jarviswidget jarviswidget-color-blueDark">\n\n\t\t\t<!-- widget options:\n\t\t\tusage: <div class="jarviswidget" id="wid-id-0" data-widget-editbutton="false">\n\n\t\t\tdata-widget-colorbutton="false"\n\t\t\tdata-widget-editbutton="false"\n\t\t\tdata-widget-togglebutton="false"\n\t\t\tdata-widget-deletebutton="false"\n\t\t\tdata-widget-fullscreenbutton="false"\n\t\t\tdata-widget-custombutton="false"\n\t\t\tdata-widget-collapsed="true"\n\t\t\tdata-widget-sortable="false"\n\n\t\t\t-->\n\t\t\t<header>\n\t\t\t\t<span class="widget-icon"> <i class="fa fa-calendar"></i> </span>\n\t\t\t\t<h2> My Events </h2>\n\t\t\t\t<div class="widget-toolbar">\n\t\t\t\t\t<!-- add: non-hidden - to disable auto hide -->\n\t\t\t\t\t<div class="btn-group">\n\t\t\t\t\t\t<button class="btn dropdown-toggle btn-xs btn-default" data-toggle="dropdown">\n\t\t\t\t\t\t\tShowing <i class="fa fa-caret-down"></i>\n\t\t\t\t\t\t</button>\n\t\t\t\t\t\t<ul class="dropdown-menu js-status-update pull-right">\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t<a href="#;" id="mt">Month</a>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t<a href="#;" id="ag">Agenda</a>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t<a href="#;" id="td">Today</a>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t</ul>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</header>\n\n\t\t\t<!-- widget div-->\n\t\t\t<div>\n\n\t\t\t\t<div class="widget-body no-padding">\n\t\t\t\t\t<!-- content goes here -->\n\t\t\t\t\t<div class="widget-body-toolbar">\n\n\t\t\t\t\t\t<div id="calendar-buttons">\n\n\t\t\t\t\t\t\t<div class="btn-group">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div id="calendar"></div>\n\n\t\t\t\t\t<!-- end content -->\n\t\t\t\t</div>\n\n\t\t\t</div>\n\t\t\t<!-- end widget div -->\n\t\t</div>\n\t\t<!-- end widget -->\n\n\t</div>\n\n</div>');
     
     }).call(this);
     
@@ -5487,79 +6122,45 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      var _ref;
+      var condition, _i, _len, _ref, _ref1;
     
-      __out.push('<!-- Bread crumb is created dynamically -->\n<!-- row -->\n<div class="row">\n\n\t<!-- col -->\n\t<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">\n\t\t<h1 class="page-title txt-color-blueDark"><!-- PAGE HEADER --><i class="fa-fw fa fa-file-o"></i> <a href="#view/patients">My Patients</a> <span>>\n\t\t\tView Patient </span></h1>\n\t</div>\n\t<!-- end col -->\n\n\t<!-- right side of the page with the sparkline graphs -->\n\t<!-- col -->\n\t<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">\n\t\t<!-- sparks -->\n\t\t<ul id="sparks">\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> Surgery Income <span class="txt-color-blue">$47,171</span></h5>\n\t\t\t\t<div class="sparkline txt-color-blue hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t1300, 1877, 2500, 2577, 2000, 2100, 3000, 2700, 3631, 2471, 2700, 3631, 2471\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> Patient Visits <span class="txt-color-purple"><i class="fa fa-arrow-circle-up" data-rel="bootstrap-tooltip" title="Increased"></i>&nbsp;45%</span></h5>\n\t\t\t\t<div class="sparkline txt-color-purple hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t110,150,300,130,400,240,220,310,220,300, 270, 210\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> Test <span class="txt-color-greenDark"><i class="fa fa-shopping-cart"></i>&nbsp;2447</span></h5>\n\t\t\t\t<div class="sparkline txt-color-greenDark hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t110,150,300,130,400,240,220,310,220,300, 270, 210\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t</ul>\n\t\t<!-- end sparks -->\n\t</div>\n\t<!-- end col -->\n\n</div>\n<!-- end row -->\n\n<!-- row -->\n\n<div class="row">\n\n\t<div class="col-sm-12">\n\n\n\t\t\t<div class="well well-sm">\n\n\t\t\t\t<div class="row">\n\n\t\t\t\t\t<div class="col-sm-12 col-md-12 col-lg-6">\n\t\t\t\t\t\t<div class="well well-light well-sm no-margin no-padding">\n\n\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\t\t\t\t\t\t\t\t\t<div id="myCarousel" class="carousel fade profile-carousel">\n\t\t\t\t\t\t\t\t\t\t<div class="air air-bottom-right padding-10">\n\t\t\t\t\t\t\t\t\t\t\t<a href="#" class="btn txt-color-white btn-primary btn-sm js-edit"><i class="fa fa-pencil"></i> Edit Details</a>&nbsp; <a href="#" class="btn txt-color-white bg-color-red btn-sm js-delete"><i class="fa fa-trash-o"></i> Delete</a>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="air air-top-left padding-10">\n\t\t\t\t\t\t\t\t\t\t\t<h4 class="txt-color-white font-md">Last visit - Jan 1, 2014</h4>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<ol class="carousel-indicators">\n\t\t\t\t\t\t\t\t\t\t\t<li data-target="#myCarousel" data-slide-to="0" class="active"></li>\n\t\t\t\t\t\t\t\t\t\t\t<li data-target="#myCarousel" data-slide-to="1" class=""></li>\n\t\t\t\t\t\t\t\t\t\t\t<li data-target="#myCarousel" data-slide-to="2" class=""></li>\n\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t<div class="carousel-inner">\n\t\t\t\t\t\t\t\t\t\t\t<!-- Slide 1 -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="item active">\n\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/demo/s1.jpg" alt="">\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- Slide 2 -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="item">\n\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/demo/s2.jpg" alt="">\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- Slide 3 -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="item">\n\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/demo/m3.jpg" alt="">\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\n\t\t\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t\t\t<div class="col-sm-3 profile-pic">\n\t\t\t\t\t\t\t\t\t\t\t<img src=\'img/avatars/');
-    
-      __out.push(__sanitize(this.gender.toLowerCase()));
-    
-      __out.push('-big.png\'>\n\t\t\t\t\t\t\t\t\t\t\t<div class="padding-10">\n\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Age: <strong>');
-    
-      __out.push(__sanitize(this.age));
-    
-      __out.push('</strong>\n\t\t\t\t\t\t\t\t\t\t\t\t<small>year');
-    
-      if (this.age > 1) {
-        __out.push('s');
-      }
-    
-      __out.push(' old</small></h4>\n\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Gender: <strong>');
-    
-      __out.push(__sanitize(this.gender));
-    
-      __out.push('</strong></h4>\n\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Relationship Status: <strong>');
-    
-      __out.push(__sanitize(this.relationshipStatus));
-    
-      __out.push('</strong></h4>\t\n\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t');
-    
-      if ((_ref = this.vitals) != null ? _ref.length : void 0) {
-        __out.push('\n\t\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Weight: <strong>');
-        __out.push(__sanitize(this.vitals[0].weight));
-        __out.push(' kg</strong></h4>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Height: <strong>');
-        __out.push(__sanitize(this.vitals[0].height));
-        __out.push(' m</strong>\t</h4>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Blood Pressure: <strong>');
-        __out.push(__sanitize(this.vitals[0].diastolicBp));
-        __out.push('/');
-        __out.push(__sanitize(this.vitals[0].systolicBp));
-        __out.push(' mmHg</strong></h4>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Blood Glucose: <strong>');
-        __out.push(__sanitize(this.vitals[0].bloodGlucose));
-        __out.push('</strong></h4>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Temperature: <strong>');
-        __out.push(__sanitize(this.vitals[0].bodyTemperature));
-        __out.push(' &deg;C</strong></h4>\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Pulse: <strong>');
-        __out.push(__sanitize(this.vitals[0].pulse));
-        __out.push('</strong>\t</h4>\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t');
-      }
-    
-      __out.push('\t\n\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#" class="js-add-vitals"><i class="fa fa-lg fa-fw fa-user-md fa-2x"></i>  <span class="menu-item-parent">Add vitals</span></a>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t<h1>');
+      __out.push('<div class="row">\n\t<div class="col-sm-12">\n\t\t<div class="row">\n\t\t\t<div class="col-md-6 dashboard-panel-6">\n\t\t\t\t<div class="jumbotron">\n\t\t\t\t\t<h1>\n\t\t\t\t\t\t');
     
       __out.push(__sanitize(this.firstName));
     
-      __out.push(' <span class="semi-bold">');
+      __out.push(' ');
     
       __out.push(__sanitize(this.lastName));
     
-      __out.push('</span>\n\t\t\t\t\t\t\t\t\t\t\t<br><small>Patient since: <strong>');
+      __out.push('\n\t\t\t\t\t</h1>\n\t\t\t\t\t<p>\n\t\t\t\t\t\t<strong>Age: </strong>');
     
-      __out.push(__sanitize(this.dateRegistered));
+      __out.push(__sanitize(this.age));
     
-      __out.push('</strong></small>\n\t\t\t\t\t\t\t\t\t\t\t</h1>\n\n\t\t\t\t\t\t\t\t\t\t\t<ul class="list-unstyled">\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<p class="text-muted">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-phone"></i>&nbsp;&nbsp; <span class="txt-color-darken">');
-    
-      __out.push(__sanitize(this.phone));
-    
-      __out.push('</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<p class="text-muted">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-envelope"></i>&nbsp;&nbsp;<a href="mailto:');
-    
-      __out.push(__sanitize(this.email));
-    
-      __out.push('">');
-    
-      __out.push(__sanitize(this.email));
-    
-      __out.push('</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<p class="text-muted">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-building"></i>&nbsp;&nbsp;<span class="txt-color-darken">');
+      __out.push('\n\t\t\t\t\t\t<address>\n\t\t\t\t\t\t\t<strong>Address: </strong> ');
     
       __out.push(__sanitize(this.address));
     
-      __out.push('</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<p class="text-muted">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-calendar"></i>&nbsp;&nbsp;<span class="txt-color-darken">Next appointment on <a href="javascript:void(0);" rel="tooltip" title="" data-placement="top" data-original-title="Create an Appointment">4:30 PM</a></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<p class="font-md">\n\t\t\t\t\t\t\t\t\t\t\t\t<i>Patient summary...</i>\n\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t<p>\n\n\t\t\t\t\t\t\t\t\t\t\t\tEt harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio\n\t\t\t\t\t\t\t\t\t\t\t\tcumque nihil impedit quo minus id quod maxime placeat facere\n\n\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);" class="btn btn-default btn-xs"><i class="fa fa-envelope-o"></i> Send Message</a>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="col-sm-3">\n\t\t\t\t\t\t\t\t\t\t\t<h1><small>Healthcare team:</small></h1>\n\t\t\t\t\t\t\t\t\t\t\t<ul class="list-inline friends-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/1.png" alt="friend-1">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/2.png" alt="friend-2">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/3.png" alt="friend-3">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/4.png" alt="friend-4">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/5.png" alt="friend-5">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/male.png" alt="friend-6">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\n\t\t\t\t\t\t\t\t\t<hr>\n\n\t\t\t\t\t\t\t\t\t<div class="padding-10">\n\n\t\t\t\t\t\t\t\t\t\t<ul class="nav nav-tabs tabs-pull-left">\n\t\t\t\t\t\t\t\t\t\t\t<li class="active">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#a1" data-toggle="tab">Conditions</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#a2" data-toggle="tab">Medications</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#a2" data-toggle="tab">Contact Details</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</ul>\n\n\t\t\t\t\t\t\t\t\t\t<div class="tab-content padding-top-10">\n\t\t\t\t\t\t\t\t\t\t\t<div class="tab-pane fade in active" id="a1">\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="p-wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body">\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<table class="table table-striped table-forum js-conditions-list">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<thead>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Condition</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Diagnosed</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Medications</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span2 sortable align-left">Action</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</thead>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="tree js-conditions-list">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</table>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success condition-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t</article>\n\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<div class="tab-pane fade" id="a2">\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="p-wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body">\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<table class="table table-striped table-forum js-medications-list">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<thead>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Medication</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Prescription Date</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Finished</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span2 sortable align-left">Action</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</thead>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="tree js-medications-list">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</table>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success medication-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t</article>\n\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t</div><!-- end tab -->\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end row -->\n\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="col-sm-12 col-md-12 col-lg-6">\n\t\t\t\t\t\t<!-- widget grid -->\n\t\t\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t\t\t<!-- row -->\n\t\t\t\t\t\t\t<div class="row">\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t\t\t<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12 sortable-grid ui-sortable">\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="wid-id-bpgraph" data-widget-colorbutton="false" data-widget-editbutton="false">\n\t\t\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-bar-chart-o"></i> </span>\n\t\t\t\t\t\t\t\t\t\t\t<h2>Blood Pressure</h2>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body no-padding">\n\t\t\t\t\t\t\t\t\t\t\t\t<div id="bp-stats" class="chart has-legend"></div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget content -->\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget -->\n\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="wid-id-bggraph" data-widget-colorbutton="false" data-widget-editbutton="false">\n\t\t\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-bar-chart-o"></i> </span>\n\t\t\t\t\t\t\t\t\t\t\t<h2>Blood Glucose</h2>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</header>\n\n\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t\t\t<!-- This area used as dropdown edit box -->\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t\t\t<div id="bg-stats" class="chart has-legend"></div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget content -->\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget -->\n\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="wid-id-weightgraph" data-widget-colorbutton="false" data-widget-editbutton="false">\n\t\t\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-bar-chart-o"></i> </span>\n\t\t\t\t\t\t\t\t\t\t\t<h2>Weight</h2>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</header>\n\n\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t\t\t<!-- This area used as dropdown edit box -->\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t\t\t<div id="weight-stats" class="chart has-legend"></div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget content -->\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget -->\n\t\t\t\t\t\t\t\t</article>\n\t\t\t\t\t\t\t\t<!-- WIDGET END -->\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</section>\n\t\t\t\t\t\t<!-- end widget grid -->\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n<!-- end row -->\n\n\n<script type="text/javascript">\n// DO NOT REMOVE : GLOBAL FUNCTIONS!\npageSetUp()\n\n// PAGE RELATED SCRIPTS\n\n</script>\n');
+      __out.push('<br /> \n\t\t\t\t\t\t\t<strong>Phone: </strong> ');
+    
+      __out.push(__sanitize(this.phone));
+    
+      __out.push('\n\t\t\t\t\t\t</address>\n\t\t\t\t\t</p>\n\t\t\t\t\t<p>\n\t\t\t\t\t\t<button class="btn btn-primary btn-lg js-edit" type="button">Edit Details</button>\n\t\t\t\t\t\t<button class="btn btn-primary btn-lg js-delete" type="button">Delete</button>\n\t\t\t\t\t</p>\n\t\t\t\t</div>\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\n\t\t\t\n\t\t\t\t\n\t\t\t</div>\n\t\t\t<div class="col-md-6 pull-right">\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Conditions</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd js-conditions" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<!-- <ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t');
+    
+      if ((_ref = this.conditions) != null ? _ref.length : void 0) {
+        __out.push('\n     \t\t\t\t\t\t\t\t\t\t\t\t');
+        _ref1 = this.conditions;
+        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+          condition = _ref1[_i];
+          __out.push('\n\t     \t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="');
+          __out.push(__sanitize(condition.id));
+          __out.push('">\n\t     \t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t');
+          __out.push(__sanitize(condition.name));
+          __out.push('\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="#" class="remove label label-danger pull-right padding-5 condition-delete" ><i class="glyphicon glyphicon-remove"></i> remove</a>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\t    \n\t\t\t\t\t\t\t\t\t\t\t\t\t');
+        }
+        __out.push('\n  \t\t\t\t\t\t\t\t\t\t\t\t');
+      }
+    
+      __out.push('\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t</ol> --> \n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success condition-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Allergies</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Medications</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Visits</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</article>\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\t\t\t</div>\n\t\t</div>\t\t\n\t</div>\t\n</div>\n');
     
     }).call(this);
     
