@@ -2025,11 +2025,6 @@ if (typeof module !== "undefined" && module !== null) {
 
 });
 
-;require.register("daylight/views/event_add_view", function(exports, require, module) {
-
-
-});
-
 ;require.register("daylight/views/events/event_add_view", function(exports, require, module) {
 
 
@@ -2045,6 +2040,7 @@ EventItemView = (function(_super) {
   __extends(EventItemView, _super);
 
   function EventItemView() {
+    this.onSaveSuccess = __bind(this.onSaveSuccess, this);
     this.render = __bind(this.render, this);
     return EventItemView.__super__.constructor.apply(this, arguments);
   }
@@ -2054,6 +2050,7 @@ EventItemView = (function(_super) {
   EventItemView.prototype.template = "<span class='<%= colour %>' data-description='<%= description %>' data-icon='<%= icon %>'><%= title %> </span>";
 
   EventItemView.prototype.initialize = function(options) {
+    this.listenTo(this.model, 'save:success', this.onSaveSuccess);
     return _.extend(this, options);
   };
 
@@ -2066,6 +2063,8 @@ EventItemView = (function(_super) {
     }));
     return this;
   };
+
+  EventItemView.prototype.onSaveSuccess = function(model, response, options) {};
 
   return EventItemView;
 
@@ -2095,7 +2094,8 @@ EventsCalendarView = (function(_super) {
     this.onChangeViewMonthClick = __bind(this.onChangeViewMonthClick, this);
     this.onSaveSuccess = __bind(this.onSaveSuccess, this);
     this.onSaveStart = __bind(this.onSaveStart, this);
-    this.onRadioBtnClick = __bind(this.onRadioBtnClick, this);
+    this.onRadioIconSelect = __bind(this.onRadioIconSelect, this);
+    this.onRadioPrioritySelect = __bind(this.onRadioPrioritySelect, this);
     this.onNavigate = __bind(this.onNavigate, this);
     this.onDestroy = __bind(this.onDestroy, this);
     this.addOne = __bind(this.addOne, this);
@@ -2103,6 +2103,7 @@ EventsCalendarView = (function(_super) {
     this.renderCalendar = __bind(this.renderCalendar, this);
     this.change = __bind(this.change, this);
     this.initDrag = __bind(this.initDrag, this);
+    this.fetchData = __bind(this.fetchData, this);
     this.render = __bind(this.render, this);
     this.template = __bind(this.template, this);
     return EventsCalendarView.__super__.constructor.apply(this, arguments);
@@ -2113,9 +2114,8 @@ EventsCalendarView = (function(_super) {
     'click #mt': 'onChangeViewMonthClick',
     'click #ag': 'onChangeViewAgendaWeekClick',
     'click #td': 'onChangeViewAgendaDayClick',
-    'click .js-add-vitals': 'onAddVitalsClick',
-    'click .js-btn-priority': 'onRadioBtnClick',
-    'click .js-btn-iconselect': 'onRadioBtnClick'
+    'click .js-btn-priority': 'onRadioPrioritySelect',
+    'click .js-btn-iconselect': 'onRadioIconSelect'
   };
 
   EventsCalendarView.prototype.template = function(data) {
@@ -2124,7 +2124,6 @@ EventsCalendarView = (function(_super) {
 
   EventsCalendarView.prototype.initialize = function(options) {
     EventsCalendarView.__super__.initialize.call(this, options);
-    this.listenTo(this.collection, 'reset', this.addAll());
     this.listenTo(this.collection, 'add', this.addOne());
     return this.listenTo(this.collection, 'change', this.change());
   };
@@ -2133,6 +2132,16 @@ EventsCalendarView = (function(_super) {
     this.$el.html(this.template());
     this.renderCalendar();
     return this;
+  };
+
+  EventsCalendarView.prototype.fetchData = function() {
+    var self, url;
+    self = this;
+    this.collection.reset();
+    url = 'API/Events';
+    return $.getJSON(url, function(data) {
+      return self.collection.reset(data);
+    });
   };
 
   EventsCalendarView.prototype.initDrag = function(e) {
@@ -2153,7 +2162,6 @@ EventsCalendarView = (function(_super) {
 
   EventsCalendarView.prototype.change = function(e) {
     var fcEvent;
-    console.log(e);
     if (e) {
       fcEvent = this.$('#calendar').fullCalendar('clientEvents', e.value())[0];
       fcEvent.title = e.title();
@@ -2182,16 +2190,19 @@ EventsCalendarView = (function(_super) {
       editable: true,
       droppable: true,
       eventResize: self.eventDropOrResize,
-      events: self.collection.toJSON(),
+      eventDrop: self.eventDropOrResize,
+      events: {
+        url: '/API/Events'
+      },
       drop: function(date, allDay) {
-        var copiedEventObject, model, originalEventObject;
+        var copiedEventObject, originalEventObject;
         originalEventObject = $(this).data('eventObject');
         copiedEventObject = $.extend({}, originalEventObject);
         copiedEventObject.start = date;
         copiedEventObject.allDay = allDay;
         $("#calendar").fullCalendar("renderEvent", copiedEventObject, true);
         if ($("#drop-remove").is(":checked")) {
-          return model = new $(this).remove();
+          return $(this).remove();
         }
       },
       select: function(start, end, allDay) {
@@ -2228,16 +2239,12 @@ EventsCalendarView = (function(_super) {
   };
 
   EventsCalendarView.prototype.addOne = function(e) {
-    console.log(e);
     if (e) {
       return this.$('#calendar').fullCalendar('renderEvent', e.toJSON());
     }
   };
 
-  EventsCalendarView.prototype.eventDropOrResize = function(e) {
-    console.log(e.id);
-    return console.log(this.model);
-  };
+  EventsCalendarView.prototype.eventDropOrResize = function(e) {};
 
   EventsCalendarView.prototype.editMode = function(mode) {
     return this.model.editMode(mode);
@@ -2251,12 +2258,18 @@ EventsCalendarView = (function(_super) {
     return this.editMode(e.to.editMode);
   };
 
-  EventsCalendarView.prototype.onRadioBtnClick = function(e) {
-    var name, val;
+  EventsCalendarView.prototype.onRadioPrioritySelect = function(e) {
+    var val;
     e.preventDefault();
-    name = e.currentTarget.children[0].name;
     val = e.currentTarget.children[0].value;
-    return $("#add-event-form input[name=" + name + "]").val(val);
+    return $("#add-event-form input[name=priority]").val(val);
+  };
+
+  EventsCalendarView.prototype.onRadioIconSelect = function(e) {
+    var val;
+    e.preventDefault();
+    val = e.currentTarget.children[0].value;
+    return $("#add-event-form input[name=iconselect]").val(val);
   };
 
   EventsCalendarView.prototype.onSaveStart = function(model, response, options) {};
@@ -2294,7 +2307,7 @@ EventsCalendarView = (function(_super) {
     title = !title ? "Untitled Event" : title;
     description = !description ? "No Description" : description;
     location = !location ? "No Location" : location;
-    icon = !icon ? " " : icon;
+    icon = !icon ? "fa-info" : icon;
     priority = !priority ? "label label-default" : priority;
     this.model.set(this.model.parse({
       title: title,
@@ -2312,227 +2325,8 @@ EventsCalendarView = (function(_super) {
     view = new EventItemView({
       model: this.model
     });
-    view.render();
     html = view.render().$el;
     html.prependTo("ul#external-events").hide().fadeIn();
-    this.$("#event-container").effect("highlight", 800);
-    return this.initDrag(html);
-  };
-
-  return EventsCalendarView;
-
-})(support.View);
-
-if (typeof module !== "undefined" && module !== null) {
-  module.exports = EventsCalendarView;
-}
-
-});
-
-;require.register("daylight/views/events_calendar_view", function(exports, require, module) {
-var EventsCalendarTemplate, EventsCalendarView,
-  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-  __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-
-EventsCalendarTemplate = require('templates/event/events_calendar_view_template');
-
-EventsCalendarView = (function(_super) {
-  __extends(EventsCalendarView, _super);
-
-  function EventsCalendarView() {
-    this.onAddEventClick = __bind(this.onAddEventClick, this);
-    this.onChangeViewAgendaDayClick = __bind(this.onChangeViewAgendaDayClick, this);
-    this.onChangeViewAgendaWeekClick = __bind(this.onChangeViewAgendaWeekClick, this);
-    this.onChangeViewMonthClick = __bind(this.onChangeViewMonthClick, this);
-    this.onSaveSuccess = __bind(this.onSaveSuccess, this);
-    this.onSaveStart = __bind(this.onSaveStart, this);
-    this.onNavigate = __bind(this.onNavigate, this);
-    this.onDestroy = __bind(this.onDestroy, this);
-    this.addOne = __bind(this.addOne, this);
-    this.addAll = __bind(this.addAll, this);
-    this.renderCalendar = __bind(this.renderCalendar, this);
-    this.change = __bind(this.change, this);
-    this.initDrag = __bind(this.initDrag, this);
-    this.render = __bind(this.render, this);
-    this.template = __bind(this.template, this);
-    return EventsCalendarView.__super__.constructor.apply(this, arguments);
-  }
-
-  EventsCalendarView.prototype.events = {
-    'click #add-event': 'onAddEventClick',
-    'click #mt': 'onChangeViewMonthClick',
-    'click #ag': 'onChangeViewAgendaWeekClick',
-    'click #td': 'onChangeViewAgendaDayClick',
-    'click .js-add-vitals': 'onAddVitalsClick'
-  };
-
-  EventsCalendarView.prototype.template = function(data) {
-    return EventsCalendarTemplate(data);
-  };
-
-  EventsCalendarView.prototype.initialize = function(options) {
-    EventsCalendarView.__super__.initialize.call(this, options);
-    this.listenTo(this.collection, 'reset', (function(_this) {
-      return function(collection, options) {
-        return _this.addAll();
-      };
-    })(this));
-    this.listenTo(this.collection, 'add', (function(_this) {
-      return function(collection, options) {
-        return _this.addOne();
-      };
-    })(this));
-    return this.listenTo(this.collection, 'change', (function(_this) {
-      return function(collection, options) {
-        return _this.change();
-      };
-    })(this));
-  };
-
-  EventsCalendarView.prototype.render = function() {
-    this.$el.html(this.template());
-    this.renderCalendar();
-    return this;
-  };
-
-  EventsCalendarView.prototype.initDrag = function(e) {
-    var eventObject;
-    eventObject = {
-      title: $.trim(e.children().text()),
-      description: $.trim(e.children("span").attr("data-description")),
-      icon: $.trim(e.children("span").attr("data-icon")),
-      className: $.trim(e.children("span").attr("class"))
-    };
-    e.data('eventObject', eventObject);
-    e.draggable({
-      zIndex: 999,
-      revert: true,
-      revertDuration: 0
-    });
-  };
-
-  EventsCalendarView.prototype.change = function(model) {
-    var fcEvent;
-    fcEvent = this.$('#calendar').fullCalendar('clientEvents', model.get('id'))[0];
-    fcEvent.title = model.get('title');
-    fcEvent.colour = model.get('colour');
-    return this.$('#calendar').fullCalendar('updateEvent', fcEvent);
-  };
-
-  EventsCalendarView.prototype.renderCalendar = function() {
-    var hdr, self;
-    self = this;
-    this.$("#external-events > li").each(function() {
-      return self.initDrag($(this));
-    });
-    hdr = {
-      left: 'title',
-      center: 'month,agendaWeek,agendaDay',
-      right: 'prev,today,next'
-    };
-    this.$('#calendar').fullCalendar({
-      header: hdr,
-      buttonText: {
-        prev: "<i class=\"fa fa-chevron-left\"></i>",
-        next: "<i class=\"fa fa-chevron-right\"></i>"
-      },
-      editable: true,
-      droppable: true,
-      drop: function(date, allDay) {
-        var copiedEventObject, originalEventObject;
-        originalEventObject = $(this).data('eventObject');
-        copiedEventObject = $.extend({}, originalEventObject);
-        copiedEventObject.start = date;
-        copiedEventObject.allDay = allDay;
-        $("#calendar").fullCalendar("renderEvent", copiedEventObject, true);
-        console.log(copiedEventObject);
-        if ($("#drop-remove").is(":checked")) {
-          return $(this).remove();
-        }
-      },
-      select: function(start, end, allDay) {
-        var obj, title;
-        title = prompt('Event Title:');
-        obj = {
-          title: title,
-          start: start,
-          end: end,
-          allDay: allDay
-        };
-        if (title) {
-          calendar.fullCalendar('renderEvent', obj, true);
-        }
-        return calendar.fullCalendar('unselect');
-      }
-    });
-    return this;
-  };
-
-  EventsCalendarView.prototype.addAll = function() {
-    return this.$('#calendar').fullCalendar('addEventSource', this.collection.toJSON());
-  };
-
-  EventsCalendarView.prototype.addOne = function(model) {
-    return this.$('#calendar').fullCalendar('renderEvent', model.toJSON());
-  };
-
-  EventsCalendarView.prototype.eventDropOrResize = function(fcEvent) {
-    return this.collection.get(fcEvent.id).save({
-      start: fcEvent.start,
-      end: fcEvent.end
-    });
-  };
-
-  EventsCalendarView.prototype.editMode = function(mode) {
-    return this.model.editMode(mode);
-  };
-
-  EventsCalendarView.prototype.onDestroy = function() {
-    return window.App.eventAggregator.trigger('navigate:patients');
-  };
-
-  EventsCalendarView.prototype.onNavigate = function(e) {
-    return this.editMode(e.to.editMode);
-  };
-
-  EventsCalendarView.prototype.onSaveStart = function(model, response, options) {};
-
-  EventsCalendarView.prototype.onSaveSuccess = function(model, response, options) {};
-
-  EventsCalendarView.prototype.onChangeViewMonthClick = function(e) {
-    e.preventDefault();
-    return this.$('#calendar').fullCalendar('changeView', 'month');
-  };
-
-  EventsCalendarView.prototype.onChangeViewAgendaWeekClick = function(e) {
-    e.preventDefault();
-    return this.$('#calendar').fullCalendar('changeView', 'agendaWeek');
-  };
-
-  EventsCalendarView.prototype.onChangeViewAgendaDayClick = function(e) {
-    e.preventDefault();
-    return this.$('#calendar').fullCalendar('changeView', 'agendaDay');
-  };
-
-  EventsCalendarView.prototype.onAddEventClick = function(e) {
-    var description, icon, priority, title;
-    e.preventDefault();
-    title = this.$("#title").val();
-    priority = this.$("input:radio[name=priority]:checked").val();
-    description = this.$("#description").val();
-    icon = this.$("input:radio[name=iconselect]:checked").val();
-    return this.addEvent(title, priority, description, icon);
-  };
-
-  EventsCalendarView.prototype.addEvent = function(title, priority, description, icon) {
-    var html;
-    e.preventDefault();
-    title = (title.length === 0 ? "Untitled Event" : title);
-    description = (description.length === 0 ? "No Description" : description);
-    icon = (icon.length === 0 ? " " : icon);
-    priority = (priority.length === 0 ? "label label-default" : priority);
-    html = $("<li><span class=\"" + priority + "\" data-description=\"" + description + "\" data-icon=\"" + icon + "\">" + title + "</span></li>").prependTo("ul#external-events").hide().fadeIn();
     this.$("#event-container").effect("highlight", 800);
     return this.initDrag(html);
   };

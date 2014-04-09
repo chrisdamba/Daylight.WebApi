@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Data;
-using System.Data.Common;
-using System.Drawing;
 using System.Runtime.Serialization;
 using Daylight.WebApi.Contracts.Entities;
 
@@ -31,7 +29,7 @@ namespace Daylight.WebApi.Mvc.Models
             Start = calendarEvent.Start;
             End = calendarEvent.End;
             AllDay = calendarEvent.AllDay;
-            ClassName = new[] {"event", calendarEvent.Colour};
+            ClassName = new[] {"event", calendarEvent.Colour.Split(' ')[0]};
         }
 
         /// <summary>
