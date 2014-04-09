@@ -1100,6 +1100,22 @@ EventModel = (function(_super) {
     return this.get('id');
   };
 
+  EventModel.prototype.title = function() {
+    return this.get('title');
+  };
+
+  EventModel.prototype.description = function() {
+    return this.get('description');
+  };
+
+  EventModel.prototype.icon = function() {
+    return this.get('icon');
+  };
+
+  EventModel.prototype.colour = function() {
+    return this.get('colour');
+  };
+
   EventModel.prototype.initialize = function(options) {
     return EventModel.__super__.initialize.call(this, options);
   };
@@ -2019,13 +2035,55 @@ if (typeof module !== "undefined" && module !== null) {
 
 });
 
+;require.register("daylight/views/events/event_item_view", function(exports, require, module) {
+var EventItemView,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+EventItemView = (function(_super) {
+  __extends(EventItemView, _super);
+
+  function EventItemView() {
+    this.render = __bind(this.render, this);
+    return EventItemView.__super__.constructor.apply(this, arguments);
+  }
+
+  EventItemView.prototype.tagName = 'li';
+
+  EventItemView.prototype.template = "<span class='<%= colour %>' data-description='<%= description %>' data-icon='<%= icon %>'><%= title %> </span>";
+
+  EventItemView.prototype.initialize = function(options) {
+    return _.extend(this, options);
+  };
+
+  EventItemView.prototype.render = function() {
+    this.$el.html(_.template(this.template, {
+      title: this.model.title(),
+      description: this.model.description(),
+      icon: this.model.icon(),
+      colour: this.model.colour()
+    }));
+    return this;
+  };
+
+  return EventItemView;
+
+})(support.View);
+
+module.exports = EventItemView;
+
+});
+
 ;require.register("daylight/views/events/events_calendar_view", function(exports, require, module) {
-var EventsCalendarTemplate, EventsCalendarView,
+var EventItemView, EventsCalendarTemplate, EventsCalendarView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 EventsCalendarTemplate = require('templates/event/events_calendar_view_template');
+
+EventItemView = require('daylight/views/events/event_item_view');
 
 EventsCalendarView = (function(_super) {
   __extends(EventsCalendarView, _super);
@@ -2066,16 +2124,9 @@ EventsCalendarView = (function(_super) {
 
   EventsCalendarView.prototype.initialize = function(options) {
     EventsCalendarView.__super__.initialize.call(this, options);
-    this.listenTo(this.collection, 'reset', (function(_this) {
-      return function(collection, options) {
-        return _this.addAll();
-      };
-    })(this));
-    return this.listenTo(this.collection, 'change', (function(_this) {
-      return function(collection, options) {
-        return _this.change();
-      };
-    })(this));
+    this.listenTo(this.collection, 'reset', this.addAll());
+    this.listenTo(this.collection, 'add', this.addOne());
+    return this.listenTo(this.collection, 'change', this.change());
   };
 
   EventsCalendarView.prototype.render = function() {
@@ -2100,12 +2151,15 @@ EventsCalendarView = (function(_super) {
     });
   };
 
-  EventsCalendarView.prototype.change = function(model) {
+  EventsCalendarView.prototype.change = function(e) {
     var fcEvent;
-    fcEvent = this.$('#calendar').fullCalendar('clientEvents', model.get('id'))[0];
-    fcEvent.title = model.get('title');
-    fcEvent.colour = model.get('colour');
-    return this.$('#calendar').fullCalendar('updateEvent', fcEvent);
+    console.log(e);
+    if (e) {
+      fcEvent = this.$('#calendar').fullCalendar('clientEvents', e.value())[0];
+      fcEvent.title = e.title();
+      fcEvent.colour = e.colour();
+      return this.$('#calendar').fullCalendar('updateEvent', fcEvent);
+    }
   };
 
   EventsCalendarView.prototype.renderCalendar = function() {
@@ -2128,10 +2182,9 @@ EventsCalendarView = (function(_super) {
       editable: true,
       droppable: true,
       eventResize: self.eventDropOrResize,
-      events: this.collection.toJSON(),
+      events: self.collection.toJSON(),
       drop: function(date, allDay) {
         var copiedEventObject, model, originalEventObject;
-        console.log(self.collection);
         originalEventObject = $(this).data('eventObject');
         copiedEventObject = $.extend({}, originalEventObject);
         copiedEventObject.start = date;
@@ -2174,8 +2227,11 @@ EventsCalendarView = (function(_super) {
     return this.$('#calendar').fullCalendar('addEventSource', this.collection.toJSON());
   };
 
-  EventsCalendarView.prototype.addOne = function(model) {
-    return this.$('#calendar').fullCalendar('renderEvent', model.toJSON());
+  EventsCalendarView.prototype.addOne = function(e) {
+    console.log(e);
+    if (e) {
+      return this.$('#calendar').fullCalendar('renderEvent', e.toJSON());
+    }
   };
 
   EventsCalendarView.prototype.eventDropOrResize = function(e) {
@@ -2234,7 +2290,7 @@ EventsCalendarView = (function(_super) {
   };
 
   EventsCalendarView.prototype.addEvent = function(title, priority, description, location, icon) {
-    var html;
+    var html, view;
     title = !title ? "Untitled Event" : title;
     description = !description ? "No Description" : description;
     location = !location ? "No Location" : location;
@@ -2253,7 +2309,12 @@ EventsCalendarView = (function(_super) {
     } else {
       this.model.save();
     }
-    html = $("<li><span class=\"" + priority + "\" data-description=\"" + description + "\" data-icon=\"" + icon + "\">" + title + "</span></li>").prependTo("ul#external-events").hide().fadeIn();
+    view = new EventItemView({
+      model: this.model
+    });
+    view.render();
+    html = view.render().$el;
+    html.prependTo("ul#external-events").hide().fadeIn();
     this.$("#event-container").effect("highlight", 800);
     return this.initDrag(html);
   };
@@ -5572,7 +5633,7 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<div class="row">\n\t<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">\n\t\t<h1 class="page-title txt-color-blueDark"><i class="fa fa-calendar fa-fw "></i>\tCalendar Events</span></h1>\n\t</div>\t\n</div>\n<!-- row -->\n\n<div class="row">\n\n\t<div class="col-sm-12 col-md-12 col-lg-3">\n\t\t<!-- new widget -->\n\t\t<div class="jarviswidget jarviswidget-color-blueDark">\n\t\t\t<header>\n\t\t\t\t<h2> Add Events </h2>\n\t\t\t</header>\n\n\t\t\t<!-- widget div-->\n\t\t\t<div>\n\n\t\t\t\t<div class="widget-body">\n\t\t\t\t\t<!-- content goes here -->\n\t\t\t\t\t<div id="js-add-event">\n\t\t\t\t\t\t<form id="add-event-form">\n\t\t\t\t\t\t\t<fieldset>\n\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t<label>Select Event Icon</label>\n\t\t\t\t\t\t\t\t\t<div class="btn-group btn-group-sm btn-group-justified" data-toggle="buttons">\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect active">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-1" value="fa-info" checked="checked">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-info text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-2" value="fa-warning" checked="">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-warning text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-3" value="fa-check" checked="">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-4" value="fa-user" checked="">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-user text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-5" value="fa-lock" checked="">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-lock text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-6" value="fa-clock-o" checked="">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-clock-o text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t<label>Event Title</label>\n\t\t\t\t\t\t\t\t\t<input class="form-control"  id="title" name="title" maxlength="40" type="text" placeholder="Event Title">\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t<label>Event Description</label>\n\t\t\t\t\t\t\t\t\t<textarea class="form-control" placeholder="Please be brief" rows="3" maxlength="40" id="description"></textarea>\n\t\t\t\t\t\t\t\t\t<p class="note">Maxlength is set to 40 characters</p>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t<label>Event Location</label>\n\t\t\t\t\t\t\t\t\t<input class="form-control"  id="location" name="location" maxlength="40" type="text" placeholder="Event Location">\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t<label>Select Event Color</label>\n\t\t\t\t\t\t\t\t\t<div class="btn-group btn-group-justified btn-select-tick" data-toggle="buttons">\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-darken js-btn-priority active" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option1" value="bg-color-darken txt-color-white" checked>\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-blue js-btn-priority" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option2" value="bg-color-blue txt-color-white">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-orange js-btn-priority" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option3" value="bg-color-orange txt-color-white">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-greenLight js-btn-priority" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option4" value="bg-color-greenLight txt-color-white">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-blueLight js-btn-priority" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option5" value="bg-color-blueLight txt-color-white">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-red js-btn-priority" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option6" value="bg-color-red txt-color-white">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</fieldset>\n\t\t\t\t\t\t\t<div class="form-actions">\n\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t<div class="col-md-12">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-default" type="button" id="add-event" >\n\t\t\t\t\t\t\t\t\t\t\tAdd Event\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<input type="hidden" value="fa-info" name="iconselect" />\n\t\t\t\t\t\t\t<input type="hidden" value="bg-color-darken txt-color-white" name="priority" />\n\t\t\t\t\t\t</form>\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- end content -->\n\t\t\t\t</div>\n\n\t\t\t</div>\n\t\t\t<!-- end widget div -->\n\t\t</div>\n\t\t<!-- end widget -->\n\n\t\t<div class="well well-sm" id="event-container">\n\t\t\t<form>\n\t\t\t\t<fieldset>\n\t\t\t\t\t<legend>\n\t\t\t\t\t\tDraggable Events\n\t\t\t\t\t</legend>\n\t\t\t\t\t<ul id=\'external-events\' class="list-unstyled">\n\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t<span class="bg-color-darken txt-color-white" data-description="Currently busy" data-icon="fa-time">Office Meeting</span>\n\t\t\t\t\t\t</li>\n\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t<span class="bg-color-blue txt-color-white" data-description="No Description" data-icon="fa-pie">Lunch Break</span>\n\t\t\t\t\t\t</li>\n\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t<span class="bg-color-red txt-color-white" data-description="Urgent Tasks" data-icon="fa-alert">URGENT</span>\n\t\t\t\t\t\t</li>\n\t\t\t\t\t</ul>\n\t\t\t\t\t<div class="checkbox">\n\t\t\t\t\t\t<label>\n\t\t\t\t\t\t\t<input type="checkbox" id="drop-remove" class="checkbox style-0" checked="checked">\n\t\t\t\t\t\t\t<span>remove after drop</span> </label>\n\t\n\t\t\t\t\t</div>\n\t\t\t\t</fieldset>\n\t\t\t</form>\n\n\t\t</div>\n\t</div>\n\t<div class="col-sm-12 col-md-12 col-lg-9">\n\n\t\t<!-- new widget -->\n\t\t<div class="jarviswidget jarviswidget-color-blueDark">\n\n\t\t\t<!-- widget options:\n\t\t\tusage: <div class="jarviswidget" id="wid-id-0" data-widget-editbutton="false">\n\n\t\t\tdata-widget-colorbutton="false"\n\t\t\tdata-widget-editbutton="false"\n\t\t\tdata-widget-togglebutton="false"\n\t\t\tdata-widget-deletebutton="false"\n\t\t\tdata-widget-fullscreenbutton="false"\n\t\t\tdata-widget-custombutton="false"\n\t\t\tdata-widget-collapsed="true"\n\t\t\tdata-widget-sortable="false"\n\n\t\t\t-->\n\t\t\t<header>\n\t\t\t\t<span class="widget-icon"> <i class="fa fa-calendar"></i> </span>\n\t\t\t\t<h2> My Events </h2>\n\t\t\t\t<div class="widget-toolbar">\n\t\t\t\t\t<!-- add: non-hidden - to disable auto hide -->\n\t\t\t\t\t<div class="btn-group">\n\t\t\t\t\t\t<button class="btn dropdown-toggle btn-xs btn-default" data-toggle="dropdown">\n\t\t\t\t\t\t\tShowing <i class="fa fa-caret-down"></i>\n\t\t\t\t\t\t</button>\n\t\t\t\t\t\t<ul class="dropdown-menu js-status-update pull-right">\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t<a href="#;" id="mt">Month</a>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t<a href="#;" id="ag">Agenda</a>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t<a href="#;" id="td">Today</a>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t</ul>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</header>\n\n\t\t\t<!-- widget div-->\n\t\t\t<div>\n\n\t\t\t\t<div class="widget-body no-padding">\n\t\t\t\t\t<!-- content goes here -->\n\t\t\t\t\t<div class="widget-body-toolbar">\n\n\t\t\t\t\t\t<div id="calendar-buttons">\n\n\t\t\t\t\t\t\t<div class="btn-group">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div id="calendar"></div>\n\n\t\t\t\t\t<!-- end content -->\n\t\t\t\t</div>\n\n\t\t\t</div>\n\t\t\t<!-- end widget div -->\n\t\t</div>\n\t\t<!-- end widget -->\n\n\t</div>\n\n</div>');
+      __out.push('<div class="row">\n\t<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">\n\t\t<h1 class="page-title txt-color-blueDark"><i class="fa fa-calendar fa-fw "></i>\tCalendar Events</span></h1>\n\t</div>\t\n</div>\n<!-- row -->\n\n<div class="row">\n\n\t<div class="col-sm-12 col-md-12 col-lg-3">\n\t\t<!-- new widget -->\n\t\t<div class="jarviswidget jarviswidget-color-blueDark">\n\t\t\t<header>\n\t\t\t\t<h2> Add Events </h2>\n\t\t\t</header>\n\n\t\t\t<!-- widget div-->\n\t\t\t<div>\n\n\t\t\t\t<div class="widget-body">\n\t\t\t\t\t<!-- content goes here -->\n\t\t\t\t\t<div id="js-add-event">\n\t\t\t\t\t\t<form id="add-event-form">\n\t\t\t\t\t\t\t<fieldset>\n\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t<label>Select Event Icon</label>\n\t\t\t\t\t\t\t\t\t<div class="btn-group btn-group-sm btn-group-justified" data-toggle="buttons">\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect active">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-1" value="fa-info" checked="checked">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-info text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-2" value="fa-warning" checked="">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-warning text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-3" value="fa-check" checked="">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-4" value="fa-user" checked="">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-user text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-5" value="fa-lock" checked="">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-lock text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn btn-default js-btn-iconselect">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="iconselect" id="icon-6" value="fa-clock-o" checked="">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-clock-o text-muted"></i> </label>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t<label>Event Title</label>\n\t\t\t\t\t\t\t\t\t<input class="form-control"  id="title" name="title" maxlength="40" type="text" placeholder="Event Title">\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t<label>Event Description</label>\n\t\t\t\t\t\t\t\t\t<textarea class="form-control" placeholder="Please be brief" rows="3" maxlength="40" id="description"></textarea>\n\t\t\t\t\t\t\t\t\t<p class="note">Maxlength is set to 40 characters</p>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t<label>Event Location</label>\n\t\t\t\t\t\t\t\t\t<input class="form-control"  id="location" name="location" maxlength="40" type="text" placeholder="Event Location">\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t\t<label>Select Event Color</label>\n\t\t\t\t\t\t\t\t\t<div class="btn-group btn-group-justified btn-select-tick" data-toggle="buttons">\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-darken js-btn-priority active" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option1" value="bg-color-darken txt-color-white" checked>\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-blue js-btn-priority" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option2" value="bg-color-blue txt-color-white">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-orange js-btn-priority" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option3" value="bg-color-orange txt-color-white">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-greenLight js-btn-priority" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option4" value="bg-color-greenLight txt-color-white">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-blueLight js-btn-priority" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option5" value="bg-color-blueLight txt-color-white">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t\t<label class="btn bg-color-red js-btn-priority" for="priority">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="priority" id="option6" value="bg-color-red txt-color-white">\n\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-check txt-color-white"></i> </label>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</fieldset>\n\t\t\t\t\t\t\t<div class="form-actions">\n\t\t\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t\t\t<div class="col-md-12">\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-default" type="button" id="add-event" >\n\t\t\t\t\t\t\t\t\t\t\tAdd Event\n\t\t\t\t\t\t\t\t\t\t</button>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<input type="hidden" value="fa-info" name="iconselect" />\n\t\t\t\t\t\t\t<input type="hidden" value="bg-color-darken txt-color-white" name="priority" />\n\t\t\t\t\t\t</form>\n\t\t\t\t\t</div>\n\t\t\t\t\t<!-- end content -->\n\t\t\t\t</div>\n\n\t\t\t</div>\n\t\t\t<!-- end widget div -->\n\t\t</div>\n\t\t<!-- end widget -->\n\n\t\t<div class="well well-sm" id="event-container">\n\t\t\t<form>\n\t\t\t\t<fieldset>\n\t\t\t\t\t<legend>\n\t\t\t\t\t\tDraggable Events\n\t\t\t\t\t</legend>\n\t\t\t\t\t<ul id=\'external-events\' class="list-unstyled"></ul>\n\t\t\t\t\t<div class="checkbox">\n\t\t\t\t\t\t<label>\n\t\t\t\t\t\t\t<input type="checkbox" id="drop-remove" class="checkbox style-0" checked="checked">\n\t\t\t\t\t\t\t<span>remove after drop</span> </label>\n\t\n\t\t\t\t\t</div>\n\t\t\t\t</fieldset>\n\t\t\t</form>\n\n\t\t</div>\n\t</div>\n\t<div class="col-sm-12 col-md-12 col-lg-9">\n\n\t\t<!-- new widget -->\n\t\t<div class="jarviswidget jarviswidget-color-blueDark">\n\n\t\t\t<!-- widget options:\n\t\t\tusage: <div class="jarviswidget" id="wid-id-0" data-widget-editbutton="false">\n\n\t\t\tdata-widget-colorbutton="false"\n\t\t\tdata-widget-editbutton="false"\n\t\t\tdata-widget-togglebutton="false"\n\t\t\tdata-widget-deletebutton="false"\n\t\t\tdata-widget-fullscreenbutton="false"\n\t\t\tdata-widget-custombutton="false"\n\t\t\tdata-widget-collapsed="true"\n\t\t\tdata-widget-sortable="false"\n\n\t\t\t-->\n\t\t\t<header>\n\t\t\t\t<span class="widget-icon"> <i class="fa fa-calendar"></i> </span>\n\t\t\t\t<h2> My Events </h2>\n\t\t\t\t<div class="widget-toolbar">\n\t\t\t\t\t<!-- add: non-hidden - to disable auto hide -->\n\t\t\t\t\t<div class="btn-group">\n\t\t\t\t\t\t<button class="btn dropdown-toggle btn-xs btn-default" data-toggle="dropdown">\n\t\t\t\t\t\t\tShowing <i class="fa fa-caret-down"></i>\n\t\t\t\t\t\t</button>\n\t\t\t\t\t\t<ul class="dropdown-menu js-status-update pull-right">\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t<a href="#;" id="mt">Month</a>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t<a href="#;" id="ag">Agenda</a>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t<a href="#;" id="td">Today</a>\n\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t</ul>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</header>\n\n\t\t\t<!-- widget div-->\n\t\t\t<div>\n\n\t\t\t\t<div class="widget-body no-padding">\n\t\t\t\t\t<!-- content goes here -->\n\t\t\t\t\t<div class="widget-body-toolbar">\n\n\t\t\t\t\t\t<div id="calendar-buttons">\n\n\t\t\t\t\t\t\t<div class="btn-group">\n\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div id="calendar"></div>\n\n\t\t\t\t\t<!-- end content -->\n\t\t\t\t</div>\n\n\t\t\t</div>\n\t\t\t<!-- end widget div -->\n\t\t</div>\n\t\t<!-- end widget -->\n\n\t</div>\n\n</div>');
     
     }).call(this);
     
