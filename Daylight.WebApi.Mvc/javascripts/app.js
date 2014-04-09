@@ -2075,7 +2075,7 @@ module.exports = EventItemView;
 });
 
 ;require.register("daylight/views/events/events_calendar_view", function(exports, require, module) {
-var EventItemView, EventsCalendarTemplate, EventsCalendarView,
+var EventCollection, EventItemView, EventModel, EventsCalendarTemplate, EventsCalendarView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -2083,6 +2083,10 @@ var EventItemView, EventsCalendarTemplate, EventsCalendarView,
 EventsCalendarTemplate = require('templates/event/events_calendar_view_template');
 
 EventItemView = require('daylight/views/events/event_item_view');
+
+EventCollection = require('daylight/collections/event_collection');
+
+EventModel = require('daylight/models/event_model');
 
 EventsCalendarView = (function(_super) {
   __extends(EventsCalendarView, _super);
@@ -2093,7 +2097,7 @@ EventsCalendarView = (function(_super) {
     this.onChangeViewAgendaWeekClick = __bind(this.onChangeViewAgendaWeekClick, this);
     this.onChangeViewMonthClick = __bind(this.onChangeViewMonthClick, this);
     this.onSaveSuccess = __bind(this.onSaveSuccess, this);
-    this.onSaveStart = __bind(this.onSaveStart, this);
+    this.saveEvent = __bind(this.saveEvent, this);
     this.onRadioIconSelect = __bind(this.onRadioIconSelect, this);
     this.onRadioPrioritySelect = __bind(this.onRadioPrioritySelect, this);
     this.onNavigate = __bind(this.onNavigate, this);
@@ -2246,10 +2250,6 @@ EventsCalendarView = (function(_super) {
 
   EventsCalendarView.prototype.eventDropOrResize = function(e) {};
 
-  EventsCalendarView.prototype.editMode = function(mode) {
-    return this.model.editMode(mode);
-  };
-
   EventsCalendarView.prototype.onDestroy = function() {
     return window.App.eventAggregator.trigger('navigate:patients');
   };
@@ -2272,7 +2272,7 @@ EventsCalendarView = (function(_super) {
     return $("#add-event-form input[name=iconselect]").val(val);
   };
 
-  EventsCalendarView.prototype.onSaveStart = function(model, response, options) {};
+  EventsCalendarView.prototype.saveEvent = function(model) {};
 
   EventsCalendarView.prototype.onSaveSuccess = function(model, response, options) {};
 

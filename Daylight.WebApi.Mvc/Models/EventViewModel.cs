@@ -30,6 +30,7 @@ namespace Daylight.WebApi.Mvc.Models
             End = calendarEvent.End;
             AllDay = calendarEvent.AllDay;
             ClassName = new[] {"event", calendarEvent.Colour.Split(' ')[0]};
+            //Icon = calendarEvent.Icon;
         }
 
         /// <summary>
