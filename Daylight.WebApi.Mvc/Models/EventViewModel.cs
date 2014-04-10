@@ -30,7 +30,6 @@ namespace Daylight.WebApi.Mvc.Models
             End = calendarEvent.End;
             AllDay = calendarEvent.AllDay;
             ClassName = new[] {"event", calendarEvent.Colour.Split(' ')[0]};
-            //Icon = calendarEvent.Icon;
         }
 
         /// <summary>
@@ -73,7 +72,7 @@ namespace Daylight.WebApi.Mvc.Models
         /// Gets or sets the end date.
         /// </summary>
         [DataMember]
-        public DateTime End { get; set; }
+        public DateTime? End { get; set; }
 
         /// <summary>
         /// Gets or sets the icon.
@@ -97,11 +96,13 @@ namespace Daylight.WebApi.Mvc.Models
         {
             if (calendarEvent == null)
             {
-                calendarEvent = new Event { State = EntityState.Added, Start = DateTime.Now, End = DateTime.Now.AddMinutes(1) };
+                calendarEvent = new Event { State = EntityState.Added, Start = DateTime.Now };
             }
             else
             {
                 calendarEvent.State = EntityState.Modified;
+                calendarEvent.Start = Start;
+                calendarEvent.End = End;
             }
 
             // Populate properties
