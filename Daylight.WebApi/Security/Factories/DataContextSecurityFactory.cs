@@ -230,7 +230,7 @@ namespace Daylight.WebApi.Security.Factories
             {
                 context.Entry(user).State = EntityState.Modified;
                 context.SaveChanges();
-                //raise the updated event
+                // raise the updated event
                 RaisedUserUpdatedEvent(beforeUser, user);
             }
         }
