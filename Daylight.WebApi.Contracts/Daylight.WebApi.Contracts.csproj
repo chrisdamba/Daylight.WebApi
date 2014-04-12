@@ -34,6 +34,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data.Entity" />
+    <Reference Include="System.Web.Mvc, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -63,10 +64,15 @@
     <Compile Include="Entities\Vital.Local.cs" />
     <Compile Include="EventFilter.cs" />
     <Compile Include="IConditionRepository.cs" />
+    <Compile Include="IEmailService.cs" />
     <Compile Include="IEventRepository.cs" />
     <Compile Include="IEventService.cs" />
+    <Compile Include="IPasswordService.cs" />
     <Compile Include="IPatientRepository.cs" />
     <Compile Include="IPatientService.cs" />
+    <Compile Include="IRegistrationProvider.cs" />
+    <Compile Include="IRegistrationService.cs" />
+    <Compile Include="IRegistrationViewModel.cs" />
     <Compile Include="PatientEventArgs.cs" />
     <Compile Include="PatientFilter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

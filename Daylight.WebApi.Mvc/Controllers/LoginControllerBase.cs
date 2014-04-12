@@ -1,6 +1,8 @@
-﻿using System.Security.Principal;
+﻿using System;
+using System.Security.Principal;
 using System.Threading;
 using System.Web.Mvc;
+using System.Web.Routing;
 using System.Web.Security;
 using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Core.IoC;
@@ -57,12 +59,29 @@ namespace Daylight.WebApi.Mvc.Controllers
 
             // Attempt to log in and act accordingly
             var result = loginService.Login(username, password, rememberMe);
+            
+            
+            if (result == LogInResultCode.ChangePassword)
+            {
+                var id = Injector.Get<ISecurityFactory>().GetUser(username.Trim()).UserId;
+                return ChangePassword(id);
+            }
+
             if (result == LogInResultCode.None)
             {
                 return LoginSuccessful();
             }
 
             return Invalid(result);
+        }
+
+        /// <summary>
+        /// Change password for the user with the given account id
+        /// </summary>
+        /// <returns>A redirect result.</returns>
+        public RedirectToRouteResult ChangePassword(Guid userId)
+        {
+            return RedirectToAction("Change", "Password", new {id = userId});
         }
 
         /// <summary>

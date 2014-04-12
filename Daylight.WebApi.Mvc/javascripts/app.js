@@ -1030,8 +1030,17 @@ ConditionModel = (function(_super) {
       name: void 0,
       synonyms: void 0,
       startedAt: void 0,
-      finishedAt: void 0
+      finishedAt: void 0,
+      medications: void 0
     };
+  };
+
+  ConditionModel.prototype.conceptId = function() {
+    return this.get('conceptId');
+  };
+
+  ConditionModel.prototype.patientId = function() {
+    return this.get('patientId');
   };
 
   ConditionModel.prototype.value = function() {
@@ -1046,18 +1055,34 @@ ConditionModel = (function(_super) {
     return this.get('synonyms');
   };
 
+  ConditionModel.prototype.initialize = function(options) {
+    return ConditionModel.__super__.initialize.call(this, options);
+  };
+
   ConditionModel.prototype.urlRoot = function() {
-    return "/API/Patients/" + (this.get('patientId')) + "/Conditions";
+    return "/API/Patients/" + (this.patientId()) + "/Conditions";
+  };
+
+  ConditionModel.prototype.getSafeDateStarted = function() {
+    var arrays, dateArray, dateString, safeDate, timeArray, timeString;
+    safeDate = this.get('startedAt');
+    if (safeDate) {
+      arrays = safeDate.split('T');
+      dateArray = arrays[0].split('-');
+      timeArray = arrays[1].split(':');
+      timeString = "" + timeArray[0] + ":" + timeArray[1];
+      dateString = "" + dateArray[2] + "/" + dateArray[1] + "/" + dateArray[0];
+      safeDate = "" + dateString + " " + timeString;
+    } else {
+      safeDate = '';
+    }
+    return safeDate;
   };
 
   ConditionModel.prototype.toJSON = function() {
     var json;
     json = ConditionModel.__super__.toJSON.apply(this, arguments);
     return json;
-  };
-
-  ConditionModel.prototype.initialize = function(options) {
-    return ConditionModel.__super__.initialize.call(this, options);
   };
 
   return ConditionModel;
@@ -1556,51 +1581,65 @@ module.exports = AddWidgetModalView;
 });
 
 ;require.register("daylight/views/condition/condition_list_item_view", function(exports, require, module) {
-var ConditionListItemView,
+var ConditionCollection, ConditionListItemTemplate, ConditionListItemView, MedicationModel, MedicationsView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+ConditionCollection = require('daylight/collections/condition_collection');
+
+ConditionListItemTemplate = require('templates/condition/condition_list_item_template');
+
+MedicationModel = require('daylight/models/medication_model');
+
+MedicationsView = require('daylight/views/medication/medications_view');
 
 ConditionListItemView = (function(_super) {
   __extends(ConditionListItemView, _super);
 
   function ConditionListItemView() {
+    this.onAddMedicationClick = __bind(this.onAddMedicationClick, this);
+    this.onDeleteCondition = __bind(this.onDeleteCondition, this);
     this.onDestroy = __bind(this.onDestroy, this);
-    this.onDeleteConditionClick = __bind(this.onDeleteConditionClick, this);
     this.render = __bind(this.render, this);
+    this.template = __bind(this.template, this);
     return ConditionListItemView.__super__.constructor.apply(this, arguments);
   }
 
-  ConditionListItemView.prototype.tagName = 'li';
+  ConditionListItemView.prototype.tagName = 'tr';
 
-  ConditionListItemView.prototype.className = 'dd-item';
-
-  ConditionListItemView.prototype.template = "<div class='dd-handle'><%= label %> <a href='#' class='remove label label-danger pull-right padding-5 condition-delete' data-id='<%= value %>> <i class='glyphicon glyphicon-remove'></i> remove </a> </div>";
+  ConditionListItemView.prototype.className = 'parent-tr';
 
   ConditionListItemView.prototype.events = {
-    'click .condition-delete': 'onDeleteConditionClick'
+    'click .js-delete-condition': 'onDeleteCondition',
+    'click .js-medication-add': 'onAddMedicationClick'
+  };
+
+  ConditionListItemView.prototype.template = function(data) {
+    return ConditionListItemTemplate(data);
   };
 
   ConditionListItemView.prototype.initialize = function(options) {
-    return ConditionListItemView.__super__.initialize.call(this, options);
+    ConditionListItemView.__super__.initialize.call(this, options);
+    this.bindTo(this.model, 'change', this.render);
+    return this.bindTo(this.model, 'destroy', this.onDestroy);
   };
 
   ConditionListItemView.prototype.render = function() {
-    this.$el.html(_.template(this.template, {
-      label: this.model.label(),
-      value: this.model.value()
-    }));
+    this.$el.html(this.template(this.model.toJSON()));
     return this;
   };
 
-  ConditionListItemView.prototype.onDeleteConditionClick = function(e) {
+  ConditionListItemView.prototype.onDestroy = function() {
+    return this.$el.remove();
+  };
+
+  ConditionListItemView.prototype.onDeleteCondition = function(e) {
     var _model;
-    e.preventDefault();
-    e.stopPropagation();
     _model = this.model;
-    return $.SmartMessageBox({
-      title: 'Shekinah Surgery Condition Remove Alert!',
-      content: 'Are you sure you want to remove this condition?',
+    $.SmartMessageBox({
+      title: 'Shekhinah Surgery Condition Remove Alert!',
+      content: 'Removing this condition will also remove the underlying medications for that condition. Are you sure you want to remove this condition?',
       buttons: '[No][Yes]'
     }, function(ButtonPressed) {
       if (ButtonPressed === 'Yes') {
@@ -1608,34 +1647,40 @@ ConditionListItemView = (function(_super) {
           wait: true
         });
         $.smallBox({
-          title: 'Shekinah Surgery Condition Remove',
+          title: 'Shekhinah Surgery Condition Remove',
           content: "<i class='fa fa-clock-o'></i> <i>Condition successfully removed...</i>",
           color: '#659265',
           iconSmall: 'fa fa-times fa-2x fadeInRight animated',
           timeout: 4000
         });
-
-        /*window.App.eventAggregator.trigger 'navigate:patient',
-        					id: _model.id
-        					index: Math.min _model.get('_index'), _model.get('conditions').length-1
-        					subIndex: 0
-        					editMode: _model.get '_editMode'
-         */
+        window.App.eventAggregator.trigger('navigate:patient', {
+          id: _model.patientId()
+        });
       }
       if (ButtonPressed === 'No') {
         return $.smallBox({
-          title: 'Shekinah Surgery Condition Remove',
-          content: "<i class='fa fa-clock-o'></i> <i>Condition has not been removed...</i>",
+          title: 'Shekhinah Surgery Condition Remove',
+          content: "<i class='fa fa-clock-o'></i> <i>The application encountered an error. Condition has not been removed...</i>",
           color: '#C46A69',
           iconSmall: 'fa fa-times fa-2x fadeInRight animated',
           timeout: 4000
         });
       }
     });
+    return e.preventDefault();
   };
 
-  ConditionListItemView.prototype.onDestroy = function() {
-    return this.leave();
+  ConditionListItemView.prototype.onAddMedicationClick = function(e) {
+    var model, view;
+    e.preventDefault();
+    model = new MedicationModel;
+    model.set({
+      conditionId: this.model.value()
+    });
+    view = new MedicationsView({
+      model: model
+    });
+    return view.show();
   };
 
   return ConditionListItemView;
@@ -1647,94 +1692,105 @@ module.exports = ConditionListItemView;
 });
 
 ;require.register("daylight/views/condition/condition_list_view", function(exports, require, module) {
-var ConditionListItemView, ConditionListView,
+var ConditionListItemView, ConditionListTemplate, ConditionListView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 ConditionListItemView = require('daylight/views/condition/condition_list_item_view');
 
+ConditionListTemplate = require('templates/condition/condition_list_template');
+
 ConditionListView = (function(_super) {
   __extends(ConditionListView, _super);
 
   function ConditionListView() {
+    this.reset = __bind(this.reset, this);
+    this.removeCondition = __bind(this.removeCondition, this);
+    this.conditionEvent = __bind(this.conditionEvent, this);
     this.renderCondition = __bind(this.renderCondition, this);
     this.render = __bind(this.render, this);
+    this.dispose = __bind(this.dispose, this);
     return ConditionListView.__super__.constructor.apply(this, arguments);
   }
 
-  ConditionListView.prototype.tagName = 'ol';
+  ConditionListView.prototype.tagName = 'tbody';
+
+  ConditionListView.prototype.className = 'condition-rows';
+
+  ConditionListView.prototype.template = ConditionListTemplate;
 
   ConditionListView.prototype.itemView = ConditionListItemView;
 
-  ConditionListView.prototype.className = 'dd-list';
+  ConditionListView.prototype.dispose = function() {
+    ConditionListView.__super__.dispose.apply(this, arguments);
+    return delete this.collection;
+  };
 
   ConditionListView.prototype.initialize = function(options) {
-    return _.extend(this, options);
+    ConditionListView.__super__.initialize.call(this, options);
+    this.listenTo(this.collection, 'add', this.renderCondition);
+    this.listenTo(this.collection, 'remove', (function(_this) {
+      return function(model, collection, options) {
+        return _this.removeCondition(model);
+      };
+    })(this));
+    this.listenTo(this.collection, 'reset', (function(_this) {
+      return function(collection, options) {
+        return _this.reset();
+      };
+    })(this));
+    return _.bindAll(this, 'render');
   };
 
   ConditionListView.prototype.render = function() {
-    this.addConditions(this.model);
-    return this;
-  };
-
-  ConditionListView.prototype.displayCondition = function(index) {
-    var newCondition;
-    newCondition = this.model.get('conditions').at(index);
-    if (!this._conditionView || this._conditionView.model.id !== newCondition.id) {
-      return this.renderCondition(newCondition);
-    }
-  };
-
-  ConditionListView.prototype.rendersCondition = function(conditionModel) {
-    return this.$el.append(new this.itemView({
-      model: conditionModel,
-      parent: this
-    }).render().$el);
-  };
-
-  ConditionListView.prototype.renderCondition = function(conditionModel) {
-    var _ref;
-    if ((_ref = this._conditionView) != null) {
-      _ref.leave();
-    }
-    this._conditionView = new ConditionListItemView({
-      model: conditionModel
-    });
-    this.renderChild(this._conditionView);
-    this.$el.append(this._conditionView.el);
-    _.defer((function(_this) {
-      return function() {
-        return _this._conditionView.layout();
-      };
-    })(this));
-  };
-
-  ConditionListView.prototype.addConditions = function(model) {
+    ConditionListView.__super__.render.apply(this, arguments);
     this.$el.empty();
-    if (model.length) {
-      _.forEach(model, this.rendersCondition, this);
-      return this.show();
-    } else {
-      return this.hide();
+    this.replaceElement(this.template());
+    this.collection.fetch();
+    this.collection.forEach(this.renderCondition, this);
+    return this;
+  };
+
+  ConditionListView.prototype.renderCondition = function(model) {
+    var view;
+    view = new ConditionListItemView({
+      model: model
+    });
+    this.conditionEvent('conditionAdded', view);
+    this.conditionEvent('conditionRendered', view);
+    return this.$el.append(this.renderChild(view).$el);
+  };
+
+  ConditionListView.prototype.conditionEvent = function(type, conditionView) {
+    return this.trigger(type, {
+      target: this,
+      conditionView: conditionView
+    });
+  };
+
+  ConditionListView.prototype.removeCondition = function(model) {
+    var view;
+    view = new ConditionListItemView({
+      model: model
+    });
+    if (view.model.id === model.id) {
+      view.leave();
+      return this.conditionEvent('conditionRemoved', view);
     }
   };
 
-  ConditionListView.prototype.hide = function() {
-    this.$el.hide();
-    return this;
-  };
-
-  ConditionListView.prototype.show = function() {
-    this.$el.show();
-    return this;
+  ConditionListView.prototype.reset = function() {
+    return this.render();
   };
 
   return ConditionListView;
 
 })(support.View);
 
-module.exports = ConditionListView;
+if (typeof module !== "undefined" && module !== null) {
+  module.exports = ConditionListView;
+}
 
 });
 
@@ -1763,7 +1819,7 @@ ConditionSearchView = (function(_super) {
   ConditionSearchView.prototype.className = 'condition-search';
 
   ConditionSearchView.prototype.events = {
-    'focus #c2_condition': 'conditionsAutoComplete'
+    'focus #c2_condition': 'renderAutoComplete'
   };
 
   ConditionSearchView.prototype.initialize = function(options) {
@@ -1778,7 +1834,7 @@ ConditionSearchView = (function(_super) {
     return this;
   };
 
-  ConditionSearchView.prototype.conditionsAutoComplete = function() {
+  ConditionSearchView.prototype.renderAutoComplete = function() {
     return new AutocompleteView({
       input: $("#c2_condition"),
       model: this._collection,
@@ -1843,13 +1899,14 @@ ConditionsView = (function(_super) {
   };
 
   ConditionsView.prototype.validationOptions = {
+    ignore: [],
     rules: {
-      condition: {
+      conceptId: {
         required: true
       }
     },
     messages: {
-      condition: 'Please enter a condition to search'
+      conceptId: 'Please enter a condition to search'
     },
     highlight: function(el) {
       return $(el).closest(".form-group").removeClass("has-success").addClass("has-error");
@@ -1870,7 +1927,7 @@ ConditionsView = (function(_super) {
 
   ConditionsView.prototype.initialize = function(options) {
     ConditionsView.__super__.initialize.call(this, options);
-    window.App.eventAggregator.on('click:addcondition', (function(_this) {
+    window.App.eventAggregator.on('click:addentity', (function(_this) {
       return function(e) {
         var conceptId, name, synonyms;
         conceptId = e.get('snomed_concept_id');
@@ -1919,8 +1976,8 @@ ConditionsView = (function(_super) {
       })(this)
     });
     this.teardown();
-    return window.App.eventAggregator.trigger('navigate:pageCondition', {
-      id: this.model.patientId
+    return window.App.eventAggregator.trigger('navigate:patient', {
+      id: this.model.patientId()
     });
   };
 
@@ -1938,7 +1995,16 @@ ConditionsView = (function(_super) {
   };
 
   ConditionsView.prototype.onSaveClick = function(e) {
-    return this.save();
+    var $valid, $validator;
+    e.preventDefault();
+    $validator = $("#searchcondition").validate(this.validationOptions);
+    $valid = $('#searchcondition').valid();
+    if (!$valid) {
+      $validator.focusInvalid();
+      return false;
+    } else {
+      return this.save();
+    }
   };
 
   ConditionsView.prototype.onCancelClick = function(e) {
@@ -2022,11 +2088,6 @@ DashboardView = (function(_super) {
 if (typeof module !== "undefined" && module !== null) {
   module.exports = DashboardView;
 }
-
-});
-
-;require.register("daylight/views/events/event_add_view", function(exports, require, module) {
-
 
 });
 
@@ -2203,13 +2264,18 @@ EventsCalendarView = (function(_super) {
         url: '/API/Events'
       },
       drop: function(date, allDay) {
-        var copiedEventObject, originalEventObject;
+        var copiedEventObject, model, originalEventObject;
         originalEventObject = $(this).data('eventObject');
         copiedEventObject = $.extend({}, originalEventObject);
         copiedEventObject.start = date;
         copiedEventObject.allDay = allDay;
-        console.log(copiedEventObject);
         $("#calendar").fullCalendar("renderEvent", copiedEventObject, true);
+        model = self.model;
+        model.set(model.parse({
+          start: date,
+          allDay: allDay
+        }));
+        model.save();
         if ($("#drop-remove").is(":checked")) {
           return $(this).remove();
         }
@@ -3981,7 +4047,7 @@ if (typeof module !== "undefined" && module !== null) {
 });
 
 ;require.register("daylight/views/patient_view", function(exports, require, module) {
-var ConditionListView, ConditionModel, ConditionsView, PatientEditView, PatientView, PatientViewTemplate,
+var BGGraphView, BPGraphView, ConditionCollection, ConditionListView, ConditionModel, ConditionsView, PatientEditView, PatientView, PatientViewTemplate, VitalCollection, VitalModel, VitalsAddView, WeightGraphView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -3992,23 +4058,40 @@ PatientEditView = require('daylight/views/patient_edit_view');
 
 ConditionsView = require('daylight/views/condition/conditions_view');
 
+ConditionModel = require('daylight/models/condition_model');
+
 ConditionListView = require('daylight/views/condition/condition_list_view');
 
-ConditionModel = require('daylight/models/condition_model');
+ConditionCollection = require('daylight/collections/condition_collection');
+
+VitalsAddView = require('daylight/views/vitals/vitals_add_view');
+
+VitalModel = require('daylight/models/vital_model');
+
+VitalCollection = require('daylight/collections/vital_collection');
+
+BGGraphView = require('daylight/views/graphs/bg_graph_view');
+
+BPGraphView = require('daylight/views/graphs/bp_graph_view');
+
+WeightGraphView = require('daylight/views/graphs/weight_graph_view');
 
 PatientView = (function(_super) {
   __extends(PatientView, _super);
 
   function PatientView() {
-    this.onConditionDelete = __bind(this.onConditionDelete, this);
-    this.onConditionsReset = __bind(this.onConditionsReset, this);
     this.onDeletePatientClick = __bind(this.onDeletePatientClick, this);
+    this.onTreeNodeClick = __bind(this.onTreeNodeClick, this);
+    this.setupWidgets = __bind(this.setupWidgets, this);
+    this.setupTree = __bind(this.setupTree, this);
+    this.onAddVitalsClick = __bind(this.onAddVitalsClick, this);
     this.onAddConditionClick = __bind(this.onAddConditionClick, this);
     this.onEditPatientClick = __bind(this.onEditPatientClick, this);
     this.onSaveSuccess = __bind(this.onSaveSuccess, this);
     this.onSaveStart = __bind(this.onSaveStart, this);
     this.onNavigate = __bind(this.onNavigate, this);
     this.onDestroy = __bind(this.onDestroy, this);
+    this.renderGraphs = __bind(this.renderGraphs, this);
     this.renderConditions = __bind(this.renderConditions, this);
     this.render = __bind(this.render, this);
     this.template = __bind(this.template, this);
@@ -4020,7 +4103,7 @@ PatientView = (function(_super) {
     'click .js-edit': 'onEditPatientClick',
     'click .condition-add': 'onAddConditionClick',
     'click .condition-edit': 'onEditConditionClick',
-    'click .condition-delete': 'onDeleteConditionClick'
+    'click .js-add-vitals': 'onAddVitalsClick'
   };
 
   PatientView.prototype.template = function(data) {
@@ -4028,39 +4111,49 @@ PatientView = (function(_super) {
   };
 
   PatientView.prototype.initialize = function(options) {
-    var collection;
     PatientView.__super__.initialize.call(this, options);
-    collection = this.model.get('conditions');
-    this._conditions = collection.map(function(m) {
-      return new ConditionModel(m);
-    });
-    this.listenTo(this.model, 'destroy', this.onDestroy);
-    this.listenTo(this.model, 'navigate', this.onNavigate);
-    this.listenTo(this.model, 'save:start', this.onSaveStart);
-    this.listenTo(this.model, 'save:success', this.onSaveSuccess);
-    return _.bindAll(this, 'render');
+    this.bindTo(this.model, 'destroy', this.onDestroy);
+    this.bindTo(this.model, 'navigate', this.onNavigate);
+    this.bindTo(this.model, 'save:start', this.onSaveStart);
+    return this.bindTo(this.model, 'save:success', this.onSaveSuccess);
   };
 
   PatientView.prototype.render = function() {
     this.$el.html(this.template(this.model.toJSON()));
     this.renderConditions();
+    this.renderGraphs();
+    this.setupTree();
+    this.setupWidgets();
     return this;
   };
 
   PatientView.prototype.renderConditions = function() {
-    var view;
+    var collection, view;
+    collection = new ConditionCollection;
+    collection.url = "API/Patients/" + (this.model.get('id')) + "/conditions";
     view = new ConditionListView({
-      model: this._conditions
+      collection: collection
     });
-    return this.$('.js-conditions').append(view.el);
+    this.$('.js-conditions-list').append(this.renderChild(view).el);
+    return this;
   };
 
-  PatientView.prototype.displayCondition = function(index, subIndex) {
-    var _ref;
-    if (subIndex == null) {
-      subIndex = 0;
-    }
-    return (_ref = this.conditionsView) != null ? _ref.displayCondition(index) : void 0;
+  PatientView.prototype.renderGraphs = function() {
+    var bg, bp, collection, wv;
+    collection = new VitalCollection;
+    collection.url = "API/Patients/" + (this.model.get('id')) + "/vitals";
+    bg = new BGGraphView({
+      collection: collection
+    });
+    bp = new BPGraphView({
+      collection: collection
+    });
+    wv = new WeightGraphView({
+      collection: collection
+    });
+    this.$('#bg-stats').append(this.renderChild(bg).el);
+    this.$('#bp-stats').append(this.renderChild(bp).el);
+    return this.$('#weight-stats').append(this.renderChild(wv).el);
   };
 
   PatientView.prototype.editMode = function(mode) {
@@ -4101,6 +4194,94 @@ PatientView = (function(_super) {
     return view.show();
   };
 
+  PatientView.prototype.onAddVitalsClick = function(e) {
+    var view, vmodel;
+    e.preventDefault();
+    vmodel = new VitalModel;
+    vmodel.set({
+      patientId: this.model.id
+    });
+    view = new VitalsAddView({
+      model: vmodel
+    });
+    return view.show();
+  };
+
+  PatientView.prototype.setupTree = function() {
+    return this.$(".tree > ul").attr("role", "tree").find("ul").attr("role", "group");
+  };
+
+  PatientView.prototype.setupWidgets = function() {
+    return this.$("#widget-grid").jarvisWidgets({
+      grid: "article",
+      widgets: ".jarviswidget",
+      localStorage: true,
+      deleteSettingsKey: "#deletesettingskey-options",
+      settingsKeyLabel: "Reset settings?",
+      deletePositionKey: "#deletepositionkey-options",
+      positionKeyLabel: "Reset position?",
+      sortable: true,
+      buttonsHidden: false,
+      toggleButton: true,
+      toggleClass: "fa fa-minus | fa fa-plus",
+      toggleSpeed: 200,
+      onToggle: function() {},
+      deleteButton: true,
+      deleteClass: "fa fa-times",
+      deleteSpeed: 200,
+      onDelete: function() {},
+      editButton: true,
+      editPlaceholder: ".jarviswidget-editbox",
+      editClass: "fa fa-cog | fa fa-save",
+      editSpeed: 200,
+      onEdit: function() {},
+      colorButton: true,
+      fullscreenButton: true,
+      fullscreenClass: "fa fa-resize-full | fa fa-resize-small",
+      fullscreenDiff: 3,
+      onFullscreen: function() {},
+      customButton: false,
+      customClass: "folder-10 | next-10",
+      customStart: function() {
+        alert("Hello you, this is a custom button...");
+      },
+      customEnd: function() {
+        alert("bye, till next time...");
+      },
+      buttonOrder: "%refresh% %custom% %edit% %toggle% %fullscreen% %delete%",
+      opacity: 1.0,
+      dragHandle: "> header",
+      placeholderClass: "jarviswidget-placeholder",
+      indicator: true,
+      indicatorTime: 600,
+      ajax: true,
+      timestampPlaceholder: ".jarviswidget-timestamp",
+      timestampFormat: "Last update: %d%/%m%/%y% %h%:%i%:%s%",
+      refreshButton: true,
+      refreshButtonClass: "fa fa-refresh",
+      labelError: "Sorry but there was a error:",
+      labelUpdated: "Last Update:",
+      labelRefresh: "Refresh",
+      labelDelete: "Delete widget:",
+      afterLoad: function() {},
+      rtl: false
+    });
+  };
+
+  PatientView.prototype.onTreeNodeClick = function(e) {
+    var children;
+    children = $(this).parent("li.parent_li").find(" > ul > li");
+    console.log(children.is(":visible"));
+    if (children.is(":visible")) {
+      children.hide("fast");
+      $(this).attr("title", "Expand this branch").find(" > i").removeClass().addClass("fa fa-lg fa-plus-circle");
+    } else {
+      children.show("fast");
+      $(this).attr("title", "Collapse this branch").find(" > i").removeClass().addClass("fa fa-lg fa-minus-circle");
+    }
+    return e.stopPropagation();
+  };
+
   PatientView.prototype.onDeletePatientClick = function(e) {
     var _model;
     _model = this.model;
@@ -4133,23 +4314,6 @@ PatientView = (function(_super) {
       }
     });
     return e.preventDefault();
-  };
-
-  PatientView.prototype.onConditionsReset = function() {
-    return _.defer((function(_this) {
-      return function() {
-        return _this.displayCondition(_this.model.get('_index'));
-      };
-    })(this));
-  };
-
-  PatientView.prototype.onConditionDelete = function() {
-    return window.App.eventAggregator.trigger('navigate:patient', {
-      id: this.model.id,
-      index: Math.min(this.model.get('_index'), this.model.get('conditions').length - 1),
-      subIndex: 0,
-      editMode: this.model.get('_editMode')
-    });
   };
 
   return PatientView;
@@ -5941,45 +6105,79 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      var condition, _i, _len, _ref, _ref1;
+      var _ref;
     
-      __out.push('<div class="row">\n\t<div class="col-sm-12">\n\t\t<div class="row">\n\t\t\t<div class="col-md-6 dashboard-panel-6">\n\t\t\t\t<div class="jumbotron">\n\t\t\t\t\t<h1>\n\t\t\t\t\t\t');
+      __out.push('<!-- Bread crumb is created dynamically -->\n<!-- row -->\n<div class="row">\n\n\t<!-- col -->\n\t<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">\n\t\t<h1 class="page-title txt-color-blueDark"><!-- PAGE HEADER --><i class="fa-fw fa fa-file-o"></i> <a href="#view/patients">My Patients</a> <span>>\n\t\t\tView Patient </span></h1>\n\t</div>\n\t<!-- end col -->\n\n\t<!-- right side of the page with the sparkline graphs -->\n\t<!-- col -->\n\t<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">\n\t\t<!-- sparks -->\n\t\t<ul id="sparks">\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> Surgery Income <span class="txt-color-blue">$47,171</span></h5>\n\t\t\t\t<div class="sparkline txt-color-blue hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t1300, 1877, 2500, 2577, 2000, 2100, 3000, 2700, 3631, 2471, 2700, 3631, 2471\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> Patient Visits <span class="txt-color-purple"><i class="fa fa-arrow-circle-up" data-rel="bootstrap-tooltip" title="Increased"></i>&nbsp;45%</span></h5>\n\t\t\t\t<div class="sparkline txt-color-purple hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t110,150,300,130,400,240,220,310,220,300, 270, 210\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> Test <span class="txt-color-greenDark"><i class="fa fa-shopping-cart"></i>&nbsp;2447</span></h5>\n\t\t\t\t<div class="sparkline txt-color-greenDark hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t110,150,300,130,400,240,220,310,220,300, 270, 210\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t</ul>\n\t\t<!-- end sparks -->\n\t</div>\n\t<!-- end col -->\n\n</div>\n<!-- end row -->\n\n<!-- row -->\n\n<div class="row">\n\n\t<div class="col-sm-12">\n\n\n\t\t\t<div class="well well-sm">\n\n\t\t\t\t<div class="row">\n\n\t\t\t\t\t<div class="col-sm-12 col-md-12 col-lg-6">\n\t\t\t\t\t\t<div class="well well-light well-sm no-margin no-padding">\n\n\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\t\t\t\t\t\t\t\t\t<div id="myCarousel" class="carousel fade profile-carousel">\n\t\t\t\t\t\t\t\t\t\t<div class="air air-bottom-right padding-10">\n\t\t\t\t\t\t\t\t\t\t\t<a href="#" class="btn txt-color-white btn-primary btn-sm js-edit"><i class="fa fa-pencil"></i> Edit Details</a>&nbsp; <a href="#" class="btn txt-color-white bg-color-red btn-sm js-delete"><i class="fa fa-trash-o"></i> Delete</a>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="air air-top-left padding-10">\n\t\t\t\t\t\t\t\t\t\t\t<h4 class="txt-color-white font-md">Last visit - Jan 1, 2014</h4>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<ol class="carousel-indicators">\n\t\t\t\t\t\t\t\t\t\t\t<li data-target="#myCarousel" data-slide-to="0" class="active"></li>\n\t\t\t\t\t\t\t\t\t\t\t<li data-target="#myCarousel" data-slide-to="1" class=""></li>\n\t\t\t\t\t\t\t\t\t\t\t<li data-target="#myCarousel" data-slide-to="2" class=""></li>\n\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t<div class="carousel-inner">\n\t\t\t\t\t\t\t\t\t\t\t<!-- Slide 1 -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="item active">\n\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/demo/s1.jpg" alt="">\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- Slide 2 -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="item">\n\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/demo/s2.jpg" alt="">\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- Slide 3 -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="item">\n\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/demo/m3.jpg" alt="">\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\n\t\t\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t\t\t<div class="col-sm-3 profile-pic">\n\t\t\t\t\t\t\t\t\t\t\t<img src=\'img/avatars/');
     
-      __out.push(__sanitize(this.firstName));
+      __out.push(__sanitize(this.gender.toLowerCase()));
     
-      __out.push(' ');
-    
-      __out.push(__sanitize(this.lastName));
-    
-      __out.push('\n\t\t\t\t\t</h1>\n\t\t\t\t\t<p>\n\t\t\t\t\t\t<strong>Age: </strong>');
+      __out.push('-big.png\'>\n\t\t\t\t\t\t\t\t\t\t\t<div class="padding-10">\n\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Age: <strong>');
     
       __out.push(__sanitize(this.age));
     
-      __out.push('\n\t\t\t\t\t\t<address>\n\t\t\t\t\t\t\t<strong>Address: </strong> ');
+      __out.push('</strong>\n\t\t\t\t\t\t\t\t\t\t\t\t<small>year');
     
-      __out.push(__sanitize(this.address));
+      if (this.age > 1) {
+        __out.push('s');
+      }
     
-      __out.push('<br /> \n\t\t\t\t\t\t\t<strong>Phone: </strong> ');
+      __out.push(' old</small></h4>\n\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Gender: <strong>');
+    
+      __out.push(__sanitize(this.gender));
+    
+      __out.push('</strong></h4>\n\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Relationship Status: <strong>');
+    
+      __out.push(__sanitize(this.relationshipStatus));
+    
+      __out.push('</strong></h4>\t\n\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t');
+    
+      if ((_ref = this.vitals) != null ? _ref.length : void 0) {
+        __out.push('\n\t\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Weight: <strong>');
+        __out.push(__sanitize(this.vitals[0].weight));
+        __out.push(' kg</strong></h4>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Height: <strong>');
+        __out.push(__sanitize(this.vitals[0].height));
+        __out.push(' m</strong>\t</h4>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Blood Pressure: <strong>');
+        __out.push(__sanitize(this.vitals[0].diastolicBp));
+        __out.push('/');
+        __out.push(__sanitize(this.vitals[0].systolicBp));
+        __out.push(' mmHg</strong></h4>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Blood Glucose: <strong>');
+        __out.push(__sanitize(this.vitals[0].bloodGlucose));
+        __out.push('</strong></h4>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Temperature: <strong>');
+        __out.push(__sanitize(this.vitals[0].bodyTemperature));
+        __out.push(' &deg;C</strong></h4>\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<h4 class="font-md">Pulse: <strong>');
+        __out.push(__sanitize(this.vitals[0].pulse));
+        __out.push('</strong>\t</h4>\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t');
+      }
+    
+      __out.push('\t\n\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#" class="js-add-vitals"><i class="fa fa-lg fa-fw fa-user-md fa-2x"></i>  <span class="menu-item-parent">Add vitals</span></a>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t<h1>');
+    
+      __out.push(__sanitize(this.firstName));
+    
+      __out.push(' <span class="semi-bold">');
+    
+      __out.push(__sanitize(this.lastName));
+    
+      __out.push('</span>\n\t\t\t\t\t\t\t\t\t\t\t<br><small>Patient since: <strong>');
+    
+      __out.push(__sanitize(this.dateRegistered));
+    
+      __out.push('</strong></small>\n\t\t\t\t\t\t\t\t\t\t\t</h1>\n\n\t\t\t\t\t\t\t\t\t\t\t<ul class="list-unstyled">\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<p class="text-muted">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-phone"></i>&nbsp;&nbsp; <span class="txt-color-darken">');
     
       __out.push(__sanitize(this.phone));
     
-      __out.push('\n\t\t\t\t\t\t</address>\n\t\t\t\t\t</p>\n\t\t\t\t\t<p>\n\t\t\t\t\t\t<button class="btn btn-primary btn-lg js-edit" type="button">Edit Details</button>\n\t\t\t\t\t\t<button class="btn btn-primary btn-lg js-delete" type="button">Delete</button>\n\t\t\t\t\t</p>\n\t\t\t\t</div>\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\n\t\t\t\n\t\t\t\t\n\t\t\t</div>\n\t\t\t<div class="col-md-6 pull-right">\n\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Conditions</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd js-conditions" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<!-- <ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t');
+      __out.push('</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<p class="text-muted">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-envelope"></i>&nbsp;&nbsp;<a href="mailto:');
     
-      if ((_ref = this.conditions) != null ? _ref.length : void 0) {
-        __out.push('\n     \t\t\t\t\t\t\t\t\t\t\t\t');
-        _ref1 = this.conditions;
-        for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-          condition = _ref1[_i];
-          __out.push('\n\t     \t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="');
-          __out.push(__sanitize(condition.id));
-          __out.push('">\n\t     \t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t');
-          __out.push(__sanitize(condition.name));
-          __out.push('\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<a href="#" class="remove label label-danger pull-right padding-5 condition-delete" ><i class="glyphicon glyphicon-remove"></i> remove</a>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</li>\t    \n\t\t\t\t\t\t\t\t\t\t\t\t\t');
-        }
-        __out.push('\n  \t\t\t\t\t\t\t\t\t\t\t\t');
-      }
+      __out.push(__sanitize(this.email));
     
-      __out.push('\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t</ol> --> \n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success condition-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Allergies</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="row">\t\t\n\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-0" role="widget">\t\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Medications</strong></h2>\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end widget -->\t\n\t\t\t\t\t\t</article>\n\t\t\t\t\t\t<article class="col-xs-12 col-sm-6 col-md-6 col-lg-6 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t<div class="jarviswidget" id="wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t<h2><strong>Visits</strong></h2>\n\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t<div class="dd" id="nestable">\n\t\t\t\t\t\t\t\t\t\t\t<ol class="dd-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 1 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li class="dd-item" data-id="1">\n\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="dd-handle">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\tItem 2 <span>- Description Field</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success" type="button">\n\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t</button>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</article>\n\t\t\t\t\t</div>\n\t\t\t\t</section>\n\t\t\t</div>\n\t\t</div>\t\t\n\t</div>\t\n</div>\n');
+      __out.push('">');
+    
+      __out.push(__sanitize(this.email));
+    
+      __out.push('</a>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<p class="text-muted">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-building"></i>&nbsp;&nbsp;<span class="txt-color-darken">');
+    
+      __out.push(__sanitize(this.address));
+    
+      __out.push('</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<p class="text-muted">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<i class="fa fa-calendar"></i>&nbsp;&nbsp;<span class="txt-color-darken">Next appointment on <a href="javascript:void(0);" rel="tooltip" title="" data-placement="top" data-original-title="Create an Appointment">4:30 PM</a></span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<p class="font-md">\n\t\t\t\t\t\t\t\t\t\t\t\t<i>Patient summary...</i>\n\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t<p>\n\n\t\t\t\t\t\t\t\t\t\t\t\tEt harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio\n\t\t\t\t\t\t\t\t\t\t\t\tcumque nihil impedit quo minus id quod maxime placeat facere\n\n\t\t\t\t\t\t\t\t\t\t\t</p>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<a href="javascript:void(0);" class="btn btn-default btn-xs"><i class="fa fa-envelope-o"></i> Send Message</a>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t<br>\n\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="col-sm-3">\n\t\t\t\t\t\t\t\t\t\t\t<h1><small>Healthcare team:</small></h1>\n\t\t\t\t\t\t\t\t\t\t\t<ul class="list-inline friends-list">\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/1.png" alt="friend-1">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/2.png" alt="friend-2">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/3.png" alt="friend-3">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/4.png" alt="friend-4">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/5.png" alt="friend-5">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t\t<li><img src="img/avatars/male.png" alt="friend-6">\n\t\t\t\t\t\t\t\t\t\t\t\t</li>\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t</ul>\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\n\t\t\t\t\t\t\t\t\t<hr>\n\n\t\t\t\t\t\t\t\t\t<div class="padding-10">\n\n\t\t\t\t\t\t\t\t\t\t<ul class="nav nav-tabs tabs-pull-left">\n\t\t\t\t\t\t\t\t\t\t\t<li class="active">\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#a1" data-toggle="tab">Conditions</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#a2" data-toggle="tab">Medications</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\n\t\t\t\t\t\t\t\t\t\t\t<li>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#a2" data-toggle="tab">Contact Details</a>\n\t\t\t\t\t\t\t\t\t\t\t</li>\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</ul>\n\n\t\t\t\t\t\t\t\t\t\t<div class="tab-content padding-top-10">\n\t\t\t\t\t\t\t\t\t\t\t<div class="tab-pane fade in active" id="a1">\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="p-wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body">\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<table class="table table-striped table-forum js-conditions-list">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<thead>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Condition</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Diagnosed</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Medications</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span2 sortable align-left">Action</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</thead>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="tree js-conditions-list">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</table>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success condition-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t</article>\n\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<div class="tab-pane fade" id="a2">\n\n\t\t\t\t\t\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12 sortable-grid ui-sortable">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="p-wid-id-1" role="widget">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body">\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<table class="table table-striped table-forum js-medications-list">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<thead>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Medication</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Prescription Date</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span3 sortable align-right">Finished</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<th class="span2 sortable align-left">Action</th>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</thead>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<div class="tree js-medications-list">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</table>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<button class="btn btn-sm btn-success medication-add" type="button">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\tAdd +\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</button>\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t <i class="fa fa-plus-o fa-lg"></i>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t\t\t</article>\n\n\t\t\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t\t\t</div><!-- end tab -->\n\t\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t<!-- end row -->\n\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="col-sm-12 col-md-12 col-lg-6">\n\t\t\t\t\t\t<!-- widget grid -->\n\t\t\t\t\t\t<section id="widget-grid" class="">\n\t\t\t\t\t\t\t<!-- row -->\n\t\t\t\t\t\t\t<div class="row">\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<!-- NEW WIDGET START -->\n\t\t\t\t\t\t\t\t<article class="col-xs-12 col-sm-12 col-md-12 col-lg-12 sortable-grid ui-sortable">\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="wid-id-bpgraph" data-widget-colorbutton="false" data-widget-editbutton="false">\n\t\t\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-bar-chart-o"></i> </span>\n\t\t\t\t\t\t\t\t\t\t\t<h2>Blood Pressure</h2>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</header>\n\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t<div>\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body no-padding">\n\t\t\t\t\t\t\t\t\t\t\t\t<div id="bp-stats" class="chart has-legend"></div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget content -->\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget -->\n\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="wid-id-bggraph" data-widget-colorbutton="false" data-widget-editbutton="false">\n\t\t\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-bar-chart-o"></i> </span>\n\t\t\t\t\t\t\t\t\t\t\t<h2>Blood Glucose</h2>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</header>\n\n\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t\t\t<!-- This area used as dropdown edit box -->\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t\t\t<div id="bg-stats" class="chart has-legend"></div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget content -->\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget -->\n\t\t\t\t\t\t\t\t\t<!-- Widget ID (each widget will need unique ID)-->\n\t\t\t\t\t\t\t\t\t<div class="jarviswidget jarviswidget-color-blue" id="wid-id-weightgraph" data-widget-colorbutton="false" data-widget-editbutton="false">\n\t\t\t\t\t\t\t\t\t\t<header>\n\t\t\t\t\t\t\t\t\t\t\t<span class="widget-icon"> <i class="fa fa-bar-chart-o"></i> </span>\n\t\t\t\t\t\t\t\t\t\t\t<h2>Weight</h2>\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</header>\n\n\t\t\t\t\t\t\t\t\t\t<!-- widget div-->\n\t\t\t\t\t\t\t\t\t\t<div>\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="jarviswidget-editbox">\n\t\t\t\t\t\t\t\t\t\t\t\t<!-- This area used as dropdown edit box -->\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget edit box -->\n\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t<!-- widget content -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="widget-body">\n\t\t\t\t\t\t\t\t\t\t\t\t<div id="weight-stats" class="chart has-legend"></div>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- end widget content -->\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<!-- end widget div -->\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t<!-- end widget -->\n\t\t\t\t\t\t\t\t</article>\n\t\t\t\t\t\t\t\t<!-- WIDGET END -->\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</section>\n\t\t\t\t\t\t<!-- end widget grid -->\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n<!-- end row -->\n\n\n<script type="text/javascript">\n// DO NOT REMOVE : GLOBAL FUNCTIONS!\npageSetUp()\n\n// PAGE RELATED SCRIPTS\n\n</script>\n');
     
     }).call(this);
     

@@ -11,7 +11,7 @@
         /// The password is required.
         /// </summary>
         PasswordRequired = 1,
-
+        
         /// <summary>
         /// The user name is required.
         /// </summary>
@@ -35,6 +35,11 @@
         /// <summary>
         /// The username password combination is valid, but the account isn't verified.
         /// </summary>
-        NotVerified = 6
+        NotVerified = 6,
+
+        /// <summary>
+        /// Either password has expired, needs to be changed
+        /// </summary>
+        ChangePassword = 7
     }
 }

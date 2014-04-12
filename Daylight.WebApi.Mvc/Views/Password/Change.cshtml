@@ -1,0 +1,75 @@
+﻿@model Daylight.WebApi.Security.Models.PasswordViewModel
+
+
+<div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-5 col-lg-5">
+        <div class="well no-padding">
+            @using (Html.BeginForm("Change", "Password", FormMethod.Post, new { id = Model.UserId, redirectUrl = Model.RedirectUrl, name = "changepassword-form", @class = "smart-form client-form" }))
+            {
+                @Html.AntiForgeryToken()
+                @Html.HiddenFor(x => x.UserId)
+				@Html.HiddenFor(x => x.RedirectUrl)
+                <header>
+                    Change Password
+                </header>
+                <fieldset>
+                        <section>
+                            <label class="input">
+                                <i class="icon-append fa fa-lock"></i>
+                                @Html.PasswordFor(model => model.OldPassword, new { placeholder = "Current Password" })
+                                @Html.ValidationMessageFor(model => model.OldPassword)
+                                <b class="tooltip tooltip-bottom-right">Needed to enter the web application</b>
+                            </label>
+                        </section>
+                        <section>
+                            <label class="input">
+                                <i class="icon-append fa fa-lock"></i>
+                                @Html.PasswordFor(model => model.Password, new { placeholder = "Password" })
+                                @Html.ValidationMessageFor(model => model.Password)
+                                <b class="tooltip tooltip-bottom-right">Don't forget your password</b>
+                            </label>
+                        </section>
+                        <section>
+                            <label class="input">
+                                <i class="icon-append fa fa-lock"></i>
+                                @Html.PasswordFor(model => model.ConfirmPassword, new { placeholder = "Confirm password" })
+                                @Html.ValidationMessageFor(model => model.ConfirmPassword)
+                                <b class="tooltip tooltip-bottom-right">Needed to verify your account</b>
+                            </label>
+                        </section>
+                </fieldset>
+
+                <footer>
+                    <button type="submit" class="btn btn-primary">
+                        Save
+                    </button>
+                    <button onclick="window.history.back();" class="btn btn-default" type="button">
+                        Cancel
+                    </button>
+                </footer>
+            }
+        </div>
+    </div>
+</div>
+@section Javascript {
+    <script src="@Url.Content("~/javascripts/vendor.js")" type="text/javascript" charset="utf-8"></script>
+    <script src="@Url.Content("~/js/plugin/chromaHash/jquery.chroma-hash.js")" type="text/javascript" charset="utf-8"></script>
+    <script src="@Url.Content("~/js/plugin/password-strength/passwordStrength.js")" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("input:password").chromaHash({ bars: 3, minimum: 1, salt: "7be82b35cb0199120eea35a4507c9acf" });
+            $('#Password').pstrength({
+                'displayMinChar': false,
+                'minChar': 8,
+                'colors': ["#f00", "#c06", "#f60", "#3c0", "#3f0"],
+                'verdicts': [
+                    'Weak',
+                    'Normal',
+                    'Medium',
+                    'Strong',
+                    'Very Strong'
+                ]
+            });
+        });
+    </script>
+}

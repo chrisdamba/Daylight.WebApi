@@ -1,5 +1,4 @@
-﻿
-using System.Web.Http;
+﻿using System.Web.Http;
 using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Mvc.Factories;
 using Daylight.WebApi.Repositories;
@@ -34,7 +33,7 @@ namespace Daylight.WebApi.Mvc
             container.RegisterType<IEventRepository, EventRepository>();
             container.RegisterType<IEventService, EventService>();
             container.RegisterType<IEventViewFactory, EventViewFactory>();
-
+            
             return container;
         }
     }

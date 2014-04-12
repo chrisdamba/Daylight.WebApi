@@ -57,6 +57,14 @@ namespace Daylight.WebApi.Services
 
             // Authenticate user
             authenticationProvider.Authenticate(username.Trim(), rememberMe);
+
+            // Check password expiry
+            var passwordExpired = securityFactory.GetUser(username.Trim()).PasswordExpired;
+            if (passwordExpired)
+            {
+                return LogInResultCode.ChangePassword;
+            }
+            
             return LogInResultCode.None;
         }
 

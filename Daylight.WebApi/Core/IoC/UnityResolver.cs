@@ -7,6 +7,7 @@ using Daylight.WebApi.Providers;
 using Daylight.WebApi.Repositories;
 using Daylight.WebApi.Repositories.Data;
 using Daylight.WebApi.Security.Factories;
+using Daylight.WebApi.Security.Models;
 using Daylight.WebApi.Services;
 using Microsoft.Practices.Unity;
 
@@ -118,7 +119,12 @@ namespace Daylight.WebApi.Core.IoC
             container.RegisterType<ISecurityFactory, DataContextSecurityFactory>();
             container.RegisterType<IAuthenticationProvider, FormsAuthenticationProvider>();
             container.RegisterType<ILoginService, LoginService>();
-            
+
+            container.RegisterType<IRegistrationViewModel, RegistrationViewModel>();
+            container.RegisterType<IRegistrationProvider, RegistrationProvider>();
+            container.RegisterType<IRegistrationService, RegistrationService>();
+            container.RegisterType<IPasswordService, PasswordService>();
+
             return container;
         }
     }

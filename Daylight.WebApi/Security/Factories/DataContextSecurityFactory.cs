@@ -228,7 +228,7 @@ namespace Daylight.WebApi.Security.Factories
 
             using (var context = CreateContext)
             {
-                user.State = EntityState.Modified;
+                context.Entry(user).State = EntityState.Modified;
                 context.SaveChanges();
                 //raise the updated event
                 RaisedUserUpdatedEvent(beforeUser, user);
@@ -399,7 +399,7 @@ namespace Daylight.WebApi.Security.Factories
                         LastLockoutDate = DateTime.UtcNow,
                         IsLockedOut = false,
                         LastPasswordFailureDate = DateTime.UtcNow,
-                        PasswordExpired = false,
+                        PasswordExpired = true, // force user to change password on login
                         State = EntityState.Added
                     };
                     
@@ -579,6 +579,7 @@ namespace Daylight.WebApi.Security.Factories
                 }
 
                 user.Password = hashedPassword;
+                user.LastPasswordChangedDate = DateTime.Now;
 
                 SecurityFactory.UpdateUser(user);
 

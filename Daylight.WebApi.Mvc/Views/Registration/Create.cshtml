@@ -1,0 +1,76 @@
+﻿@model Daylight.WebApi.Security.Models.RegistrationViewModel
+
+
+<div class="row">
+    <div class="col-xs-12 col-sm-12 col-md-5 col-lg-5">
+        <div class="well no-padding">
+            @using (Html.BeginForm("Create", "Registration", FormMethod.Post, new { name = "login-form", id = "smart-form-register", @class = "smart-form client-form" }))
+            {
+                @Html.AntiForgeryToken()
+                <header>
+                    User Registration
+                </header>
+                <fieldset>
+                    <div class="row">
+                        <section class="col col-6">
+                            <label class="input">
+                                @Html.TextBoxFor(model => model.FirstName, new { placeholder = "First name" })
+                                @Html.ValidationMessageFor(model => model.FirstName)
+                            </label>
+                        </section>
+                        <section class="col col-6">
+                            <label class="input">
+                                @Html.TextBoxFor(model => model.LastName, new { placeholder = "Last name" })
+                                @Html.ValidationMessageFor(model => model.LastName)
+                            </label>
+                        </section>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <section>
+                        <label class="input">
+                            <i class="icon-append fa fa-user"></i>
+                            @Html.TextBoxFor(model => model.Username, new { placeholder = "Username" })
+                            @Html.ValidationMessageFor(model => model.Username)
+                            <b class="tooltip tooltip-bottom-right">Needed to enter the web application</b>
+                        </label>
+                    </section>
+
+                    <section>
+                        <label class="input">
+                            <i class="icon-append fa fa-envelope"></i>
+                            @Html.TextBoxFor(model => model.Email, new { placeholder = "Email address" })
+                            @Html.ValidationMessageFor(model => model.Email)
+                            <b class="tooltip tooltip-bottom-right">Needed to verify your account</b>
+                        </label>
+                    </section>
+
+                    <section>
+                        <label class="input">
+                            <i class="icon-append fa fa-lock"></i>
+                            @Html.TextBoxFor(model => model.Password, new { placeholder = "Password" })
+                            @Html.ValidationMessageFor(model => model.Password)
+                            <b class="tooltip tooltip-bottom-right">Don't forget your password</b>
+                        </label>
+                    </section>
+                </fieldset>
+                    
+                <footer>
+                    <button type="submit" class="btn btn-primary">
+                        Save
+                    </button>
+                </footer>
+
+                <div class="message">
+                    <i class="fa fa-check"></i>
+                    <p>
+                        Registration done!
+                    </p>
+                </div>
+                    
+            }
+        </div>
+    </div>
+</div>
+
+
