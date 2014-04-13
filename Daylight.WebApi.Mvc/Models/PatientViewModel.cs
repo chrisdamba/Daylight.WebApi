@@ -4,6 +4,7 @@ using System.Data;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Web.UI.WebControls;
 using Daylight.WebApi.Contracts.Entities;
 
 
@@ -23,6 +24,7 @@ namespace Daylight.WebApi.Mvc.Models
         public PatientViewModel(Patient patient)
         {
             Id = patient.PatientId;
+            Title = patient.Title;
             Dob = patient.DateOfBirth.ToLongDateString();
             DateRegistered = patient.DateBecamePatient.ToString("dddd, dd MMMM yyyy hh:mm");
             RelationshipStatus = patient.RelationshipStatus;
@@ -87,6 +89,13 @@ namespace Daylight.WebApi.Mvc.Models
         /// </value>
         [DataMember]
         public Guid Id { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
+        [DataMember]
+        public string Title { get; set; }
 
         /// <summary>
         /// Gets or sets the patient age.
@@ -191,6 +200,7 @@ namespace Daylight.WebApi.Mvc.Models
 
             // Populate properties
             patient.Gender = Gender;
+            patient.Title = Title;
             patient.DateOfBirth = DateTime.ParseExact(Dob, "d/M/yyyy", CultureInfo.InvariantCulture);
             patient.RelationshipStatus = RelationshipStatus;
             patient.DateBecamePatient = Convert.ToDateTime(DateRegistered);

@@ -1268,6 +1268,7 @@ PatientModel = (function(_super) {
 
   PatientModel.prototype.defaults = {
     id: void 0,
+    title: void 0,
     relationshipStatus: void 0,
     firstName: void 0,
     lastName: void 0,
@@ -3419,9 +3420,9 @@ PatientCreateView = (function(_super) {
   };
 
   PatientCreateView.prototype.save = function() {
-    var address, areaLocality, building, city, collection, dob, email, fname, form, gender, lname, phone, prefix, province, rstatus, street;
+    var address, areaLocality, building, city, collection, dob, email, fname, form, gender, lname, phone, rstatus, street, title;
     form = this.$("form").serializeObject();
-    prefix = this.$("input:radio[name ='salutation']:checked").val();
+    title = this.$("input:radio[name ='salutation']:checked").val();
     fname = this.$('#fname').val();
     lname = this.$('#lname').val();
     gender = this.$('#gender').find(":selected").val();
@@ -3433,11 +3434,11 @@ PatientCreateView = (function(_super) {
     building = this.$('#building').val();
     street = this.$('#street').val();
     city = this.$('#city').val();
-    province = this.$('#province').val();
-    address = "" + building + ", " + street + ", " + areaLocality + ", " + city + ", " + province;
+    address = "" + building + ", " + street + ", " + areaLocality + ", " + city;
     collection = window.IoC.get('PatientCollection');
     this.model.collection = collection;
     this.model.set(this.model.parse({
+      title: title,
       gender: gender,
       relationshipStatus: rstatus,
       dob: dob,
@@ -3644,9 +3645,9 @@ PatientEditView = (function(_super) {
   };
 
   PatientEditView.prototype.save = function() {
-    var address, areaLocality, building, city, collection, d, dob, email, fname, form, gender, lname, phone, prefix, province, rstatus, street;
+    var address, areaLocality, building, city, collection, d, dob, email, fname, form, gender, lname, phone, rstatus, street, title;
     form = this.$("form").serializeObject();
-    prefix = this.$("input:radio[name ='salutation']:checked").val();
+    title = this.$("input:radio[name ='salutation']:checked").val();
     fname = this.$('#fname').val();
     lname = this.$('#lname').val();
     gender = this.$('#gender').find(":selected").val();
@@ -3659,11 +3660,11 @@ PatientEditView = (function(_super) {
     building = this.$('#building').val();
     street = this.$('#street').val();
     city = this.$('#city').val();
-    province = this.$('#province').val();
-    address = "" + building + ", " + street + ", " + areaLocality + ", " + city + ", " + province;
+    address = "" + building + ", " + street + ", " + areaLocality + ", " + city;
     collection = window.IoC.get('PatientCollection');
     this.model.collection = collection;
     this.model.set(this.model.parse({
+      title: title,
       id: this.model.id,
       gender: gender,
       relationshipStatus: rstatus,
@@ -5339,11 +5340,11 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<div class="row">\n\t<div class="col-sm-12">\n\t\t<div class="form-group">\n\t\t\t<div class="input-group margin-bottom-sm">\n\t\t\t\t<div class="inline-group">\n\t\t\t\t\t<div class="bbf-editor">\n\t\t\t\t\t\t<input class="form-control input-lg js-search-terms" autocomplete="off" placeholder="Search for condition" type="text" name="condition" id="c2_condition" value="');
+      __out.push('<div class="row">\n\t<div class="col-sm-12">\n\t\t<div class="form-group">\n\t\t\t<div class="inline-group">\n\t\t\t\t<div class="bbf-editor">\n\t\t\t\t\t<input class="form-control input-lg js-search-terms" autocomplete="off" placeholder="Search for condition" type="text" name="condition" id="c2_condition" value="');
     
       __out.push(__sanitize(this.name));
     
-      __out.push('">\t\t\t\t\t\t\t\t\n\t\t\t\t\t</div>\t\t\t\t\t\t\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>');
+      __out.push('">\t\t\t\t\t\t\t\t\n\t\t\t\t</div>\t\t\t\t\t\t\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>');
     
     }).call(this);
     
@@ -5393,7 +5394,7 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Add Condition</h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<div class="row">\t\t\t\t\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t<form id="searchcondition" novalidate="novalidate">\n\t\t\t\t\t\t<div id="search_container"></div>\t\n\t\t\t\t\t\t<div class="panel-body no-padding">            \n\t\t\t\t\t\t\t<strong>');
+      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Add Condition</h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<div class="row">\t\t\t\t\n\t\t\t\t<div class="col-sm-12">\n\t\t\t\t\t<form id="searchcondition" novalidate="novalidate">\n\t\t\t\t\t\t<div id="search_container"></div>\t\n\t\t\t\t\t\t<div class="panel-body no-padding">            \n\t\t\t\t\t\t\t<strong>');
     
       __out.push(__sanitize(this.name));
     
@@ -5713,11 +5714,11 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<div class="row">\n\t<div class="col-sm-12">\n\t\t<div class="form-group">\n\t\t\t<div class="input-group margin-bottom-sm">\n\t\t\t\t<div class="inline-group">\n\t\t\t\t\t<div class="bbf-editor">\n\t\t\t\t\t\t<input class="form-control input-lg js-search-terms" autocomplete="off" placeholder="Search for medication" type="text" name="medication" id="m2_medication" value="');
+      __out.push('<div class="row">\n\t<div class="col-sm-12">\n\t\t<div class="form-group">\n\t\t\t<div class="inline-group">\n\t\t\t\t<div class="bbf-editor">\n\t\t\t\t\t<input class="form-control input-lg js-search-terms" autocomplete="off" placeholder="Search for medication" type="text" name="medication" id="m2_medication" value="');
     
       __out.push(__sanitize(this.name));
     
-      __out.push('">\t\t\t\t\t\t\t\t\n\t\t\t\t\t</div>\t\t\t\t\t\t\n\t\t\t\t</div>\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>');
+      __out.push('">\t\t\t\t\t\t\t\t\n\t\t\t\t</div>\t\t\t\t\t\t\n\t\t\t</div>\n\t\t</div>\n\t</div>\n</div>');
     
     }).call(this);
     
@@ -5767,7 +5768,7 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Add Medication</h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<div class="row">\t\t\t\t\n\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t<form id="searchmedication" novalidate="novalidate">\n\t\t\t\t\t\t<div id="search_medication_container"></div>\t\n\t\t\t\t\t\t<div class="panel-body no-padding">            \n\t\t\t\t\t\t\t<strong>');
+      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Add Medication</h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<div class="row">\t\t\t\t\n\t\t\t\t<div class="col-sm-12">\n\t\t\t\t\t<form id="searchmedication" novalidate="novalidate">\n\t\t\t\t\t\t<div id="search_medication_container"></div>\t\n\t\t\t\t\t\t<div class="panel-body no-padding">            \n\t\t\t\t\t\t\t<strong>');
     
       __out.push(__sanitize(this.name));
     
@@ -5829,7 +5830,7 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Patient Registration form </h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<form id="newpatient" novalidate="novalidate">\n\t\t\t\t<div class="row">\n\t\t\t\t\t<div class="col-sm-12">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group margin-bottom-sm">\n\t\t\t\t\t\t\t\t<label class="control-label"><h4>Salutation</h4></label>\n\t\t\t\t\t\t\t\t<div class="inline-group">\n\t\t\t\t\t\t\t\t\t<label class="radio  radio-inline">\n\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Mr." id="optionsMr" checked>\n\t\t\t\t\t\t\t\t\t\t<i></i>Mr.</label>\n\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Mrs." id="optionsMrs">\n\t\t\t\t\t\t\t\t\t\t<i></i>Mrs.</label>\t\n\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Miss" id="optionsMiss">\n\t\t\t\t\t\t\t\t\t\t<i></i>Miss</label>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Ms." id="optionsMs">\n\t\t\t\t\t\t\t\t\t\t<i></i>Ms.</label>\t\n\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" id="optionsDr" value="Dr.">\n\t\t\t\t\t\t\t\t\t\t<i></i>Dr.</label>\n\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" id="optionsProf" value="Prof">\n\t\t\t\t\t\t\t\t\t\t<i></i>Prof.</label>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\n\t\t\t\t<div class="row">\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-user fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="First Name" type="text" name="fname" id="fname">\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-user fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="Last Name" type="text" name="lname" id="lname">\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\n\t\t\t\t\n\t\t\t\t<div class="row">\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-user fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t<select class="form-control input-lg" id="relationshipStatus" name="relationshipStatus">\n\t\t\t\t\t\t\t\t\t<option value="None" selected="selected">Marital Status</option>\n\t\t\t\t\t\t\t\t\t<option value="Married">Married</option>\n\t\t\t\t\t\t\t\t\t<option value="Single">Single</option>\n\t\t\t\t\t\t\t\t\t<option value="Divorced">Divorced</option>\n\t\t\t\t\t\t\t\t\t<option value="Common Law">Common Law</option>\n\t\t\t\t\t\t\t\t\t<option value="Separated">Separated</option>\n\t\t\t\t\t\t\t\t\t<option value="Widowed">Widowed</option>\n\t\t\t\t\t\t\t\t</select>\t\t\t\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-calendar fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t<input type="text" name="dob" placeholder="Date Of Birth" class="form-control input-lg clsDatePicker" id="dob" data-dateformat="dd/mm/yy">\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\n\t\t\t\t<div class="row">\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-user fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t<select class="form-control input-lg" id="gender" name="gender">\n\t\t\t\t\t\t\t\t\t<option value="" selected="selected">Gender</option>\n\t\t\t\t\t\t\t\t\t<option value="M">Male</option>\n\t\t\t\t\t\t\t\t\t<option value="F">Female</option>\n\t\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\n\t\t\t\t<div class="row">\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-mobile fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t<input class="form-control input-lg" data-mask="9999 999-999" data-mask-placeholder= "X" placeholder="Phone" type="text" name="phone" id="phone">\t\t\t\t\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-envelope fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="email@address.com" type="text" name="email" id="email">\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\n\t\t\t\t\n\t\t\t\t<div class="row">\n\t\t\t\t\t<div class="col-sm-12">\n\t\t\t\t\t\t<h4>Address </h4>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t\t<div class="row">\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-building fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="Building Name/House Number" type="text" name="building" id="building">\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-envelope-o fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="Street Name" type="text" name="street" id="street">\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\n\t\t\t\t</div>\n\t\t\t\t<div class="row">\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-map-marker fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="Area Locality" type="text" name="locality" id="locality">\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-map-marker fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t<select class="form-control input-lg" name="city" id="city">\n\t\t\t\t\t\t\t\t\t<option value="" selected="selected">Select City/Town</option>\n\t\t\t\t\t\t\t\t\t<option value="Harare">Harare</option>\n\t\t\t\t\t\t\t\t\t<option value="Bulawayo">Bulawayo</option>\n\t\t\t\t\t\t\t\t\t<option value="Chitungwiza">Chitungwiza</option>\n\t\t\t\t\t\t\t\t\t<option value="Gweru">Gweru</option>\n\t\t\t\t\t\t\t\t\t<option value="Mutare">Mutare</option>\n\t\t\t\t\t\t\t\t\t<option value="Chegutu">Chegutu</option>\n\t\t\t\t\t\t\t\t\t<option value="Chinhoyi">Chinhoyi</option>\n\t\t\t\t\t\t\t\t\t<option value="Bindura">Bindura</option>\n\t\t\t\t\t\t\t\t\t<option value="Mt. Darwin">Mt. Darwin</option>\n\t\t\t\t\t\t\t\t\t<option value="Kariba">Kariba</option>\n\t\t\t\t\t\t\t\t\t<option value="Chipinge">Chipinge</option>\n\t\t\t\t\t\t\t\t\t<option value="Rusape">Rusape</option>\n\t\t\t\t\t\t\t\t\t<option value="Marondera">Marondera</option>\n\t\t\t\t\t\t\t\t\t<option value="Kwekwe">Kwekwe</option>\n\t\t\t\t\t\t\t\t\t<option value="Kadoma">Kadoma</option>\n\t\t\t\t\t\t\t\t\t<option value="Gwanda">Gwanda</option>\n\t\t\t\t\t\t\t\t\t<option value="Triangle">Triangle</option>\n\t\t\t\t\t\t\t\t\t<option value="Beitbridge">Beitbridge</option>\n\t\t\t\t\t\t\t\t\t<option value="Masvingo">Masvingo</option>\n\t\t\t\t\t\t\t\t\t<option value="Zvishavane">Zvishavane</option>\n\t\t\t\t\t\t\t\t\t<option value="Hwange">Hwange</option>\n\t\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\n\t\t\t\t</div>\n\n\t\t\t\t<div class="row">\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-map-marker fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t<select class="form-control input-lg" name="province" id="province">\n\t\t\t\t\t\t\t\t\t<option value="" selected="selected">Select Province</option>\n\t\t\t\t\t\t\t\t\t<option value="Bulawayo">Bulawayo</option>\n\t\t\t\t\t\t\t\t\t<option value="Harare">Harare</option>\n\t\t\t\t\t\t\t\t\t<option value="Manicaland">Manicaland</option>\n\t\t\t\t\t\t\t\t\t<option value="Mashonaland Central">Mashonaland Central</option>\n\t\t\t\t\t\t\t\t\t<option value="Mashonaland East">Mashonaland East</option>\n\t\t\t\t\t\t\t\t\t<option value="Mashonaland West">Mashonaland West</option>\n\t\t\t\t\t\t\t\t\t<option value="Masvingo">Masvingo</option>\n\t\t\t\t\t\t\t\t\t<option value="Matabeleland North">Matabeleland North</option>\n\t\t\t\t\t\t\t\t\t<option value="Matabeleland South">Matabeleland South</option>\n\t\t\t\t\t\t\t\t\t<option value="Midlands">Midlands</option>\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-map-marker fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t<select class="form-control input-lg" name="addressType" id="addressType">\n\t\t\t\t\t\t\t\t\t<option value="" selected="selected">Address Type</option>\n\t\t\t\t\t\t\t\t\t<option value="Residential">Residential</option>\n\t\t\t\t\t\t\t\t\t<option value="Industrial">Industrial</option>\n\t\t\t\t\t\t\t\t\t<option value="Commercial">Commercial</option>\n\t\t\t\t\t\t\t\t\t<option value="Military">Military</option>\n\t\t\t\t\t\t\t\t\t<option value="Agricultural">Agricultural</option>\n\t\t\t\t\t\t\t\t\t<option value="Educational">Educational</option>\n\t\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\n\t\t\t\t</div>\n\t\t\t\t</div>\n\t\t\t</form>\t\t\t\t\t\n\n\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t<button type="button" class="btn btn-primary" data-dismiss="modal">\n\t\t\t\tCancel\n\t\t\t</button>\n\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\tSave Changes\n\t\t\t</button>\n\t\t</div>\t\t\t\n\t</div>\n</div>\t');
+      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Patient Registration form </h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<form id="newpatient" class="smart-form" novalidate="novalidate">\n\t\t\t\t<fieldset>\t\t\t\t\t\t\t\t\n\t\t\t\t\t<section>\n\t\t\t\t\t\t<label class="label">Salutation</label>\n\t\t\t\t\t\t<div class="inline-group">\n\t\t\t\t\t\t\t<label class="radio">\n\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Mr" id="optionsMr" checked="checked">\n\t\t\t\t\t\t\t\t<i></i>Mr.</label>\n\t\t\t\t\t\t\t<label class="radio">\n\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Mrs" id="optionsMrs">\n\t\t\t\t\t\t\t\t<i></i>Mrs.</label>\t\n\t\t\t\t\t\t\t<label class="radio">\n\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Miss" id="optionsMiss">\n\t\t\t\t\t\t\t\t<i></i>Miss</label>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<label class="radio">\n\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Ms" id="optionsMs">\n\t\t\t\t\t\t\t\t<i></i>Ms.</label>\t\n\t\t\t\t\t\t\t<label class="radio">\n\t\t\t\t\t\t\t\t<input type="radio" name="salutation" id="optionsDr" value="Dr">\n\t\t\t\t\t\t\t\t<i></i>Dr.</label>\n\t\t\t\t\t\t\t<label class="radio">\n\t\t\t\t\t\t\t\t<input type="radio" name="salutation" id="optionsProf" value="Prof">\n\t\t\t\t\t\t\t\t<i></i>Prof.</label>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</section>\n\t\t\t\t</fieldset>\n\n\t\t\t\t<fieldset>\n\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t<section class="col col-6">\n\t\t\t\t\t\t\t<label class="select">\n\t\t\t\t\t\t\t\t<select id="gender" name="gender">\n\t\t\t\t\t\t\t\t\t<option value="" selected="selected">Gender</option>\n\t\t\t\t\t\t\t\t\t<option value="M">Male</option>\n\t\t\t\t\t\t\t\t\t<option value="F">Female</option>\n\t\t\t\t\t\t\t\t</select> <i></i> </label>\n\t\t\t\t\t\t</section>\n\t\t\t\t\t\t<section class="col col-6">\n\t\t\t\t\t\t\t<label class="select">\n\t\t\t\t\t\t\t\t<select id="relationshipStatus" name="relationshipStatus">\n\t\t\t\t\t\t\t\t\t<option value="" selected="selected">Marital Status</option>\n\t\t\t\t\t\t\t\t\t<option value="Married">Married</option>\n\t\t\t\t\t\t\t\t\t<option value="Single">Single</option>\n\t\t\t\t\t\t\t\t\t<option value="Divorced">Divorced</option>\n\t\t\t\t\t\t\t\t\t<option value="Common Law">Common Law</option>\n\t\t\t\t\t\t\t\t\t<option value="Separated">Separated</option>\n\t\t\t\t\t\t\t\t\t<option value="Widowed">Widowed</option>\n\t\t\t\t\t\t\t\t</select> <i></i> </label>\n\t\t\t\t\t\t</section>\t\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t</fieldset>\t\n\n\t\t\t\t<fieldset>\n\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t<section class="col col-6">\n\t\t\t\t\t\t\t<label class="input"> <i class="icon-prepend fa fa-user"></i>\n\t\t\t\t\t\t\t\t<input type="text" placeholder="First Name" type="text" name="fname" id="fname">\n\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t</section>\n\t\t\t\t\t\t<section class="col col-6">\n\t\t\t\t\t\t\t<label class="input"> <i class="icon-prepend fa fa-user"></i>\n\t\t\t\t\t\t\t\t<input type="text" placeholder="Last Name" type="text" name="lname" id="lname">\n\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t</section>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t<section class="col col-6">\n\t\t\t\t\t\t\t<label class="input"> <i class="icon-prepend fa fa-envelope-o"></i>\n\t\t\t\t\t\t\t\t<input type="email" placeholder="Email address" type="text" name="email" id="email">\n\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t</section>\n\t\t\t\t\t\t<section class="col col-6">\n\t\t\t\t\t\t\t<label class="input"> <i class="icon-prepend fa fa-phone"></i>\n\t\t\t\t\t\t\t\t<input type="tel" placeholder="Phone" type="text" name="phone" id="phone" data-mask="(999) 999-9999">\n\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t</section>\n\t\t\t\t\t</div>\n\t\t\t\t</fieldset>\n\t\t\t\t\n\t\t\t\t<fieldset>\t\t\t\t\t\t\t\n\t\t\t\t\t<section>\n\t\t\t\t\t\t<label class="input"> <i class="icon-prepend fa fa-calendar"></i>\n\t\t\t\t\t\t\t<input type="text" name="dob" id="dob" class="clsDatePicker" placeholder="Date of birth" data-dateformat="dd/mm/yy">\n\t\t\t\t\t\t</label>\n\t\t\t\t\t</section>\t\t\t\t\t\t\n\t\t\t\t</fieldset>\n\n\t\t\t\t<fieldset>\t\n\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t<section class="col col-4">\n\t\t\t\t\t\t\t<label class="input"> <i class="icon-prepend fa fa-building"></i>\n\t\t\t\t\t\t\t\t<input type="text" placeholder="Building" type="text" name="building" id="building">\n\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t</section>\n\t\t\t\t\t\t<section class="col col-4">\n\t\t\t\t\t\t\t<label class="input"> <i class="icon-prepend fa fa-map-marker"></i>\n\t\t\t\t\t\t\t\t<input type="text" placeholder="Street" type="text" name="street" id="street">\n\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t</section>\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t<section class="col col-4">\n\t\t\t\t\t\t\t<label class="input"> <i class="icon-prepend fa fa-map-marker"></i>\n\t\t\t\t\t\t\t\t<input type="text" placeholder="Locality" type="text" name="locality" id="locality">\n\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t</section>\t\t\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<section>\n\t\t\t\t\t\t<label class="select"> \n\t\t\t\t\t\t\t<select id="city" name="city">\n\t\t\t\t\t\t\t\t<option value="" selected="selected">Select City/Town</option>\n\t\t\t\t\t\t\t\t<option value="Harare">Harare</option>\n\t\t\t\t\t\t\t\t<option value="Bulawayo">Bulawayo</option>\n\t\t\t\t\t\t\t\t<option value="Chitungwiza">Chitungwiza</option>\n\t\t\t\t\t\t\t\t<option value="Gweru">Gweru</option>\n\t\t\t\t\t\t\t\t<option value="Mutare">Mutare</option>\n\t\t\t\t\t\t\t\t<option value="Chegutu">Chegutu</option>\n\t\t\t\t\t\t\t\t<option value="Chinhoyi">Chinhoyi</option>\n\t\t\t\t\t\t\t\t<option value="Bindura">Bindura</option>\n\t\t\t\t\t\t\t\t<option value="Mt. Darwin">Mt. Darwin</option>\n\t\t\t\t\t\t\t\t<option value="Kariba">Kariba</option>\n\t\t\t\t\t\t\t\t<option value="Chipinge">Chipinge</option>\n\t\t\t\t\t\t\t\t<option value="Rusape">Rusape</option>\n\t\t\t\t\t\t\t\t<option value="Marondera">Marondera</option>\n\t\t\t\t\t\t\t\t<option value="Kwekwe">Kwekwe</option>\n\t\t\t\t\t\t\t\t<option value="Kadoma">Kadoma</option>\n\t\t\t\t\t\t\t\t<option value="Gwanda">Gwanda</option>\n\t\t\t\t\t\t\t\t<option value="Triangle">Triangle</option>\n\t\t\t\t\t\t\t\t<option value="Beitbridge">Beitbridge</option>\n\t\t\t\t\t\t\t\t<option value="Masvingo">Masvingo</option>\n\t\t\t\t\t\t\t\t<option value="Zvishavane">Zvishavane</option>\n\t\t\t\t\t\t\t\t<option value="Hwange">Hwange</option>\n\t\t\t\t\t\t\t</select> <i></i> </label>\n\t\t\t\t\t</section>\t\t\t\t\t\t\n\t\t\t\t</fieldset>\n\t\t\t</form>\n\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t<button type="button" class="btn btn-primary" data-dismiss="modal">\n\t\t\t\tCancel\n\t\t\t</button>\n\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\tSave Changes\n\t\t\t</button>\n\t\t</div>\t\t\t\n\t</div>\n</div>\t');
     
     }).call(this);
     
@@ -5879,39 +5880,267 @@ module.exports = function (__obj) {
   }
   (function() {
     (function() {
-      __out.push('<div class="modal-dialog">\n\t\t<div class="modal-content">\n\t\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t\t&times;\n\t\t\t\t</button>\n\t\t\t\t<header>\n\t\t\t\t\t<h2>Edit Patient Details </h2>\t\t\t\t\t\t\t\t\t\n\t\t\t\t</header>\t\t\t\t\n\t\t\t</div>\n\t\t\t<div class="modal-body">\n\t\t\t\t<form id="newpatient" novalidate="novalidate">\n\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t<div class="col-sm-12">\n\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t<div class="input-group margin-bottom-sm">\n\t\t\t\t\t\t\t\t\t<label class="control-label"><h4>Salutation</h4></label>\n\t\t\t\t\t\t\t\t\t<div class="inline-group">\n\t\t\t\t\t\t\t\t\t\t<label class="radio  radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Mr." id="optionsMr" checked>\n\t\t\t\t\t\t\t\t\t\t\t<i></i>Mr.</label>\n\t\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Mrs." id="optionsMrs">\n\t\t\t\t\t\t\t\t\t\t\t<i></i>Mrs.</label>\t\n\t\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Miss" id="optionsMiss">\n\t\t\t\t\t\t\t\t\t\t\t<i></i>Miss</label>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Ms." id="optionsMs">\n\t\t\t\t\t\t\t\t\t\t\t<i></i>Ms.</label>\t\n\t\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" id="optionsDr" value="Dr.">\n\t\t\t\t\t\t\t\t\t\t\t<i></i>Dr.</label>\n\t\t\t\t\t\t\t\t\t\t<label class="radio radio-inline">\n\t\t\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" id="optionsProf" value="Prof">\n\t\t\t\t\t\t\t\t\t\t\t<i></i>Prof.</label>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-user fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" value="');
+      __out.push('<div class="modal-dialog">\n\t\t<div class="modal-content">\n\t\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t\t&times;\n\t\t\t\t</button>\n\t\t\t\t<header>\n\t\t\t\t\t<h2>Edit Patient Details </h2>\t\t\t\t\t\t\t\t\t\n\t\t\t\t</header>\t\t\t\t\n\t\t\t</div>\n\t\t\t<div class="modal-body">\n\t\t\t\t<form id="newpatient" class="smart-form" novalidate="novalidate">\n\t\t\t\t\t<fieldset>\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t<section>\n\t\t\t\t\t\t\t<label class="label">Salutation</label>\n\t\t\t\t\t\t\t<div class="inline-group">\n\t\t\t\t\t\t\t\t<label class="radio">\n\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Mr" id="optionsMr" ');
+    
+      if (this.title === 'Mr') {
+        __out.push('checked="checked"');
+      }
+    
+      __out.push('>\n\t\t\t\t\t\t\t\t\t<i></i>Mr.</label>\n\t\t\t\t\t\t\t\t<label class="radio">\n\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Mrs" id="optionsMrs" ');
+    
+      if (this.title === 'Mrs') {
+        __out.push(' checked="checked"');
+      }
+    
+      __out.push('>\n\t\t\t\t\t\t\t\t\t<i></i>Mrs.</label>\t\n\t\t\t\t\t\t\t\t<label class="radio">\n\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Miss" id="optionsMiss" ');
+    
+      if (this.title === 'Miss') {
+        __out.push(' checked="checked"');
+      }
+    
+      __out.push('>\n\t\t\t\t\t\t\t\t\t<i></i>Miss</label>\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<label class="radio">\n\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" value="Ms" id="optionsMs" ');
+    
+      if (this.title === 'Ms') {
+        __out.push(' checked="checked"');
+      }
+    
+      __out.push('>\n\t\t\t\t\t\t\t\t\t<i></i>Ms.</label>\t\n\t\t\t\t\t\t\t\t<label class="radio">\n\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" id="optionsDr" value="Dr" ');
+    
+      if (this.title === 'Dr') {
+        __out.push(' checked="checked"');
+      }
+    
+      __out.push('>\n\t\t\t\t\t\t\t\t\t<i></i>Dr.</label>\n\t\t\t\t\t\t\t\t<label class="radio">\n\t\t\t\t\t\t\t\t\t<input type="radio" name="salutation" id="optionsProf" value="Prof" ');
+    
+      if (this.title === 'Prof') {
+        __out.push(' checked="checked"');
+      }
+    
+      __out.push('>\n\t\t\t\t\t\t\t\t\t<i></i>Prof.</label>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</section>\n\t\t\t\t\t</fieldset>\n\n\t\t\t\t\t<fieldset>\n\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t<section class="col col-6">\n\t\t\t\t\t\t\t\t<label class="select">\n\t\t\t\t\t\t\t\t\t<select id="gender" name="gender">\n\t\t\t\t\t\t\t\t\t\t<option value="" ');
+    
+      if (!this.gender) {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Gender</option>\n\t\t\t\t\t\t\t\t\t\t<option value="M" ');
+    
+      if (this.gender === 'M') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Male</option>\n\t\t\t\t\t\t\t\t\t\t<option value="F" ');
+    
+      if (this.gender === 'F') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Female</option>\n\t\t\t\t\t\t\t\t\t</select> <i></i> </label>\n\t\t\t\t\t\t\t</section>\n\t\t\t\t\t\t\t<section class="col col-6">\n\t\t\t\t\t\t\t\t<label class="select">\n\t\t\t\t\t\t\t\t\t<select id="relationshipStatus" name="relationshipStatus">\n\t\t\t\t\t\t\t\t\t\t<option value="" ');
+    
+      if (!this.relationshipStatus) {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Marital Status</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Married" ');
+    
+      if (this.relationshipStatus === 'Married') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('">Married</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Single" ');
+    
+      if (this.relationshipStatus === 'Single') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('">Single</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Divorced" ');
+    
+      if (this.relationshipStatus === 'Divorced') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Divorced</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Common Law" ');
+    
+      if (this.relationshipStatus === 'Common Law') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Common Law</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Separated" ');
+    
+      if (this.relationshipStatus === 'Separated') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Separated</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Widowed" ');
+    
+      if (this.relationshipStatus === 'Widowed') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Widowed</option>\n\t\t\t\t\t\t\t\t\t</select> <i></i> </label>\n\t\t\t\t\t\t\t</section>\t\t\t\t\t\t\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</fieldset>\t\n\n\t\t\t\t\t<fieldset>\n\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t<section class="col col-6">\n\t\t\t\t\t\t\t\t<label class="input"> <i class="icon-prepend fa fa-user"></i>\n\t\t\t\t\t\t\t\t\t<input type="text" value="');
     
       __out.push(__sanitize(this.firstName));
     
-      __out.push('" type="text" name="fname" id="fname">\n\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\n\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-user fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" value="');
+      __out.push('" type="text" name="fname" id="fname">\n\t\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t\t</section>\n\t\t\t\t\t\t\t<section class="col col-6">\n\t\t\t\t\t\t\t\t<label class="input"> <i class="icon-prepend fa fa-user"></i>\n\t\t\t\t\t\t\t\t\t<input type="text" value="');
     
       __out.push(__sanitize(this.lastName));
     
-      __out.push('" type="text" name="lname" id="lname">\n\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t\n\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-user fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t<select class="form-control input-lg" id="relationshipStatus" name="relationshipStatus">\n\t\t\t\t\t\t\t\t\t\t<option value="" selected="selected">Marital Status</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Married">Married</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Single">Single</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Divorced">Divorced</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Common Law">Common Law</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Separated">Separated</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Widowed">Widowed</option>\n\t\t\t\t\t\t\t\t\t</select>\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\n\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-calendar fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t<input type="text" name="dob" value="');
-    
-      __out.push(__sanitize(this.dob));
-    
-      __out.push('" class="form-control input-lg" id="dob" data-dateformat="dd/mm/yy">\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-user fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t<select class="form-control input-lg" id="gender" name="gender">\n\t\t\t\t\t\t\t\t\t\t<option value="" selected="selected">Gender</option>\n\t\t\t\t\t\t\t\t\t\t<option value="M">Male</option>\n\t\t\t\t\t\t\t\t\t\t<option value="F">Female</option>\n\t\t\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-mobile fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" value="');
-    
-      __out.push(__sanitize(this.phone));
-    
-      __out.push('" type="text" name="phone" id="phone">\t\t\t\t\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-envelope fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" value="');
+      __out.push('" type="text" name="lname" id="lname">\n\t\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t\t</section>\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t<section class="col col-6">\n\t\t\t\t\t\t\t\t<label class="input"> <i class="icon-prepend fa fa-envelope-o"></i>\n\t\t\t\t\t\t\t\t\t<input type="email" value="');
     
       __out.push(__sanitize(this.email));
     
-      __out.push('" type="text" name="email" id="email">\n\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\n\t\t\t\t\t\n\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t<div class="col-sm-12">\n\t\t\t\t\t\t\t<h4>Address </h4>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-building fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" value="');
+      __out.push('" type="text" name="email" id="email">\n\t\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t\t</section>\n\t\t\t\t\t\t\t<section class="col col-6">\n\t\t\t\t\t\t\t\t<label class="input"> <i class="icon-prepend fa fa-phone"></i>\n\t\t\t\t\t\t\t\t\t<input type="tel" value="');
+    
+      __out.push(__sanitize(this.phone));
+    
+      __out.push('" type="text" name="phone" id="phone" data-mask="(999) 999-9999">\n\t\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t\t</section>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</fieldset>\n\t\t\t\t\t\n\t\t\t\t\t<fieldset>\t\t\t\t\t\t\t\n\t\t\t\t\t\t<section>\n\t\t\t\t\t\t\t<label class="input"> <i class="icon-prepend fa fa-calendar"></i>\n\t\t\t\t\t\t\t\t<input type="text" name="dob" value="');
+    
+      __out.push(__sanitize(this.dob));
+    
+      __out.push('" id="dob" data-dateformat="dd/mm/yy">\n\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t</section>\t\t\t\t\t\t\n\t\t\t\t\t</fieldset>\n\n\t\t\t\t\t<fieldset>\t\n\t\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t\t<section class="col col-4">\n\t\t\t\t\t\t\t\t<label class="input"> <i class="icon-prepend fa fa-building"></i>\n\t\t\t\t\t\t\t\t\t<input type="text" value="');
     
       __out.push(__sanitize(this.address.split(',')[0]));
     
-      __out.push('" type="text" name="building" id="building">\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-envelope-o fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" value="');
+      __out.push('" type="text" name="building" id="building">\n\t\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t\t</section>\n\t\t\t\t\t\t\t<section class="col col-4">\n\t\t\t\t\t\t\t\t<label class="input"> <i class="icon-prepend fa fa-map-marker"></i>\n\t\t\t\t\t\t\t\t\t<input type="text" value="');
     
       __out.push(__sanitize(this.address.split(',')[1]));
     
-      __out.push('" type="text" name="street" id="street">\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-map-marker fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t<input class="form-control input-lg" value="');
+      __out.push('" type="text" name="street" id="street">\n\t\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t\t</section>\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t<section class="col col-4">\n\t\t\t\t\t\t\t\t<label class="input"> <i class="icon-prepend fa fa-map-marker"></i>\n\t\t\t\t\t\t\t\t\t<input type="text" value="');
     
       __out.push(__sanitize(this.address.split(',')[2]));
     
-      __out.push('" type="text" name="locality" id="locality">\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-map-marker fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t<select class="form-control input-lg" name="city" id="city">\n\t\t\t\t\t\t\t\t\t\t<option value="" selected="selected">Select City/Town</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Harare">Harare</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Bulawayo">Bulawayo</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Chitungwiza">Chitungwiza</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Gweru">Gweru</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Mutare">Mutare</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Chegutu">Chegutu</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Chinhoyi">Chinhoyi</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Bindura">Bindura</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Mt. Darwin">Mt. Darwin</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Kariba">Kariba</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Chipinge">Chipinge</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Rusape">Rusape</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Marondera">Marondera</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Kwekwe">Kwekwe</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Kadoma">Kadoma</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Gwanda">Gwanda</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Triangle">Triangle</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Beitbridge">Beitbridge</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Masvingo">Masvingo</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Zvishavane">Zvishavane</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Hwange">Hwange</option>\n\t\t\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\n\t\t\t\t\t<div class="row">\n\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-map-marker fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t<select class="form-control input-lg" name="province" id="province">\n\t\t\t\t\t\t\t\t\t\t<option value="" selected="selected">Select Province</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Bulawayo">Bulawayo</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Harare">Harare</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Manicaland">Manicaland</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Mashonaland Central">Mashonaland Central</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Mashonaland East">Mashonaland East</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Mashonaland West">Mashonaland West</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Masvingo">Masvingo</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Matabeleland North">Matabeleland North</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Matabeleland South">Matabeleland South</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Midlands">Midlands</option>\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-map-marker fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t\t<select class="form-control input-lg" name="addressType" id="addressType">\n\t\t\t\t\t\t\t\t\t\t<option value="" selected="selected">Address Type</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Residential">Residential</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Industrial">Industrial</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Commercial">Commercial</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Military">Military</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Agricultural">Agricultural</option>\n\t\t\t\t\t\t\t\t\t\t<option value="Educational">Educational</option>\n\t\t\t\t\t\t\t\t\t</select>\n\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</form>\t\t\t\t\t\n\n\t\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t\t<button type="button" class="btn btn-primary" data-dismiss="modal">\n\t\t\t\t\tCancel\n\t\t\t\t</button>\n\t\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\t\tSave Changes\n\t\t\t\t</button>\n\t\t\t</div>\t\t\t\n\t\t</div>\n\t</div>\t');
+      __out.push('" type="text" name="locality" id="locality">\n\t\t\t\t\t\t\t\t</label>\n\t\t\t\t\t\t\t</section>\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t<section>\n\t\t\t\t\t\t\t<label class="select"> \n\t\t\t\t\t\t\t\t<select id="city" name="city">\n\t\t\t\t\t\t\t\t\t<option value="" ');
+    
+      if (!this.address.split(',')[3]) {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Select City/Town</option>\n\t\t\t\t\t\t\t\t\t<option value="Harare" ');
+    
+      if (this.address.split(',')[3] === 'Harare') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Harare</option>\n\t\t\t\t\t\t\t\t\t<option value="Bulawayo" ');
+    
+      if (this.address.split(',')[3] === 'Bulawayo') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Bulawayo</option>\n\t\t\t\t\t\t\t\t\t<option value="Chitungwiza" ');
+    
+      if (this.address.split(',')[3] === 'Chitungwiza') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Chitungwiza</option>\n\t\t\t\t\t\t\t\t\t<option value="Gweru" ');
+    
+      if (this.address.split(',')[3] === 'Gweru') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Gweru</option>\n\t\t\t\t\t\t\t\t\t<option value="Mutare" ');
+    
+      if (this.address.split(',')[3] === 'Mutare') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Mutare</option>\n\t\t\t\t\t\t\t\t\t<option value="Chegutu" ');
+    
+      if (this.address.split(',')[3] === 'Chegutu') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Chegutu</option>\n\t\t\t\t\t\t\t\t\t<option value="Chinhoyi" ');
+    
+      if (this.address.split(',')[3] === 'Chinhoyi') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Chinhoyi</option>\n\t\t\t\t\t\t\t\t\t<option value="Bindura" ');
+    
+      if (this.address.split(',')[3] === 'Bindura') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Bindura</option>\n\t\t\t\t\t\t\t\t\t<option value="Mt. Darwin" ');
+    
+      if (this.address.split(',')[3] === 'Mt. Darwin') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Mt. Darwin</option>\n\t\t\t\t\t\t\t\t\t<option value="Kariba" ');
+    
+      if (this.address.split(',')[3] === 'Kariba') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Kariba</option>\n\t\t\t\t\t\t\t\t\t<option value="Chipinge" ');
+    
+      if (this.address.split(',')[3] === 'Chipinge') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Chipinge</option>\n\t\t\t\t\t\t\t\t\t<option value="Rusape" ');
+    
+      if (this.address.split(',')[3] === 'Rusape') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Rusape</option>\n\t\t\t\t\t\t\t\t\t<option value="Marondera" ');
+    
+      if (this.address.split(',')[3] === 'Marondera') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Marondera</option>\n\t\t\t\t\t\t\t\t\t<option value="Kwekwe" ');
+    
+      if (this.address.split(',')[3] === 'Kwekwe') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Kwekwe</option>\n\t\t\t\t\t\t\t\t\t<option value="Kadoma" ');
+    
+      if (this.address.split(',')[3] === 'Kadoma') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Kadoma</option>\n\t\t\t\t\t\t\t\t\t<option value="Gwanda" ');
+    
+      if (this.address.split(',')[3] === 'Gwanda') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Gwanda</option>\n\t\t\t\t\t\t\t\t\t<option value="Triangle" ');
+    
+      if (this.address.split(',')[3] === 'Triangle') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Triangle</option>\n\t\t\t\t\t\t\t\t\t<option value="Beitbridge" ');
+    
+      if (this.address.split(',')[3] === 'Beitbridge') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Beitbridge</option>\n\t\t\t\t\t\t\t\t\t<option value="Masvingo" ');
+    
+      if (this.address.split(',')[3] === 'Masvingo') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Masvingo</option>\n\t\t\t\t\t\t\t\t\t<option value="Zvishavane" ');
+    
+      if (this.address.split(',')[3] === 'Zvishavane') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Zvishavane</option>\n\t\t\t\t\t\t\t\t\t<option value="Hwange" ');
+    
+      if (this.address.split(',')[3] === 'Hwange') {
+        __out.push('selected="selected"');
+      }
+    
+      __out.push('>Hwange</option>\n\t\t\t\t\t\t\t\t</select> <i></i> </label>\n\t\t\t\t\t\t</section>\t\t\t\t\t\t\n\t\t\t\t\t</fieldset>\n\t\t\t\t</form>\t\t\t\t\t\n\n\t\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t\t<button type="button" class="btn btn-primary" data-dismiss="modal">\n\t\t\t\t\tCancel\n\t\t\t\t</button>\n\t\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\t\tSave Changes\n\t\t\t\t</button>\n\t\t\t</div>\t\t\t\n\t\t</div>\n\t</div>\t');
     
     }).call(this);
     
@@ -6107,7 +6336,7 @@ module.exports = function (__obj) {
     (function() {
       var _ref;
     
-      __out.push('<!-- Bread crumb is created dynamically -->\n<!-- row -->\n<div class="row">\n\n\t<!-- col -->\n\t<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">\n\t\t<h1 class="page-title txt-color-blueDark"><!-- PAGE HEADER --><i class="fa-fw fa fa-file-o"></i> <a href="#view/patients">My Patients</a> <span>>\n\t\t\tView Patient </span></h1>\n\t</div>\n\t<!-- end col -->\n\n\t<!-- right side of the page with the sparkline graphs -->\n\t<!-- col -->\n\t<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">\n\t\t<!-- sparks -->\n\t\t<ul id="sparks">\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> Surgery Income <span class="txt-color-blue">$47,171</span></h5>\n\t\t\t\t<div class="sparkline txt-color-blue hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t1300, 1877, 2500, 2577, 2000, 2100, 3000, 2700, 3631, 2471, 2700, 3631, 2471\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> Patient Visits <span class="txt-color-purple"><i class="fa fa-arrow-circle-up" data-rel="bootstrap-tooltip" title="Increased"></i>&nbsp;45%</span></h5>\n\t\t\t\t<div class="sparkline txt-color-purple hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t110,150,300,130,400,240,220,310,220,300, 270, 210\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> Test <span class="txt-color-greenDark"><i class="fa fa-shopping-cart"></i>&nbsp;2447</span></h5>\n\t\t\t\t<div class="sparkline txt-color-greenDark hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t110,150,300,130,400,240,220,310,220,300, 270, 210\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t</ul>\n\t\t<!-- end sparks -->\n\t</div>\n\t<!-- end col -->\n\n</div>\n<!-- end row -->\n\n<!-- row -->\n\n<div class="row">\n\n\t<div class="col-sm-12">\n\n\n\t\t\t<div class="well well-sm">\n\n\t\t\t\t<div class="row">\n\n\t\t\t\t\t<div class="col-sm-12 col-md-12 col-lg-6">\n\t\t\t\t\t\t<div class="well well-light well-sm no-margin no-padding">\n\n\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\t\t\t\t\t\t\t\t\t<div id="myCarousel" class="carousel fade profile-carousel">\n\t\t\t\t\t\t\t\t\t\t<div class="air air-bottom-right padding-10">\n\t\t\t\t\t\t\t\t\t\t\t<a href="#" class="btn txt-color-white btn-primary btn-sm js-edit"><i class="fa fa-pencil"></i> Edit Details</a>&nbsp; <a href="#" class="btn txt-color-white bg-color-red btn-sm js-delete"><i class="fa fa-trash-o"></i> Delete</a>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="air air-top-left padding-10">\n\t\t\t\t\t\t\t\t\t\t\t<h4 class="txt-color-white font-md">Last visit - Jan 1, 2014</h4>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<ol class="carousel-indicators">\n\t\t\t\t\t\t\t\t\t\t\t<li data-target="#myCarousel" data-slide-to="0" class="active"></li>\n\t\t\t\t\t\t\t\t\t\t\t<li data-target="#myCarousel" data-slide-to="1" class=""></li>\n\t\t\t\t\t\t\t\t\t\t\t<li data-target="#myCarousel" data-slide-to="2" class=""></li>\n\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t<div class="carousel-inner">\n\t\t\t\t\t\t\t\t\t\t\t<!-- Slide 1 -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="item active">\n\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/demo/s1.jpg" alt="">\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- Slide 2 -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="item">\n\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/demo/s2.jpg" alt="">\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- Slide 3 -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="item">\n\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/demo/m3.jpg" alt="">\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\n\t\t\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t\t\t<div class="col-sm-3 profile-pic">\n\t\t\t\t\t\t\t\t\t\t\t<img src=\'img/avatars/');
+      __out.push('<!-- Bread crumb is created dynamically -->\n<!-- row -->\n<div class="row">\n\n\t<!-- col -->\n\t<div class="col-xs-12 col-sm-7 col-md-7 col-lg-4">\n\t\t<h1 class="page-title txt-color-blueDark"><!-- PAGE HEADER --><i class="fa-fw fa fa-file-o"></i> <a href="#view/patients">My Patients</a> <span>>\n\t\t\tView Patient </span></h1>\n\t</div>\n\t<!-- end col -->\n\n\t<!-- right side of the page with the sparkline graphs -->\n\t<!-- col -->\n\t<div class="col-xs-12 col-sm-5 col-md-5 col-lg-8">\n\t\t<!-- sparks -->\n\t\t<ul id="sparks">\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> Surgery Income <span class="txt-color-blue">$47,171</span></h5>\n\t\t\t\t<div class="sparkline txt-color-blue hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t1300, 1877, 2500, 2577, 2000, 2100, 3000, 2700, 3631, 2471, 2700, 3631, 2471\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> Patient Visits <span class="txt-color-purple"><i class="fa fa-arrow-circle-up" data-rel="bootstrap-tooltip" title="Increased"></i>&nbsp;45%</span></h5>\n\t\t\t\t<div class="sparkline txt-color-purple hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t110,150,300,130,400,240,220,310,220,300, 270, 210\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t\t<li class="sparks-info">\n\t\t\t\t<h5> Test <span class="txt-color-greenDark"><i class="fa fa-shopping-cart"></i>&nbsp;2447</span></h5>\n\t\t\t\t<div class="sparkline txt-color-greenDark hidden-mobile hidden-md hidden-sm">\n\t\t\t\t\t110,150,300,130,400,240,220,310,220,300, 270, 210\n\t\t\t\t</div>\n\t\t\t</li>\n\t\t</ul>\n\t\t<!-- end sparks -->\n\t</div>\n\t<!-- end col -->\n\n</div>\n<!-- end row -->\n\n<!-- row -->\n\n<div class="row">\n\n\t<div class="col-sm-12">\n\n\n\t\t\t<div class="well well-sm">\n\n\t\t\t\t<div class="row">\n\n\t\t\t\t\t<div class="col-sm-12 col-md-12 col-lg-6">\n\t\t\t\t\t\t<div class="well well-light well-sm no-margin no-padding">\n\n\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\t\t\t\t\t\t\t\t\t<div id="myCarousel" class="carousel fade profile-carousel">\n\t\t\t\t\t\t\t\t\t\t<div class="air air-bottom-right padding-10">\n\t\t\t\t\t\t\t\t\t\t\t<a href="#" class="btn txt-color-white btn-primary btn-sm js-edit"><i class="fa fa-pencil"></i> Edit Details</a>&nbsp; <a href="#" class="btn txt-color-white bg-color-red btn-sm js-delete"><i class="fa fa-trash-o"></i> Delete</a>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="air air-top-left padding-10">\n\t\t\t\t\t\t\t\t\t\t\t<h4 class="txt-color-white font-md">Last visit - Jan 1, 2014</h4>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<ol class="carousel-indicators">\n\t\t\t\t\t\t\t\t\t\t\t<li data-target="#myCarousel" data-slide-to="0" class=""></li>\n\t\t\t\t\t\t\t\t\t\t\t<li data-target="#myCarousel" data-slide-to="1" class=""></li>\n\t\t\t\t\t\t\t\t\t\t\t<li data-target="#myCarousel" data-slide-to="2" class="active"></li>\n\t\t\t\t\t\t\t\t\t\t</ol>\n\t\t\t\t\t\t\t\t\t\t<div class="carousel-inner">\n\t\t\t\t\t\t\t\t\t\t\t<!-- Slide 1 -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="item active">\n\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/demo/m3.jpg" alt="">\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- Slide 2 -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="item">\n\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/demo/s2.jpg" alt="">\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t\t<!-- Slide 3 -->\n\t\t\t\t\t\t\t\t\t\t\t<div class="item">\n\t\t\t\t\t\t\t\t\t\t\t\t<img src="img/demo/s1.jpg" alt="">\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t</div>\n\n\t\t\t\t\t\t\t\t<div class="col-sm-12">\n\n\t\t\t\t\t\t\t\t\t<div class="row">\n\n\t\t\t\t\t\t\t\t\t\t<div class="col-sm-3 profile-pic">\n\t\t\t\t\t\t\t\t\t\t\t<img src=\'img/avatars/');
     
       __out.push(__sanitize(this.gender.toLowerCase()));
     

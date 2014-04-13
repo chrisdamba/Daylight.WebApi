@@ -23,6 +23,7 @@ namespace Daylight.WebApi.Contracts.Entities
     
         public System.Guid PatientId { get; set; }
         public bool IsDeleted { get; set; }
+        public string Title { get; set; }
         public string Gender { get; set; }
         public string RelationshipStatus { get; set; }
         public System.DateTime DateOfBirth { get; set; }

@@ -57,6 +57,7 @@
           <Property Name="Phone" Type="varchar" MaxLength="50" />
           <Property Name="Email" Type="varchar" MaxLength="100" />
           <Property Name="Address" Type="varchar" MaxLength="500" />
+          <Property Name="Title" Type="varchar" MaxLength="10" />
         </EntityType>
         <EntityType Name="User">
           <Key>
@@ -197,6 +198,7 @@
           <Property Type="String" Name="Address" MaxLength="500" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="Conditions" Relationship="DaylightModel.FK_Condition_Patient" FromRole="Patient" ToRole="Condition" />
           <NavigationProperty Name="Vitals" Relationship="DaylightModel.FK_Vitals_Patient" FromRole="Patient" ToRole="Vital" />
+          <Property Name="Title" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="Condition">
           <Key>
@@ -326,6 +328,7 @@
           <EntitySetMapping Name="Patients">
             <EntityTypeMapping TypeName="DaylightModel.Patient">
               <MappingFragment StoreEntitySet="Patient">
+                <ScalarProperty Name="Title" ColumnName="Title" />
                 <ScalarProperty Name="Address" ColumnName="Address" />
                 <ScalarProperty Name="Email" ColumnName="Email" />
                 <ScalarProperty Name="Phone" ColumnName="Phone" />

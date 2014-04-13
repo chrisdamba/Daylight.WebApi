@@ -1,10 +1,40 @@
-ul.autocomplete {
+/*ul.autocomplete {
     display: none;
     position: absolute;
     background-color: #f8f8f8;
     margin: 0;
     padding: 3px 0;
     height: 20px;
+}*/
+
+ul.autocomplete {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 1051 !important;
+    float: left;
+    display: none;
+    min-width: 160px;
+    width: 100%;
+    padding: 4px 0;
+    margin: 1px 0 0 2px;
+    list-style: none;
+    background-color: #ffffff;
+    border-color: #ccc;
+    border-color: rgba(0, 0, 0, 0.2);
+    border-style: solid;
+    border-width: 1px;
+    -webkit-border-radius: 2px;
+    -moz-border-radius: 2px;
+    border-radius: 2px;
+    -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    -moz-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    -webkit-background-clip: padding-box;
+    -moz-background-clip: padding;
+    background-clip: padding-box;
+    *border-right-width: 2px;
+    *border-bottom-width: 2px;
 }
 
     ul.autocomplete li {
