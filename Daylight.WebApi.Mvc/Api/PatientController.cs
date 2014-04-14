@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
@@ -8,10 +7,12 @@ using Daylight.WebApi.Mvc.Factories;
 using Daylight.WebApi.Mvc.Models;
 using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Core.Attributes;
+using Daylight.WebApi.Security;
 
 namespace Daylight.WebApi.Mvc.Api
 {
     [Backbone]
+    [HttpRequiredFeature(FeatureIdentifier.Patients)]
     public class PatientController : ApiController
     {
         private readonly IViewFactory viewFactory;

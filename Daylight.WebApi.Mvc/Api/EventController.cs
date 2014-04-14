@@ -7,6 +7,7 @@ using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Core.Attributes;
 using Daylight.WebApi.Mvc.Factories;
 using Daylight.WebApi.Mvc.Models;
+using Daylight.WebApi.Security;
 
 namespace Daylight.WebApi.Mvc.Api
 {
@@ -14,6 +15,7 @@ namespace Daylight.WebApi.Mvc.Api
     /// An MVC API Controller for authoring and viewing calendar events.
     /// </summary>
     [Backbone]
+    [HttpRequiredFeature(FeatureIdentifier.Events)]
     public class EventController : ApiController
     {
         private readonly IEventViewFactory viewFactory;

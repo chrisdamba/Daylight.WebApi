@@ -717,6 +717,35 @@ namespace Daylight.WebApi.Security.Factories
         }
 
         /// <summary>
+        /// Gets whether a given user is authorized to use a feature of 
+        /// the product
+        /// </summary>
+        /// <param name="forFeature">The name of the user accessing the feature</param>
+        /// <returns>True if authorized, false otherwise</returns>
+        public bool IsAuthorized(FeatureIdentifier forFeature)
+        {
+            return IsAuthorized(new[] { forFeature })[forFeature];
+        }
+
+
+        /// <summary>
+        /// Gets whether a given user is authorized to use a feature of 
+        /// the product
+        /// </summary>
+        /// <param name="forFeature">The name of the user accessing the feature</param>
+        /// <returns>True if authorized, false otherwise</returns>
+        public IDictionary<FeatureIdentifier, bool> IsAuthorized(params FeatureIdentifier[] forFeature)
+        {
+            return (from f in forFeature.Distinct()
+                    select new { Feature = f, Value = true }).ToDictionary(k => k.Feature, e => e.Value);
+        }
+
+        public void NotifyUserLogin()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// Raises the user updated event.
         /// </summary>
         /// <param name="beforeUser">The before user.</param>

@@ -5,6 +5,7 @@ using System.Security.Principal;
 using System.Web.Security;
 using Daylight.WebApi.Contracts.Entities;
 using Daylight.WebApi.Contracts.Entities.Events;
+using Daylight.WebApi.Security;
 
 namespace Daylight.WebApi.Contracts
 {
@@ -411,6 +412,27 @@ namespace Daylight.WebApi.Contracts
         /// <param name="search">The search.</param>
         /// <returns>A list of Users</returns>
         IEnumerable<User> GetRoleUserMembers(Role role, string search);
+
+        /// <summary>
+        /// Gets whether a given user is authorized to use a feature of 
+        /// the product
+        /// </summary>
+        /// <param name="forFeature">The name of the user accessing the feature</param>
+        /// <returns>True if authorized, false otherwise</returns>
+        bool IsAuthorized(FeatureIdentifier forFeature);
+
+        /// <summary>
+        /// Gets whether a given user is authorized to use a feature of 
+        /// the product
+        /// </summary>
+        /// <param name="forFeature">The name of the user accessing the feature</param>
+        /// <returns>True if authorized, false otherwise</returns>
+        IDictionary<FeatureIdentifier, bool> IsAuthorized(params FeatureIdentifier[] forFeature);
+
+        /// <summary>
+        /// Notifies the user login.
+        /// </summary>
+        void NotifyUserLogin();
 
     }
 }

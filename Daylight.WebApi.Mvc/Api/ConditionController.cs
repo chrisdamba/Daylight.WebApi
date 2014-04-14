@@ -6,6 +6,7 @@ using System.Web.Http;
 using Daylight.WebApi.Core.Attributes;
 using Daylight.WebApi.Mvc.Factories;
 using Daylight.WebApi.Mvc.Models;
+using Daylight.WebApi.Security;
 
 namespace Daylight.WebApi.Mvc.Api
 {
@@ -13,6 +14,7 @@ namespace Daylight.WebApi.Mvc.Api
     /// An MVC API Controller for authoring and viewing patient conditions.
     /// </summary>
     [Backbone]
+    [HttpRequiredFeature(FeatureIdentifier.Conditions)]
     public class ConditionController : ApiController
     {
         private readonly IViewFactory viewFactory;

@@ -80,6 +80,7 @@
     <Compile Include="Core\Attributes\AllowAnonymousAttribute.cs" />
     <Compile Include="Core\Attributes\AuthorizeUserAttribute.cs" />
     <Compile Include="Core\Attributes\BackboneAttribute.cs" />
+    <Compile Include="Core\Attributes\HttpRequiredFeatureAttribute.cs" />
     <Compile Include="Core\Attributes\PasswordAttribute.cs" />
     <Compile Include="Core\Attributes\PropertiesMustMatchAttribute.cs" />
     <Compile Include="Core\Attributes\UniqueEmailAttribute.cs" />
@@ -116,6 +117,7 @@
     <Compile Include="Security\CustomPrincipal.cs" />
     <Compile Include="Security\Factories\DataContextSecurityFactory.cs" />
     <Compile Include="Security\Factories\SecurityFactory.cs" />
+    <Compile Include="Security\FeatureIdentifier.cs" />
     <Compile Include="Security\Models\ChangePasswordViewModel.cs" />
     <Compile Include="Security\Models\PasswordViewModel.cs" />
     <Compile Include="Security\Models\RegistrationViewModel.cs" />
