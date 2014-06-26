@@ -42,13 +42,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\Bill.cs" />
     <Compile Include="Entities\Address.Local.cs" />
     <Compile Include="Entities\AuditAction.cs" />
+    <Compile Include="Entities\Bill.Local.cs" />
     <Compile Include="Entities\Condition.cs" />
     <Compile Include="Entities\Condition.Local.cs" />
     <Compile Include="Entities\Event.cs" />
     <Compile Include="Entities\Event.Local.cs" />
     <Compile Include="Entities\IStateEntity.cs" />
+    <Compile Include="Entities\MedicalAid.Local.cs" />
+    <Compile Include="Entities\MedicalAidMember.Local.cs" />
     <Compile Include="Entities\Medication.cs" />
     <Compile Include="Entities\Medication.Local.cs" />
     <Compile Include="Entities\Model.cs" />
@@ -56,6 +60,9 @@
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="Entities\Patient.Local.cs" />
+    <Compile Include="Entities\PatientBill.Local.cs" />
+    <Compile Include="Entities\Payment.Local.cs" />
+    <Compile Include="Entities\PaymentMethod.Local.cs" />
     <Compile Include="Entities\Role.cs" />
     <Compile Include="Entities\Role.Local.cs" />
     <Compile Include="Entities\User.cs" />
@@ -63,18 +70,26 @@
     <Compile Include="Entities\Vital.cs" />
     <Compile Include="Entities\Vital.Local.cs" />
     <Compile Include="EventFilter.cs" />
+    <Compile Include="IBillRepository.cs" />
     <Compile Include="IConditionRepository.cs" />
     <Compile Include="IEmailService.cs" />
     <Compile Include="IEventRepository.cs" />
     <Compile Include="IEventService.cs" />
     <Compile Include="IPasswordService.cs" />
+    <Compile Include="IPatientBillRepository.cs" />
     <Compile Include="IPatientRepository.cs" />
     <Compile Include="IPatientService.cs" />
+    <Compile Include="IPaymentRepository.cs" />
     <Compile Include="IRegistrationProvider.cs" />
     <Compile Include="IRegistrationService.cs" />
     <Compile Include="IRegistrationViewModel.cs" />
+    <Compile Include="Entities\MedicalAid.cs" />
+    <Compile Include="Entities\MedicalAidMember.cs" />
+    <Compile Include="Entities\PatientBill.cs" />
     <Compile Include="PatientEventArgs.cs" />
     <Compile Include="PatientFilter.cs" />
+    <Compile Include="Entities\Payment.cs" />
+    <Compile Include="Entities\PaymentMethod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

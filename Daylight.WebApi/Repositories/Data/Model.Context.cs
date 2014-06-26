@@ -39,5 +39,11 @@ namespace Daylight.WebApi.Repositories.Data
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<Vital> Vitals { get; set; }
         public virtual DbSet<Event> Events { get; set; }
+        public virtual DbSet<Bill> Bills { get; set; }
+        public virtual DbSet<MedicalAid> MedicalAids { get; set; }
+        public virtual DbSet<MedicalAidMember> MedicalAidMembers { get; set; }
+        public virtual DbSet<Payment> Payments { get; set; }
+        public virtual DbSet<PaymentMethod> PaymentMethods { get; set; }
+        public virtual DbSet<PatientBill> PatientBills { get; set; }
     }
 }

@@ -4,7 +4,26 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-    <Schema Namespace="DaylightModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2008" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+    <Schema Namespace="DaylightModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2008" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Bill">
+          <Key>
+            <PropertyRef Name="BillId" />
+          </Key>
+          <Property Name="BillId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="DueDate" Type="datetime" />
+          <Property Name="Amount" Type="money" Nullable="false" />
+          <Property Name="Details" Type="varchar(max)" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'Daylight.dbo.BillPayment' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="BillPayment">
+          <Key>
+            <PropertyRef Name="BillId" />
+            <PropertyRef Name="PaymentTransactionId" />
+          </Key>
+          <Property Name="BillId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="PaymentTransactionId" Type="uniqueidentifier" Nullable="false" />
+        </EntityType>
         <EntityType Name="Condition">
           <Key>
             <PropertyRef Name="ConditionId" />
@@ -29,6 +48,29 @@
           <Property Name="End" Type="datetime" />
           <Property Name="AllDay" Type="bit" Nullable="false" />
           <Property Name="Icon" Type="varchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="MedicalAid">
+          <Key>
+            <PropertyRef Name="MedicalAidId" />
+          </Key>
+          <Property Name="MedicalAidId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="MedicalAidName" Type="varchar" MaxLength="255" Nullable="false" />
+          <Property Name="Phone" Type="varchar" MaxLength="50" />
+          <Property Name="Address" Type="varchar(max)" />
+        </EntityType>
+        <EntityType Name="MedicalAidMember">
+          <Key>
+            <PropertyRef Name="MemberId" />
+          </Key>
+          <Property Name="MemberId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="MedicalAidId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="MembershipNumber" Type="varchar" MaxLength="255" />
+          <Property Name="RelationshipToPatient" Type="varchar" MaxLength="50" />
+          <Property Name="Name" Type="varchar" MaxLength="255" />
+          <Property Name="Address" Type="varchar(max)" />
+          <Property Name="Phone" Type="varchar" MaxLength="50" />
+          <Property Name="IdNumber" Type="varchar" MaxLength="20" />
+          <Property Name="Employer" Type="varchar(max)" />
         </EntityType>
         <EntityType Name="Medication">
           <Key>
@@ -58,6 +100,34 @@
           <Property Name="Email" Type="varchar" MaxLength="100" />
           <Property Name="Address" Type="varchar" MaxLength="500" />
           <Property Name="Title" Type="varchar" MaxLength="10" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'Daylight.dbo.PatientBill' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="PatientBill">
+          <Key>
+            <PropertyRef Name="BillId" />
+            <PropertyRef Name="ConditionId" />
+            <PropertyRef Name="PatientId" />
+          </Key>
+          <Property Name="BillId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="ConditionId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="PatientId" Type="uniqueidentifier" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Payment">
+          <Key>
+            <PropertyRef Name="PaymentTransactionId" />
+          </Key>
+          <Property Name="PaymentTransactionId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="PaymentMethodId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="Status" Type="varchar" MaxLength="50" />
+          <Property Name="PaidDate" Type="datetime" />
+        </EntityType>
+        <EntityType Name="PaymentMethod">
+          <Key>
+            <PropertyRef Name="PaymentMethodId" />
+          </Key>
+          <Property Name="PaymentMethodId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="Details" Type="varchar(max)" Nullable="false" />
         </EntityType>
         <EntityType Name="User">
           <Key>
@@ -101,6 +171,30 @@
           <Property Name="Weight" Type="float" />
           <Property Name="Height" Type="float" />
         </EntityType>
+        <Association Name="FK_BillPayment_Bill">
+          <End Role="Bill" Type="Self.Bill" Multiplicity="1" />
+          <End Role="BillPayment" Type="Self.BillPayment" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Bill">
+              <PropertyRef Name="BillId" />
+            </Principal>
+            <Dependent Role="BillPayment">
+              <PropertyRef Name="BillId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_BillPayment_Payment">
+          <End Role="Payment" Type="Self.Payment" Multiplicity="1" />
+          <End Role="BillPayment" Type="Self.BillPayment" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Payment">
+              <PropertyRef Name="PaymentTransactionId" />
+            </Principal>
+            <Dependent Role="BillPayment">
+              <PropertyRef Name="PaymentTransactionId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_Condition_Patient">
           <End Role="Patient" Type="Self.Patient" Multiplicity="1" />
           <End Role="Condition" Type="Self.Condition" Multiplicity="*" />
@@ -113,6 +207,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_MedicalAidMember_MedicalAid">
+          <End Role="MedicalAid" Type="Self.MedicalAid" Multiplicity="1" />
+          <End Role="MedicalAidMember" Type="Self.MedicalAidMember" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="MedicalAid">
+              <PropertyRef Name="MedicalAidId" />
+            </Principal>
+            <Dependent Role="MedicalAidMember">
+              <PropertyRef Name="MedicalAidId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_Medication_Condition">
           <End Role="Condition" Type="Self.Condition" Multiplicity="1" />
           <End Role="Medication" Type="Self.Medication" Multiplicity="*" />
@@ -122,6 +228,54 @@
             </Principal>
             <Dependent Role="Medication">
               <PropertyRef Name="ConditionId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_PatientBill_Bill">
+          <End Role="Bill" Type="Self.Bill" Multiplicity="1" />
+          <End Role="PatientBill" Type="Self.PatientBill" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Bill">
+              <PropertyRef Name="BillId" />
+            </Principal>
+            <Dependent Role="PatientBill">
+              <PropertyRef Name="BillId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_PatientBill_Condition">
+          <End Role="Condition" Type="Self.Condition" Multiplicity="1" />
+          <End Role="PatientBill" Type="Self.PatientBill" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Condition">
+              <PropertyRef Name="ConditionId" />
+            </Principal>
+            <Dependent Role="PatientBill">
+              <PropertyRef Name="ConditionId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_PatientBill_Patient">
+          <End Role="Patient" Type="Self.Patient" Multiplicity="1" />
+          <End Role="PatientBill" Type="Self.PatientBill" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Patient">
+              <PropertyRef Name="PatientId" />
+            </Principal>
+            <Dependent Role="PatientBill">
+              <PropertyRef Name="PatientId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Payment_PaymentMethod">
+          <End Role="PaymentMethod" Type="Self.PaymentMethod" Multiplicity="1" />
+          <End Role="Payment" Type="Self.Payment" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="PaymentMethod">
+              <PropertyRef Name="PaymentMethodId" />
+            </Principal>
+            <Dependent Role="Payment">
+              <PropertyRef Name="PaymentMethodId" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -138,19 +292,65 @@
           </ReferentialConstraint>
         </Association>
         <EntityContainer Name="DaylightModelStoreContainer">
+          <EntitySet Name="Bill" EntityType="Self.Bill" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Condition" EntityType="Self.Condition" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Event" EntityType="Self.Event" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="MedicalAid" EntityType="Self.MedicalAid" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="MedicalAidMember" EntityType="Self.MedicalAidMember" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Medication" EntityType="Self.Medication" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Patient" EntityType="Self.Patient" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Payment" EntityType="Self.Payment" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="PaymentMethod" EntityType="Self.PaymentMethod" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="User" EntityType="Self.User" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Vitals" EntityType="Self.Vitals" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="BillPayment" EntityType="Self.BillPayment" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+[BillPayment].[BillId] AS [BillId], 
+[BillPayment].[PaymentTransactionId] AS [PaymentTransactionId]
+FROM [dbo].[BillPayment] AS [BillPayment]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="PatientBill" EntityType="Self.PatientBill" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+[PatientBill].[BillId] AS [BillId], 
+[PatientBill].[ConditionId] AS [ConditionId], 
+[PatientBill].[PatientId] AS [PatientId]
+FROM [dbo].[PatientBill] AS [PatientBill]</DefiningQuery>
+          </EntitySet>
+          <AssociationSet Name="FK_BillPayment_Bill" Association="Self.FK_BillPayment_Bill">
+            <End Role="Bill" EntitySet="Bill" />
+            <End Role="BillPayment" EntitySet="BillPayment" />
+          </AssociationSet>
+          <AssociationSet Name="FK_BillPayment_Payment" Association="Self.FK_BillPayment_Payment">
+            <End Role="Payment" EntitySet="Payment" />
+            <End Role="BillPayment" EntitySet="BillPayment" />
+          </AssociationSet>
           <AssociationSet Name="FK_Condition_Patient" Association="Self.FK_Condition_Patient">
             <End Role="Patient" EntitySet="Patient" />
             <End Role="Condition" EntitySet="Condition" />
           </AssociationSet>
+          <AssociationSet Name="FK_MedicalAidMember_MedicalAid" Association="Self.FK_MedicalAidMember_MedicalAid">
+            <End Role="MedicalAid" EntitySet="MedicalAid" />
+            <End Role="MedicalAidMember" EntitySet="MedicalAidMember" />
+          </AssociationSet>
           <AssociationSet Name="FK_Medication_Condition" Association="Self.FK_Medication_Condition">
             <End Role="Condition" EntitySet="Condition" />
             <End Role="Medication" EntitySet="Medication" />
+          </AssociationSet>
+          <AssociationSet Name="FK_PatientBill_Bill" Association="Self.FK_PatientBill_Bill">
+            <End Role="Bill" EntitySet="Bill" />
+            <End Role="PatientBill" EntitySet="PatientBill" />
+          </AssociationSet>
+          <AssociationSet Name="FK_PatientBill_Condition" Association="Self.FK_PatientBill_Condition">
+            <End Role="Condition" EntitySet="Condition" />
+            <End Role="PatientBill" EntitySet="PatientBill" />
+          </AssociationSet>
+          <AssociationSet Name="FK_PatientBill_Patient" Association="Self.FK_PatientBill_Patient">
+            <End Role="Patient" EntitySet="Patient" />
+            <End Role="PatientBill" EntitySet="PatientBill" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Payment_PaymentMethod" Association="Self.FK_Payment_PaymentMethod">
+            <End Role="PaymentMethod" EntitySet="PaymentMethod" />
+            <End Role="Payment" EntitySet="Payment" />
           </AssociationSet>
           <AssociationSet Name="FK_Vitals_Patient" Association="Self.FK_Vitals_Patient">
             <End Role="Patient" EntitySet="Patient" />
@@ -180,6 +380,36 @@
             <End Role="Vital" EntitySet="Vitals" />
           </AssociationSet>
           <EntitySet Name="Events" EntityType="DaylightModel.Event" />
+          <EntitySet Name="Bills" EntityType="DaylightModel.Bill" />
+          <EntitySet Name="MedicalAids" EntityType="DaylightModel.MedicalAid" />
+          <EntitySet Name="MedicalAidMembers" EntityType="DaylightModel.MedicalAidMember" />
+          <EntitySet Name="Payments" EntityType="DaylightModel.Payment" />
+          <EntitySet Name="PaymentMethods" EntityType="DaylightModel.PaymentMethod" />
+          <AssociationSet Name="FK_MedicalAidMember_MedicalAid" Association="DaylightModel.FK_MedicalAidMember_MedicalAid">
+            <End Role="MedicalAid" EntitySet="MedicalAids" />
+            <End Role="MedicalAidMember" EntitySet="MedicalAidMembers" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Payment_PaymentMethod" Association="DaylightModel.FK_Payment_PaymentMethod">
+            <End Role="PaymentMethod" EntitySet="PaymentMethods" />
+            <End Role="Payment" EntitySet="Payments" />
+          </AssociationSet>
+          <AssociationSet Name="BillPayment" Association="DaylightModel.BillPayment">
+            <End Role="Bill" EntitySet="Bills" />
+            <End Role="Payment" EntitySet="Payments" />
+          </AssociationSet>
+          <EntitySet Name="PatientBills" EntityType="DaylightModel.PatientBill" />
+          <AssociationSet Name="FK_PatientBill_Bill" Association="DaylightModel.FK_PatientBill_Bill">
+            <End Role="Bill" EntitySet="Bills" />
+            <End Role="PatientBill" EntitySet="PatientBills" />
+          </AssociationSet>
+          <AssociationSet Name="FK_PatientBill_Condition" Association="DaylightModel.FK_PatientBill_Condition">
+            <End Role="Condition" EntitySet="Conditions" />
+            <End Role="PatientBill" EntitySet="PatientBills" />
+          </AssociationSet>
+          <AssociationSet Name="FK_PatientBill_Patient" Association="DaylightModel.FK_PatientBill_Patient">
+            <End Role="Patient" EntitySet="Patients" />
+            <End Role="PatientBill" EntitySet="PatientBills" />
+          </AssociationSet>
           </EntityContainer>
         <EntityType Name="Patient">
           <Key>
@@ -199,6 +429,7 @@
           <NavigationProperty Name="Conditions" Relationship="DaylightModel.FK_Condition_Patient" FromRole="Patient" ToRole="Condition" />
           <NavigationProperty Name="Vitals" Relationship="DaylightModel.FK_Vitals_Patient" FromRole="Patient" ToRole="Vital" />
           <Property Name="Title" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="PatientBills" Relationship="DaylightModel.FK_PatientBill_Patient" FromRole="Patient" ToRole="PatientBill" />
         </EntityType>
         <EntityType Name="Condition">
           <Key>
@@ -212,6 +443,7 @@
           <Property Type="String" Name="Name" MaxLength="255" FixedLength="false" Unicode="false" />
           <NavigationProperty Name="Patient" Relationship="DaylightModel.FK_Condition_Patient" FromRole="Condition" ToRole="Patient" />
           <NavigationProperty Name="Medications" Relationship="DaylightModel.FK_Medication_Condition" FromRole="Condition" ToRole="Medication" />
+          <NavigationProperty Name="PatientBills" Relationship="DaylightModel.FK_PatientBill_Condition" FromRole="Condition" ToRole="PatientBill" />
         </EntityType>
         <Association Name="FK_Condition_Patient">
           <End Type="DaylightModel.Patient" Role="Patient" Multiplicity="1" />
@@ -319,6 +551,138 @@
           <Property Name="AllDay" Type="Boolean" Nullable="false" />
           <Property Name="Icon" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
+        <EntityType Name="Bill">
+          <Key>
+            <PropertyRef Name="BillId" />
+          </Key>
+          <Property Name="BillId" Type="Guid" Nullable="false" />
+          <Property Name="DueDate" Type="DateTime" Precision="3" />
+          <Property Name="Amount" Type="Decimal" Nullable="false" Precision="19" Scale="4" />
+          <Property Name="Details" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="Payments" Relationship="DaylightModel.BillPayment" FromRole="Bill" ToRole="Payment" />
+          <NavigationProperty Name="PatientBills" Relationship="DaylightModel.FK_PatientBill_Bill" FromRole="Bill" ToRole="PatientBill" />
+        </EntityType>
+        <EntityType Name="MedicalAid">
+          <Key>
+            <PropertyRef Name="MedicalAidId" />
+          </Key>
+          <Property Name="MedicalAidId" Type="Guid" Nullable="false" />
+          <Property Name="MedicalAidName" Type="String" Nullable="false" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="Phone" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Address" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="MedicalAidMembers" Relationship="DaylightModel.FK_MedicalAidMember_MedicalAid" FromRole="MedicalAid" ToRole="MedicalAidMember" />
+        </EntityType>
+        <EntityType Name="MedicalAidMember">
+          <Key>
+            <PropertyRef Name="MemberId" />
+          </Key>
+          <Property Name="MemberId" Type="Guid" Nullable="false" />
+          <Property Name="MedicalAidId" Type="Guid" Nullable="false" />
+          <Property Name="MembershipNumber" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="RelationshipToPatient" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Name" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
+          <Property Name="Address" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <Property Name="Phone" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="IdNumber" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="Employer" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="MedicalAid" Relationship="DaylightModel.FK_MedicalAidMember_MedicalAid" FromRole="MedicalAidMember" ToRole="MedicalAid" />
+        </EntityType>
+        <EntityType Name="Payment">
+          <Key>
+            <PropertyRef Name="PaymentTransactionId" />
+          </Key>
+          <Property Name="PaymentTransactionId" Type="Guid" Nullable="false" />
+          <Property Name="PaymentMethodId" Type="Guid" Nullable="false" />
+          <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="PaidDate" Type="DateTime" Precision="3" />
+          <NavigationProperty Name="PaymentMethod" Relationship="DaylightModel.FK_Payment_PaymentMethod" FromRole="Payment" ToRole="PaymentMethod" />
+          <NavigationProperty Name="Bills" Relationship="DaylightModel.BillPayment" FromRole="Payment" ToRole="Bill" />
+        </EntityType>
+        <EntityType Name="PaymentMethod">
+          <Key>
+            <PropertyRef Name="PaymentMethodId" />
+          </Key>
+          <Property Name="PaymentMethodId" Type="Guid" Nullable="false" />
+          <Property Name="Details" Type="String" Nullable="false" MaxLength="Max" FixedLength="false" Unicode="false" />
+          <NavigationProperty Name="Payments" Relationship="DaylightModel.FK_Payment_PaymentMethod" FromRole="PaymentMethod" ToRole="Payment" />
+        </EntityType>
+        <Association Name="FK_MedicalAidMember_MedicalAid">
+          <End Type="DaylightModel.MedicalAid" Role="MedicalAid" Multiplicity="1" />
+          <End Type="DaylightModel.MedicalAidMember" Role="MedicalAidMember" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="MedicalAid">
+              <PropertyRef Name="MedicalAidId" />
+            </Principal>
+            <Dependent Role="MedicalAidMember">
+              <PropertyRef Name="MedicalAidId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Payment_PaymentMethod">
+          <End Type="DaylightModel.PaymentMethod" Role="PaymentMethod" Multiplicity="1" />
+          <End Type="DaylightModel.Payment" Role="Payment" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="PaymentMethod">
+              <PropertyRef Name="PaymentMethodId" />
+            </Principal>
+            <Dependent Role="Payment">
+              <PropertyRef Name="PaymentMethodId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="BillPayment">
+          <End Type="DaylightModel.Bill" Role="Bill" Multiplicity="*" />
+          <End Type="DaylightModel.Payment" Role="Payment" Multiplicity="*" />
+        </Association>
+        <EntityType Name="PatientBill">
+          <Key>
+            <PropertyRef Name="BillId" />
+            <PropertyRef Name="ConditionId" />
+            <PropertyRef Name="PatientId" />
+          </Key>
+          <Property Name="BillId" Type="Guid" Nullable="false" />
+          <Property Name="ConditionId" Type="Guid" Nullable="false" />
+          <Property Name="PatientId" Type="Guid" Nullable="false" />
+          <NavigationProperty Name="Bill" Relationship="DaylightModel.FK_PatientBill_Bill" FromRole="PatientBill" ToRole="Bill" />
+          <NavigationProperty Name="Condition" Relationship="DaylightModel.FK_PatientBill_Condition" FromRole="PatientBill" ToRole="Condition" />
+          <NavigationProperty Name="Patient" Relationship="DaylightModel.FK_PatientBill_Patient" FromRole="PatientBill" ToRole="Patient" />
+        </EntityType>
+        <Association Name="FK_PatientBill_Bill">
+          <End Type="DaylightModel.Bill" Role="Bill" Multiplicity="1" />
+          <End Type="DaylightModel.PatientBill" Role="PatientBill" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Bill">
+              <PropertyRef Name="BillId" />
+            </Principal>
+            <Dependent Role="PatientBill">
+              <PropertyRef Name="BillId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_PatientBill_Condition">
+          <End Type="DaylightModel.Condition" Role="Condition" Multiplicity="1" />
+          <End Type="DaylightModel.PatientBill" Role="PatientBill" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Condition">
+              <PropertyRef Name="ConditionId" />
+            </Principal>
+            <Dependent Role="PatientBill">
+              <PropertyRef Name="ConditionId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_PatientBill_Patient">
+          <End Type="DaylightModel.Patient" Role="Patient" Multiplicity="1" />
+          <End Type="DaylightModel.PatientBill" Role="PatientBill" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Patient">
+              <PropertyRef Name="PatientId" />
+            </Principal>
+            <Dependent Role="PatientBill">
+              <PropertyRef Name="PatientId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -424,6 +788,76 @@
                 <ScalarProperty Name="Description" ColumnName="Description" />
                 <ScalarProperty Name="Title" ColumnName="Title" />
                 <ScalarProperty Name="EventId" ColumnName="EventId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Bills">
+            <EntityTypeMapping TypeName="DaylightModel.Bill">
+              <MappingFragment StoreEntitySet="Bill">
+                <ScalarProperty Name="Details" ColumnName="Details" />
+                <ScalarProperty Name="Amount" ColumnName="Amount" />
+                <ScalarProperty Name="DueDate" ColumnName="DueDate" />
+                <ScalarProperty Name="BillId" ColumnName="BillId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="MedicalAids">
+            <EntityTypeMapping TypeName="DaylightModel.MedicalAid">
+              <MappingFragment StoreEntitySet="MedicalAid">
+                <ScalarProperty Name="Address" ColumnName="Address" />
+                <ScalarProperty Name="Phone" ColumnName="Phone" />
+                <ScalarProperty Name="MedicalAidName" ColumnName="MedicalAidName" />
+                <ScalarProperty Name="MedicalAidId" ColumnName="MedicalAidId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="MedicalAidMembers">
+            <EntityTypeMapping TypeName="DaylightModel.MedicalAidMember">
+              <MappingFragment StoreEntitySet="MedicalAidMember">
+                <ScalarProperty Name="Employer" ColumnName="Employer" />
+                <ScalarProperty Name="IdNumber" ColumnName="IdNumber" />
+                <ScalarProperty Name="Phone" ColumnName="Phone" />
+                <ScalarProperty Name="Address" ColumnName="Address" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="RelationshipToPatient" ColumnName="RelationshipToPatient" />
+                <ScalarProperty Name="MembershipNumber" ColumnName="MembershipNumber" />
+                <ScalarProperty Name="MedicalAidId" ColumnName="MedicalAidId" />
+                <ScalarProperty Name="MemberId" ColumnName="MemberId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Payments">
+            <EntityTypeMapping TypeName="DaylightModel.Payment">
+              <MappingFragment StoreEntitySet="Payment">
+                <ScalarProperty Name="PaidDate" ColumnName="PaidDate" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="PaymentMethodId" ColumnName="PaymentMethodId" />
+                <ScalarProperty Name="PaymentTransactionId" ColumnName="PaymentTransactionId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="PaymentMethods">
+            <EntityTypeMapping TypeName="DaylightModel.PaymentMethod">
+              <MappingFragment StoreEntitySet="PaymentMethod">
+                <ScalarProperty Name="Details" ColumnName="Details" />
+                <ScalarProperty Name="PaymentMethodId" ColumnName="PaymentMethodId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <AssociationSetMapping Name="BillPayment" TypeName="DaylightModel.BillPayment" StoreEntitySet="BillPayment">
+            <EndProperty Name="Payment">
+              <ScalarProperty Name="PaymentTransactionId" ColumnName="PaymentTransactionId" />
+            </EndProperty>
+            <EndProperty Name="Bill">
+              <ScalarProperty Name="BillId" ColumnName="BillId" />
+            </EndProperty>
+          </AssociationSetMapping>
+          <EntitySetMapping Name="PatientBills">
+            <EntityTypeMapping TypeName="DaylightModel.PatientBill">
+              <MappingFragment StoreEntitySet="PatientBill">
+                <ScalarProperty Name="PatientId" ColumnName="PatientId" />
+                <ScalarProperty Name="ConditionId" ColumnName="ConditionId" />
+                <ScalarProperty Name="BillId" ColumnName="BillId" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

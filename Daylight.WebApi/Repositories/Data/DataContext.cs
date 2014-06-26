@@ -71,5 +71,53 @@ namespace Daylight.WebApi.Repositories.Data
         {
             get { return base.Events;  }
         }
+
+        /// <summary>
+        /// Gets the bill table.
+        /// </summary>
+        public IDbSet<Bill> Bills
+        {
+            get { return base.Bills; }
+        }
+        
+        /// <summary>
+        /// Gets the patient bill table.
+        /// </summary>
+        public IDbSet<PatientBill> PatientBills
+        {
+            get { return base.PatientBills; }
+        }
+
+        /// <summary>
+        /// Gets the medical aid table.
+        /// </summary>
+        public IDbSet<MedicalAid> MedicalAids
+        {
+            get { return base.MedicalAids; }
+        }
+
+        /// <summary>
+        /// Gets the medical aid member table.
+        /// </summary>
+        public IDbSet<MedicalAidMember> MedicalAidMembers
+        {
+            get { return base.MedicalAidMembers; }
+        }
+
+        /// <summary>
+        /// Gets the payment table.
+        /// </summary>
+        public IDbSet<Payment> Payments
+        {
+            get { return base.Payments; }
+        }
+
+        /// <summary>
+        /// Gets the payment method table.
+        /// </summary>
+        public IDbSet<PaymentMethod> PaymentMethods
+        {
+            get { return base.PaymentMethods; }
+        }
     }
 }

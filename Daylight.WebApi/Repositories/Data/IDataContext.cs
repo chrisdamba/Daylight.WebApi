@@ -27,6 +27,18 @@ namespace Daylight.WebApi.Repositories.Data
         IDbSet<Vital> Vitals { get; }
 
         IDbSet<Event> Events { get; }
+
+        IDbSet<Bill> Bills { get; }
+
+        IDbSet<PatientBill> PatientBills { get; }
+
+        IDbSet<MedicalAid> MedicalAids { get; }
+
+        IDbSet<MedicalAidMember> MedicalAidMembers { get; }
+
+        IDbSet<Payment> Payments { get; }
+
+        IDbSet<PaymentMethod> PaymentMethods { get; }
         
         DbEntityEntry Entry(object entity);
         

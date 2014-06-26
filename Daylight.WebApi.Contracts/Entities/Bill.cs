@@ -12,23 +12,20 @@ namespace Daylight.WebApi.Contracts.Entities
     using System;
     using System.Collections.Generic;
     
-    public partial class Condition : IStateEntity
+    public partial class Bill : IStateEntity
     {
-        public Condition()
+        public Bill()
         {
-            this.Medications = new HashSet<Medication>();
+            this.Payments = new HashSet<Payment>();
             this.PatientBills = new HashSet<PatientBill>();
         }
     
-        public System.Guid ConditionId { get; set; }
-        public System.Guid PatientId { get; set; }
-        public System.DateTime StartedAt { get; set; }
-        public int ConceptId { get; set; }
-        public Nullable<System.DateTime> FinishedAt { get; set; }
-        public string Name { get; set; }
+        public System.Guid BillId { get; set; }
+        public Nullable<System.DateTime> DueDate { get; set; }
+        public decimal Amount { get; set; }
+        public string Details { get; set; }
     
-        public virtual Patient Patient { get; set; }
-        public virtual ICollection<Medication> Medications { get; set; }
+        public virtual ICollection<Payment> Payments { get; set; }
         public virtual ICollection<PatientBill> PatientBills { get; set; }
     }
 }

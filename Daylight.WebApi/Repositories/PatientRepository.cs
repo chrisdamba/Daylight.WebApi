@@ -46,6 +46,7 @@ namespace Daylight.WebApi.Repositories
                         medication.StartedAt = DateTime.Now;
                         medication.ConditionId = condition.ConditionId;
                     }
+
                 }
 
                 // Assign observation ID for vitals

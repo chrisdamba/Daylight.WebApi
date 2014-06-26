@@ -95,6 +95,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\FormsAuthenticationProvider.cs" />
     <Compile Include="Providers\RegistrationProvider.cs" />
+    <Compile Include="Repositories\BillRepository.cs" />
     <Compile Include="Repositories\Data\DataContext.cs" />
     <Compile Include="Repositories\Data\DataContextInitializer.cs" />
     <Compile Include="Repositories\Data\DataContextUtility.cs" />
@@ -111,7 +112,9 @@
     </Compile>
     <Compile Include="Repositories\Data\RepositoryBase.cs" />
     <Compile Include="Repositories\EventRepository.cs" />
+    <Compile Include="Repositories\PatientBillRepository.cs" />
     <Compile Include="Repositories\PatientRepository.cs" />
+    <Compile Include="Repositories\PaymentRepository.cs" />
     <Compile Include="Security\BaseViewPage.cs" />
     <Compile Include="Security\Crypto.cs" />
     <Compile Include="Security\CustomPrincipal.cs" />
