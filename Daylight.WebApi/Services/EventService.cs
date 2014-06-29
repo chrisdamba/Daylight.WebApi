@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq.Expressions;
 using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Contracts.Entities;
+using Daylight.WebApi.Contracts.Services;
 using Daylight.WebApi.Core.IoC;
 
 namespace Daylight.WebApi.Services

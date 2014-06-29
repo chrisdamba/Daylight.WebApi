@@ -1,5 +1,6 @@
 ﻿using System.Collections.Specialized;
 using Daylight.WebApi.Contracts.Entities;
+using Daylight.WebApi.Contracts.Services;
 
 namespace Daylight.WebApi.Contracts
 {

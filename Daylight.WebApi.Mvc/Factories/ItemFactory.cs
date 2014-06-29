@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Linq;
+using Daylight.WebApi.Contracts.Services;
 using Daylight.WebApi.Core.Exceptions;
 using Daylight.WebApi.Mvc.Models;
 using Daylight.WebApi.Contracts;

@@ -72,16 +72,11 @@
     <Compile Include="EventFilter.cs" />
     <Compile Include="IBillRepository.cs" />
     <Compile Include="IConditionRepository.cs" />
-    <Compile Include="IEmailService.cs" />
     <Compile Include="IEventRepository.cs" />
-    <Compile Include="IEventService.cs" />
-    <Compile Include="IPasswordService.cs" />
     <Compile Include="IPatientBillRepository.cs" />
     <Compile Include="IPatientRepository.cs" />
-    <Compile Include="IPatientService.cs" />
     <Compile Include="IPaymentRepository.cs" />
     <Compile Include="IRegistrationProvider.cs" />
-    <Compile Include="IRegistrationService.cs" />
     <Compile Include="IRegistrationViewModel.cs" />
     <Compile Include="Entities\MedicalAid.cs" />
     <Compile Include="Entities\MedicalAidMember.cs" />
@@ -91,6 +86,12 @@
     <Compile Include="Entities\Payment.cs" />
     <Compile Include="Entities\PaymentMethod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\IBillService.cs" />
+    <Compile Include="Services\IEmailService.cs" />
+    <Compile Include="Services\IEventService.cs" />
+    <Compile Include="Services\IPasswordService.cs" />
+    <Compile Include="Services\IPatientService.cs" />
+    <Compile Include="Services\IRegistrationService.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Web.Mvc;
 using Daylight.WebApi.Contracts;
+using Daylight.WebApi.Contracts.Services;
 using Daylight.WebApi.Core.Attributes;
 using Daylight.WebApi.Core.IoC;
 

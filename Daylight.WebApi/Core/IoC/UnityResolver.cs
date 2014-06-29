@@ -3,6 +3,7 @@ using System.Threading;
 using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Contracts.Entities;
 using Daylight.WebApi.Contracts.Providers;
+using Daylight.WebApi.Contracts.Services;
 using Daylight.WebApi.Providers;
 using Daylight.WebApi.Repositories;
 using Daylight.WebApi.Repositories.Data;

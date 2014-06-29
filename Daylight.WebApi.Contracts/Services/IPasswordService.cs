@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Daylight.WebApi.Contracts
+namespace Daylight.WebApi.Contracts.Services
 {
     /// <summary>
     /// A password service which assigns reset authorization ids to a user, and allows a new

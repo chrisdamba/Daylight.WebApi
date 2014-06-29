@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Daylight.WebApi.Contracts.Entities;
 
-namespace Daylight.WebApi.Contracts
+namespace Daylight.WebApi.Contracts.Services
 {
     public interface IPatientService
     {

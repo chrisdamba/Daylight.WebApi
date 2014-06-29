@@ -1,5 +1,6 @@
 ﻿using System;
 using Daylight.WebApi.Contracts;
+using Daylight.WebApi.Contracts.Services;
 using Daylight.WebApi.Core.IoC;
 
 namespace Daylight.WebApi.Services

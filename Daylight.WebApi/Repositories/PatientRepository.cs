@@ -37,6 +37,16 @@ namespace Daylight.WebApi.Repositories
                     condition.ConditionId = Guid.NewGuid();
                     condition.StartedAt = DateTime.Now;
 
+                    if (condition.PatientBills != null)
+                    {
+                        foreach (var bill in condition.PatientBills)
+                        {
+                            bill.BillId = Guid.NewGuid();
+                            bill.ConditionId = condition.ConditionId;
+                            bill.PatientId = patient.PatientId;
+                        }    
+                    }
+                    
                     if (condition.Medications == null) continue;
 
                     // Assign medication id, as it will be empty
@@ -46,7 +56,6 @@ namespace Daylight.WebApi.Repositories
                         medication.StartedAt = DateTime.Now;
                         medication.ConditionId = condition.ConditionId;
                     }
-
                 }
 
                 // Assign observation ID for vitals
@@ -77,12 +86,23 @@ namespace Daylight.WebApi.Repositories
                     condition.ConditionId = condition.ConditionId == Guid.Empty ? Guid.NewGuid() : condition.ConditionId;
                     condition.PatientId = patient.PatientId;
 
+                    if (condition.PatientBills != null)
+                    {
+                        foreach (var bill in condition.PatientBills)
+                        {
+                            bill.BillId = bill.BillId == Guid.Empty ? Guid.NewGuid() : bill.BillId;
+                            bill.ConditionId = condition.ConditionId;
+                            if (bill.State == EntityState.Deleted)
+                                bill.State = EntityState.Deleted;
+                        }
+                    }
+
                     if (condition.Medications == null) continue;
                     // Assign medication id, as it will be empty
                     foreach (var medication in condition.Medications)
                     {
                         medication.MedicationId = medication.MedicationId == Guid.Empty ? Guid.NewGuid() : medication.MedicationId;
-                        medication.ConditionId = medication.ConditionId;
+                        medication.ConditionId = condition.ConditionId;
                         if (medication.State == EntityState.Deleted)
                         {
                             medication.State = EntityState.Deleted;
@@ -101,6 +121,7 @@ namespace Daylight.WebApi.Repositories
                 var entries = patient.Vitals.Cast<IStateEntity>()
                                      .Union(patient.Conditions)
                                      .Union(patient.Conditions.SelectMany(x => x.Medications.Cast<IStateEntity>()))
+                                     .Union(patient.Conditions.SelectMany(x => x.PatientBills.Cast<IStateEntity>()))
                                      .Union(new IStateEntity[] { patient })
                                      .ToArray();
                 foreach (var entry in entries)

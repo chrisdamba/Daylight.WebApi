@@ -62,6 +62,7 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.Entity" />
     <Reference Include="System.Web" />
     <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System.Web.Extensions" />
@@ -119,6 +120,7 @@
     <Compile Include="Domain\Repositories\EventRepositoryTests.cs" />
     <Compile Include="Domain\Repositories\FakeDbSet.cs" />
     <Compile Include="Domain\Repositories\PatientRepositoryTests.cs" />
+    <Compile Include="Domain\Services\BillServiceTests.cs" />
     <Compile Include="Domain\Services\RegistrationServiceTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -1,5 +1,6 @@
 ﻿using System.Web.Http;
 using Daylight.WebApi.Contracts;
+using Daylight.WebApi.Contracts.Services;
 using Daylight.WebApi.Mvc.Factories;
 using Daylight.WebApi.Repositories;
 using Daylight.WebApi.Repositories.Data;

@@ -2,7 +2,7 @@
 using System.Collections.Specialized;
 using System.Web.Mvc;
 
-namespace Daylight.WebApi.Contracts
+namespace Daylight.WebApi.Contracts.Services
 {
     /// <summary>
     /// A service handling registration concerns, supporting the workflow of creating an account in the system.

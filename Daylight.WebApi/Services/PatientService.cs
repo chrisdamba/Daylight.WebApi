@@ -6,6 +6,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Contracts.Entities;
+using Daylight.WebApi.Contracts.Services;
 using Daylight.WebApi.Repositories;
 
 namespace Daylight.WebApi.Services
