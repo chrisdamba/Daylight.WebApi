@@ -71,5 +71,17 @@ namespace Daylight.WebApi.Mvc.Factories
 
             return vital;
         }
+
+        public BillViewModel GetBill(Guid billId, Guid patientId)
+        {
+            var bill = GetPatient(patientId).Bills.FirstOrDefault(x => x.Id == billId);
+
+            if (bill == null)
+            {
+                throw new UnavailableItemException("Bill not found");
+            }
+
+            return bill;
+        }
     }
 }

@@ -148,6 +148,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Api\BillController.cs" />
     <Compile Include="Api\ConditionController.cs" />
     <Compile Include="Api\EventController.cs" />
     <Compile Include="Api\LoginController.cs" />

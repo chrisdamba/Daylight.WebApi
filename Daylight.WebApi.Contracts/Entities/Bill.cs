@@ -17,7 +17,7 @@ namespace Daylight.WebApi.Contracts.Entities
         public Bill()
         {
             this.Payments = new HashSet<Payment>();
-            this.PatientBills = new HashSet<PatientBill>();
+            this.Patients = new HashSet<Patient>();
         }
     
         public System.Guid BillId { get; set; }
@@ -26,6 +26,6 @@ namespace Daylight.WebApi.Contracts.Entities
         public string Details { get; set; }
     
         public virtual ICollection<Payment> Payments { get; set; }
-        public virtual ICollection<PatientBill> PatientBills { get; set; }
+        public virtual ICollection<Patient> Patients { get; set; }
     }
 }

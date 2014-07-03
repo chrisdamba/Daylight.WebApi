@@ -16,6 +16,7 @@ namespace Daylight.WebApi.Mvc.Models
         private int? conditionsCount;
         private ConditionViewModel[] conditions;
         private VitalsViewModel[] vitals;
+        private BillViewModel[] bills;
         
         public PatientViewModel()
         {
@@ -37,8 +38,21 @@ namespace Daylight.WebApi.Mvc.Models
             Age = GetAge(patient.DateOfBirth);
             Conditions = patient.Conditions.Where(c => c.FinishedAt == null).Select(x => new ConditionViewModel(x)).ToArray();
             Vitals = patient.Vitals.Select(x => new VitalsViewModel(x)).OrderByDescending(x => x.DateRecorded).ToArray();
+            Bills = patient.Bills.Select(x => new BillViewModel(x)).OrderByDescending(x => x.DueDate).ToArray();
         }
 
+        /// <summary>
+        /// Gets or sets the bills.
+        /// </summary>
+        /// <value>
+        /// The bills.
+        /// </value>
+        [DataMember]
+        public BillViewModel[] Bills
+        {
+            get { return bills ?? new BillViewModel[0]; }
+            set { bills = value; }
+        }
         /// <summary>
         /// Gets or sets the conditions.
         /// </summary>

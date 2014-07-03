@@ -81,14 +81,6 @@ namespace Daylight.WebApi.Repositories.Data
         }
         
         /// <summary>
-        /// Gets the patient bill table.
-        /// </summary>
-        public IDbSet<PatientBill> PatientBills
-        {
-            get { return base.PatientBills; }
-        }
-
-        /// <summary>
         /// Gets the medical aid table.
         /// </summary>
         public IDbSet<MedicalAid> MedicalAids

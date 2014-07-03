@@ -33,7 +33,6 @@ namespace Daylight.WebApi.Repositories.Data
         }
     
         public virtual DbSet<Patient> Patients { get; set; }
-        public virtual DbSet<Condition> Conditions { get; set; }
         public virtual DbSet<Medication> Medications { get; set; }
         public virtual DbSet<Role> Roles { get; set; }
         public virtual DbSet<User> Users { get; set; }
@@ -44,6 +43,6 @@ namespace Daylight.WebApi.Repositories.Data
         public virtual DbSet<MedicalAidMember> MedicalAidMembers { get; set; }
         public virtual DbSet<Payment> Payments { get; set; }
         public virtual DbSet<PaymentMethod> PaymentMethods { get; set; }
-        public virtual DbSet<PatientBill> PatientBills { get; set; }
+        public virtual DbSet<Condition> Conditions { get; set; }
     }
 }

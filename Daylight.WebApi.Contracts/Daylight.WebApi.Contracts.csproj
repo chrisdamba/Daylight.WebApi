@@ -60,7 +60,6 @@
       <DependentUpon>Model.tt</DependentUpon>
     </Compile>
     <Compile Include="Entities\Patient.Local.cs" />
-    <Compile Include="Entities\PatientBill.Local.cs" />
     <Compile Include="Entities\Payment.Local.cs" />
     <Compile Include="Entities\PaymentMethod.Local.cs" />
     <Compile Include="Entities\Role.cs" />
@@ -73,14 +72,12 @@
     <Compile Include="IBillRepository.cs" />
     <Compile Include="IConditionRepository.cs" />
     <Compile Include="IEventRepository.cs" />
-    <Compile Include="IPatientBillRepository.cs" />
     <Compile Include="IPatientRepository.cs" />
     <Compile Include="IPaymentRepository.cs" />
     <Compile Include="IRegistrationProvider.cs" />
     <Compile Include="IRegistrationViewModel.cs" />
     <Compile Include="Entities\MedicalAid.cs" />
     <Compile Include="Entities\MedicalAidMember.cs" />
-    <Compile Include="Entities\PatientBill.cs" />
     <Compile Include="PatientEventArgs.cs" />
     <Compile Include="PatientFilter.cs" />
     <Compile Include="Entities\Payment.cs" />

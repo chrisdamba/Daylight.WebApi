@@ -30,8 +30,6 @@ namespace Daylight.WebApi.Repositories.Data
 
         IDbSet<Bill> Bills { get; }
 
-        IDbSet<PatientBill> PatientBills { get; }
-
         IDbSet<MedicalAid> MedicalAids { get; }
 
         IDbSet<MedicalAidMember> MedicalAidMembers { get; }

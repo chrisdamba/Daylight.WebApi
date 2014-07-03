@@ -4,7 +4,6 @@ using System.Linq;
 using Daylight.WebApi.Contracts.Services;
 using Daylight.WebApi.Core.Exceptions;
 using Daylight.WebApi.Mvc.Models;
-using Daylight.WebApi.Contracts;
 using Daylight.WebApi.Contracts.Entities;
 
 namespace Daylight.WebApi.Mvc.Factories
@@ -38,7 +37,7 @@ namespace Daylight.WebApi.Mvc.Factories
                 throw new UnavailableItemException("Vital not found");
             }
 
-            // Delete condition
+            // Delete vital
             vital.State = EntityState.Deleted;
             foreach (var v in patient.Vitals.Where(x => x.ObservationId != observationId))
             {
@@ -119,6 +118,29 @@ namespace Daylight.WebApi.Mvc.Factories
             patientService.Save(patient);
         }
 
+        public void DeleteBill(Guid billId, Guid patientId)
+        {
+            var patient = patientService.Get(patientId);
+            if (patient == null)
+            {
+                throw new UnavailableItemException("Patient not found");
+            }
+            var bill = patient.Bills.SingleOrDefault(x => x.BillId == billId);
+            if (bill == null)
+            {
+                throw new UnavailableItemException("Bill not found");
+            }
+
+            // Delete bill
+            bill.State = EntityState.Deleted;
+            foreach (var b in patient.Bills.Where(x => x.BillId != billId))
+            {
+                b.State = EntityState.Modified;
+            }
+
+            patientService.Save(patient);
+        }
+
         public virtual Patient Save(PatientViewModel model)
         {
             var patient = model.Id != Guid.Empty ? patientService.Get(model.Id) : null;
@@ -158,6 +180,37 @@ namespace Daylight.WebApi.Mvc.Factories
 
             patientService.Save(patient);
             return vital;
+        }
+
+        public Bill Save(BillViewModel model, Guid patientId)
+        {
+            // Get the patient to update
+            var patient = patientService.Get(patientId);
+
+            if (patient == null)
+            {
+                throw new UnavailableItemException("Patient not found");
+            }
+
+            Bill bill = null;
+
+            if (model.Id == Guid.Empty)
+            {
+                // Create bill
+                bill = model.ToEntity(null);
+                patient.Bills.Add(bill);
+            }
+            else
+            {
+                bill = patient.Bills.FirstOrDefault(x => x.BillId == model.Id);
+                if (bill == null)
+                    throw new UnavailableItemException("Bill not found");
+
+                bill = model.ToEntity(bill);
+            }
+
+            patientService.Save(patient);
+            return bill;
         }
 
         public virtual Condition Save(ConditionViewModel model, Guid patientId)

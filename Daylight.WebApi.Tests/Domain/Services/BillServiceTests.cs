@@ -57,48 +57,48 @@ namespace Daylight.WebApi.Tests.Domain.Services
 
             using (mocks.Record())
             {
-                SetupResult.For(patient.Conditions)
-                    .Return(new List<Condition>
+                //SetupResult.For(patient.Conditions)
+                //    .Return(new List<Condition>
+                //    {
+                //        new Condition
+                //        {
+                //            ConditionId = conditionId
+                //        }
+                //    });
+                //SetupResult.For(patient.PatientId).Return(patientId);
+                billRepository.Create(null);
+                LastCall.Constraints(
+                    Is.Matching<Bill>(x =>
                     {
-                        new Condition
-                        {
-                            ConditionId = conditionId
-                        }
-                    });
-                SetupResult.For(patient.PatientId).Return(patientId);
-                Expect.Call(() => billRepository.Create(null))
-                    .Constraints(
-                        Is.Matching<Bill>(x =>
-                        {
-                            Assert.AreEqual(bill.Amount, x.Amount);
-                            Assert.AreEqual(bill.BillId, x.BillId);
-                            Assert.AreEqual(bill.Details, x.Details);
-                            Assert.AreEqual(bill.DueDate, x.DueDate);
-                            Assert.AreEqual(bill.State, x.State);
-                            return true;
-                        })
-                    );
+                        Assert.AreEqual(bill.Amount, x.Amount);
+                        Assert.AreEqual(bill.BillId, x.BillId);
+                        Assert.AreEqual(bill.Details, x.Details);
+                        Assert.AreEqual(bill.DueDate, x.DueDate);
+                        Assert.AreEqual(bill.State, x.State);
+                        return true;
+                    })
+                );
                 
-                Expect.Call(patientRepository.Get(patientId)).Return(patient);
-                
-                Expect.Call(() => patient.PatientBills.Add(null))
-                    .Constraints(
-                        Is.Matching<PatientBill>(x =>
-                        {
-                            Assert.AreEqual(patientBill.Bill, x.Bill);
-                            Assert.AreEqual(patientBill.Condition, x.Condition);
-                            Assert.AreEqual(patientBill.Patient, x.Patient);
-                            return true;
-                        })
-                    );
-                Expect.Call(() => patientRepository.Update(null))
-                    .Constraints(
-                        Is.Matching<Patient>(x =>
-                        {
-                            Assert.AreEqual(patient.PatientId, x.PatientId);
-                            return true;
-                        })
-                    );
+                //Expect.Call(patientRepository.Get(patientId)).Return(patient);
+
+                patient.PatientBills.Add(null);
+                LastCall.Constraints(
+                    Is.Matching<PatientBill>(x =>
+                    {
+                        Assert.AreEqual(patientBill.Bill, x.Bill);
+                        Assert.AreEqual(patientBill.Condition, x.Condition);
+                        Assert.AreEqual(patientBill.Patient, x.Patient);
+                        return true;
+                    })
+                );
+                patientRepository.Update(null);
+                LastCall.Constraints(
+                    Is.Matching<Patient>(x =>
+                    {
+                        Assert.AreEqual(patient.PatientId, x.PatientId);
+                        return true;
+                    })
+                );
             }
 
             using (mocks.Playback())

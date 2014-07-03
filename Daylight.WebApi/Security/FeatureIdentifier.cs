@@ -15,6 +15,7 @@ namespace Daylight.WebApi.Security
         Conditions = 2,
         Medications = 3,
         Vitals = 4,
+        Billing = 5,
         Administration = 7,
         UserAdministration = 10,
         Events = 11,

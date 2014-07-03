@@ -20,5 +20,7 @@ namespace Daylight.WebApi.Mvc.Factories
         MedicationViewModel GetMedication(Guid medicationId, Guid conditionId, Guid patientId);
 
         VitalsViewModel GetVital(Guid observationId, Guid patientId);
+        
+        BillViewModel GetBill(Guid billId, Guid patientId);
     }
 }

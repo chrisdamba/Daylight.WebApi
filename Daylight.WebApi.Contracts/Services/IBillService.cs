@@ -5,6 +5,6 @@ namespace Daylight.WebApi.Contracts.Services
 {
     public interface IBillService
     {
-        void Save(Bill bill, Guid conditionId, Guid patientId);
+        void Save(Bill bill, Guid patientId);
     }
 }

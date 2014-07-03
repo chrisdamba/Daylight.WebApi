@@ -36,16 +36,6 @@ namespace Daylight.WebApi.Repositories
                 {
                     condition.ConditionId = Guid.NewGuid();
                     condition.StartedAt = DateTime.Now;
-
-                    if (condition.PatientBills != null)
-                    {
-                        foreach (var bill in condition.PatientBills)
-                        {
-                            bill.BillId = Guid.NewGuid();
-                            bill.ConditionId = condition.ConditionId;
-                            bill.PatientId = patient.PatientId;
-                        }    
-                    }
                     
                     if (condition.Medications == null) continue;
 
@@ -86,17 +76,6 @@ namespace Daylight.WebApi.Repositories
                     condition.ConditionId = condition.ConditionId == Guid.Empty ? Guid.NewGuid() : condition.ConditionId;
                     condition.PatientId = patient.PatientId;
 
-                    if (condition.PatientBills != null)
-                    {
-                        foreach (var bill in condition.PatientBills)
-                        {
-                            bill.BillId = bill.BillId == Guid.Empty ? Guid.NewGuid() : bill.BillId;
-                            bill.ConditionId = condition.ConditionId;
-                            if (bill.State == EntityState.Deleted)
-                                bill.State = EntityState.Deleted;
-                        }
-                    }
-
                     if (condition.Medications == null) continue;
                     // Assign medication id, as it will be empty
                     foreach (var medication in condition.Medications)
@@ -115,13 +94,12 @@ namespace Daylight.WebApi.Repositories
                     vital.ObservationId = vital.ObservationId == Guid.Empty ? Guid.NewGuid() : vital.ObservationId;
                     vital.PatientId = patient.PatientId;
                 }
-
                 
                 // Update the entities in the context
                 var entries = patient.Vitals.Cast<IStateEntity>()
                                      .Union(patient.Conditions)
                                      .Union(patient.Conditions.SelectMany(x => x.Medications.Cast<IStateEntity>()))
-                                     .Union(patient.Conditions.SelectMany(x => x.PatientBills.Cast<IStateEntity>()))
+                                     .Union(patient.Bills)
                                      .Union(new IStateEntity[] { patient })
                                      .ToArray();
                 foreach (var entry in entries)
@@ -145,6 +123,7 @@ namespace Daylight.WebApi.Repositories
                 return context.Patients
                     .Include(Lambda.Property<Patient>(x => x.Vitals))
                     .Include(Lambda.Property<Patient>(x => x.Conditions))
+                    .Include(Lambda.Property<Patient>(x => x.Bills))
                     .Include(string.Format("{0}.{1}", Lambda.Property<Patient>(x => x.Conditions), Lambda.Property<Condition>(x => x.Medications)))
                     .SingleOrDefault(x => x.PatientId == id);
             }
@@ -162,6 +141,7 @@ namespace Daylight.WebApi.Repositories
                 return context.Patients
                     .Include(Lambda.Property<Patient>(x => x.Vitals))
                     .Include(Lambda.Property<Patient>(x => x.Conditions))
+                    .Include(Lambda.Property<Patient>(x => x.Bills))
                     .Include(string.Format("{0}.{1}", Lambda.Property<Patient>(x => x.Conditions), Lambda.Property<Condition>(x => x.Medications)))
                     .Where(x => ids.Contains(x.PatientId) && !x.IsDeleted).ToArray();
             }
