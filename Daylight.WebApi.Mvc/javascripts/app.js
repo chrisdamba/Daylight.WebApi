@@ -505,6 +505,71 @@ module.exports = Application;
 
 });
 
+;require.register("daylight/collections/bill_collection", function(exports, require, module) {
+var BillCollection, BillModel,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+BillModel = require('daylight/models/bill_model');
+
+BillCollection = (function(_super) {
+  __extends(BillCollection, _super);
+
+  function BillCollection() {
+    return BillCollection.__super__.constructor.apply(this, arguments);
+  }
+
+  BillCollection.prototype.model = BillModel;
+
+  BillCollection.prototype.url = function() {
+    if (this.model) {
+      return "API/Patients/" + (this.model.get('patientId')) + "/bills";
+    } else {
+      return '';
+    }
+  };
+
+  BillCollection.prototype.initialize = function(models, options) {
+    BillCollection.__super__.initialize.call(this, models, options);
+    this.on('index-up', this.onIndexUp);
+    return this.on('index-down', this.onIndexDown);
+  };
+
+  BillCollection.prototype.fetch = function(options) {
+    options = options ? _.clone(options) : {};
+    return BillCollection.__super__.fetch.call(this, options);
+  };
+
+  BillCollection.prototype.changeIndex = function(model, to) {
+    var from;
+    from = this.models.indexOf(model);
+    this.models.splice(to, 0, this.models.splice(from, 1)[0]);
+    return this.trigger('reorder', {
+      from: {
+        index: from
+      },
+      to: {
+        index: to
+      }
+    });
+  };
+
+  BillCollection.prototype.onIndexUp = function(model) {
+    return this.changeIndex(model, this.indexOf(model) + 1);
+  };
+
+  BillCollection.prototype.onIndexDown = function(model) {
+    return this.changeIndex(model, this.indexOf(model) - 1);
+  };
+
+  return BillCollection;
+
+})(support.Collection);
+
+module.exports = BillCollection;
+
+});
+
 ;require.register("daylight/collections/condition_collection", function(exports, require, module) {
 var ConditionCollection, ConditionModel,
   __hasProp = {}.hasOwnProperty,
@@ -1010,6 +1075,58 @@ module.exports = ApplicationModel;
 
 });
 
+;require.register("daylight/models/bill_model", function(exports, require, module) {
+var BillModel,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+BillModel = (function(_super) {
+  __extends(BillModel, _super);
+
+  function BillModel() {
+    this.urlRoot = __bind(this.urlRoot, this);
+    return BillModel.__super__.constructor.apply(this, arguments);
+  }
+
+  BillModel.prototype.defaults = function() {
+    return {
+      dueDate: void 0,
+      details: void 0,
+      amount: void 0
+    };
+  };
+
+  BillModel.prototype.patientId = function() {
+    return this.get('patientId');
+  };
+
+  BillModel.prototype.value = function() {
+    return this.get('id');
+  };
+
+  BillModel.prototype.initialize = function(options) {
+    return BillModel.__super__.initialize.call(this, options);
+  };
+
+  BillModel.prototype.urlRoot = function() {
+    return "/API/Patients/" + (this.patientId()) + "/Bills";
+  };
+
+  BillModel.prototype.toJSON = function() {
+    var json;
+    json = BillModel.__super__.toJSON.apply(this, arguments);
+    return json;
+  };
+
+  return BillModel;
+
+})(support.Model);
+
+module.exports = BillModel;
+
+});
+
 ;require.register("daylight/models/condition_model", function(exports, require, module) {
 var ConditionModel,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -1282,6 +1399,7 @@ PatientModel = (function(_super) {
     conditions: void 0,
     conditionsCount: void 0,
     vitals: void 0,
+    bills: void 0,
     uri: void 0,
     _editMode: false,
     _index: 0,
@@ -1578,6 +1696,211 @@ AddWidgetModalView = (function(_super) {
 })(support.View);
 
 module.exports = AddWidgetModalView;
+
+});
+
+;require.register("daylight/views/bills/bill_add_view", function(exports, require, module) {
+var BillAddTemplate, BillAddView, BillModel,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+BillAddTemplate = require('templates/bills/bill_add_template');
+
+BillModel = require('daylight/models/bill_model');
+
+BillAddView = (function(_super) {
+  __extends(BillAddView, _super);
+
+  function BillAddView() {
+    this.onKeyDown = __bind(this.onKeyDown, this);
+    this.createDatePicker = __bind(this.createDatePicker, this);
+    this.save = __bind(this.save, this);
+    this.render = __bind(this.render, this);
+    return BillAddView.__super__.constructor.apply(this, arguments);
+  }
+
+  BillAddView.prototype.id = "create";
+
+  BillAddView.prototype.className = "modal fade";
+
+  BillAddView.prototype.template = BillAddTemplate;
+
+  BillAddView.prototype.events = {
+    'keydown': 'onKeyDown',
+    'click .js-cancel-btn': 'onCancelClick',
+    'click .js-save-btn': 'onSaveClick',
+    'mouseover .clsDatePicker': 'createDatePicker',
+    'hidden.bs.modal': 'teardown'
+  };
+
+  BillAddView.prototype.validationOptions = {
+    rules: {
+      date: {
+        required: true
+      },
+      time: {
+        required: true
+      },
+      weight: {
+        required: true
+      },
+      height: {
+        required: true
+      },
+      systolic: {
+        required: true
+      },
+      diastolic: {
+        required: true
+      },
+      bloodGlucose: {
+        required: true
+      },
+      temperature: {
+        required: true
+      },
+      pulse: {
+        required: true
+      }
+    },
+    messages: {
+      date: 'Please specify the date',
+      time: 'Please specify last time',
+      weight: 'Please specify weight',
+      height: 'Please specify height',
+      systolic: 'Please specify blood pressure systolic',
+      diastolic: 'Please specify blood pressure diastolic',
+      bloodGlucose: 'Please specifiy the blood glucose',
+      temperature: 'Please specifiy the body temperature',
+      pulse: 'Please specifiy pulse'
+    },
+    highlight: function(el) {
+      return $(el).closest(".form-group").removeClass("has-success").addClass("has-error");
+    },
+    unhighlight: function(el) {
+      return $(el).closest(".form-group").removeClass("has-error").addClass("has-success");
+    },
+    errorElement: 'span',
+    errorClass: 'help-block',
+    errorPlacement: function(error, el) {
+      if (el.parent('.input-group').length) {
+        return error.insertAfter(el.parent());
+      } else {
+        return error.insertAfter(el);
+      }
+    }
+  };
+
+  BillAddView.prototype.initialize = function(options) {
+    BillAddView.__super__.initialize.call(this, options);
+    _.bindAll(this, "render");
+    this.render();
+    return this.createDatePicker();
+  };
+
+  BillAddView.prototype.render = function() {
+    this.$el.html(this.template(this.model.toJSON()));
+    this.$el.modal({
+      show: false
+    });
+    this.delegateEvents(this.events);
+    return this;
+  };
+
+  BillAddView.prototype.save = function() {
+    var amount, collection, date, details, dueDate, form, time;
+    form = this.$("form").serializeObject();
+    date = this.$('#date').val();
+    time = this.$('#time').val();
+    dueDate = "" + date + " " + time;
+    amount = this.$('#amount').val();
+    details = this.$('#details').val();
+    collection = window.IoC.get('BillCollection');
+    this.model.collection = collection;
+    this.model.set(this.model.parse({
+      dueDate: dueDate,
+      amount: amount,
+      details: details
+    }));
+    this.model.save(null, {
+      wait: true,
+      success: (function(_this) {
+        return function(model, response, options) {
+          console.log(model);
+          return $.smallBox({
+            title: "Patient bill has been successfully added!",
+            content: "<i class='fa fa-clock-o'></i> <i>3 seconds ago...</i>",
+            color: '#5F895F',
+            iconSmall: 'fa fa-check bounce animated',
+            timeout: 4000
+          });
+        };
+      })(this),
+      error: (function(_this) {
+        return function(model, response, options) {
+          return window.location = '/Error/HttpError';
+        };
+      })(this)
+    });
+    this.teardown();
+    return window.App.eventAggregator.trigger('navigate:patient', {
+      id: this.model.patientId()
+    });
+  };
+
+  BillAddView.prototype.createDatePicker = function() {
+    var view;
+    view = this;
+    return $("#date").datepicker({
+      minDate: '-1',
+      dateFormat: 'dd/mm/yy',
+      defaultDate: view.selectedDate
+    });
+  };
+
+  BillAddView.prototype.dispose = function() {
+    return Backbone.Validation.unbind(this);
+  };
+
+  BillAddView.prototype.show = function() {
+    return this.$el.modal("show");
+  };
+
+  BillAddView.prototype.teardown = function() {
+    return this.$el.modal("hide");
+  };
+
+  BillAddView.prototype.onKeyDown = function(e) {
+    if (e.which === 13) {
+      e.preventDefault();
+      return this.onSaveClick();
+    }
+  };
+
+  BillAddView.prototype.onSaveClick = function(e) {
+    var $valid, $validator;
+    e.preventDefault();
+    $validator = $("#addbill").validate(this.validationOptions);
+    $valid = $('#addbill').valid();
+    if (!$valid) {
+      $validator.focusInvalid();
+      return false;
+    } else {
+      return this.save();
+    }
+  };
+
+  BillAddView.prototype.onCancelClick = function(e) {
+    e.preventDefault();
+    return this.teardown();
+  };
+
+  return BillAddView;
+
+})(support.View);
+
+module.exports = BillAddView;
 
 });
 
@@ -4058,7 +4381,7 @@ if (typeof module !== "undefined" && module !== null) {
 });
 
 ;require.register("daylight/views/patient_view", function(exports, require, module) {
-var BGGraphView, BPGraphView, ConditionCollection, ConditionListView, ConditionModel, ConditionsView, PatientEditView, PatientView, PatientViewTemplate, VitalCollection, VitalModel, VitalsAddView, WeightGraphView,
+var BGGraphView, BPGraphView, BillAddView, BillCollection, BillModel, ConditionCollection, ConditionListView, ConditionModel, ConditionsView, PatientEditView, PatientView, PatientViewTemplate, VitalCollection, VitalModel, VitalsAddView, WeightGraphView,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -4066,6 +4389,12 @@ var BGGraphView, BPGraphView, ConditionCollection, ConditionListView, ConditionM
 PatientViewTemplate = require('templates/patient_view_template');
 
 PatientEditView = require('daylight/views/patient_edit_view');
+
+BillAddView = require('daylight/views/bills/bill_add_view');
+
+BillModel = require('daylight/models/bill_model');
+
+BillCollection = require('daylight/collections/bill_collection');
 
 ConditionsView = require('daylight/views/condition/conditions_view');
 
@@ -4095,6 +4424,7 @@ PatientView = (function(_super) {
     this.onTreeNodeClick = __bind(this.onTreeNodeClick, this);
     this.setupWidgets = __bind(this.setupWidgets, this);
     this.setupTree = __bind(this.setupTree, this);
+    this.onAddBillClick = __bind(this.onAddBillClick, this);
     this.onAddVitalsClick = __bind(this.onAddVitalsClick, this);
     this.onAddConditionClick = __bind(this.onAddConditionClick, this);
     this.onEditPatientClick = __bind(this.onEditPatientClick, this);
@@ -4114,7 +4444,8 @@ PatientView = (function(_super) {
     'click .js-edit': 'onEditPatientClick',
     'click .condition-add': 'onAddConditionClick',
     'click .condition-edit': 'onEditConditionClick',
-    'click .js-add-vitals': 'onAddVitalsClick'
+    'click .js-add-vitals': 'onAddVitalsClick',
+    'click .js-add-bill': 'onAddBillClick'
   };
 
   PatientView.prototype.template = function(data) {
@@ -4214,6 +4545,19 @@ PatientView = (function(_super) {
     });
     view = new VitalsAddView({
       model: vmodel
+    });
+    return view.show();
+  };
+
+  PatientView.prototype.onAddBillClick = function(e) {
+    var bmodel, view;
+    e.preventDefault();
+    bmodel = new BillModel;
+    bmodel.set({
+      patientId: this.model.id
+    });
+    view = new BillAddView({
+      model: bmodel
     });
     return view.show();
   };
@@ -5108,6 +5452,56 @@ Router = (function(_super) {
 
 module.exports = Router;
 
+});
+
+;require.register("templates/bills/bill_add_template", function(exports, require, module) {
+module.exports = function (__obj) {
+  if (!__obj) __obj = {};
+  var __out = [], __capture = function(callback) {
+    var out = __out, result;
+    __out = [];
+    callback.call(this);
+    result = __out.join('');
+    __out = out;
+    return __safe(result);
+  }, __sanitize = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else if (typeof value !== 'undefined' && value != null) {
+      return __escape(value);
+    } else {
+      return '';
+    }
+  }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+  __safe = __obj.safe = function(value) {
+    if (value && value.ecoSafe) {
+      return value;
+    } else {
+      if (!(typeof value !== 'undefined' && value != null)) value = '';
+      var result = new String(value);
+      result.ecoSafe = true;
+      return result;
+    }
+  };
+  if (!__escape) {
+    __escape = __obj.escape = function(value) {
+      return ('' + value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    };
+  }
+  (function() {
+    (function() {
+      __out.push('<div class="modal-dialog">\n\t<div class="modal-content">\n\t\t<div class="modal-header class="smart-form client-form"">\n\t\t\t<button type="button" class="close" data-dismiss="modal" aria-hidden="true">\n\t\t\t\t&times;\n\t\t\t</button>\n\t\t\t<header>\n\t\t\t\t<h2>Patient Bill</h2>\t\t\t\t\t\t\t\t\t\n\t\t\t</header>\t\t\t\t\n\t\t</div>\n\t\t<div class="modal-body">\n\t\t\t<form id="addbill" novalidate="novalidate">\n\t\t\t\t<div class="row">\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-calendar fa-lg fa-fw"></i></span>\n\t\t\t\t\t\t\t\t<input class="form-control input-lg clsDatePicker" placeholder="Bill Due Date" type="text" name="date" id="date">\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\t\t\t\t\t\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-clock fa-lg"></i></span>\n\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="Time (Example: 15:23)" type="text" name="time" id="time">\n\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\n\n\t\t\t\t<div class="row">\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-dollar fa-lg"></i></span>\n\t\t\t\t\t\t\t\t<input class="form-control input-lg" placeholder="Amount ($)" type="text" name="amount" id="amount">\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t<div class="form-group">\n\t\t\t\t\t\t\t<div class="input-group">\n\t\t\t\t\t\t\t\t<span class="input-group-addon"><i class="fa fa-list fa-lg"></i></span>\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t<textarea class="form-control input-lg" placeholder="Details" rows="3" maxlength="40" id="details"></textarea>\n\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t</div>\n\t\t\t\t\t</div>\n\t\t\t\t</div>\t\t\t\n\t\t\t\t\n\t\t\t</form>\t\n\t\t</div>\t\t\t\t\t\t\t\n\n\t\t<div class="modal-footer">\t\t\t\t\n\t\t\t<button type="button" class="btn btn-primary" data-dismiss="modal">\n\t\t\t\tCancel\n\t\t\t</button>\n\t\t\t<button type="submit" class="btn btn-primary js-save-btn">\n\t\t\t\t<i class="fa fa-save"></i>\n\t\t\t\tSave Changes\n\t\t\t</button>\n\t\t</div>\t\t\t\n\t</div>\n</div>\t');
+    
+    }).call(this);
+    
+  }).call(__obj);
+  __obj.safe = __objSafe, __obj.escape = __escape;
+  return __out.join('');
+}
 });
 
 ;require.register("templates/condition/condition_detail_template", function(exports, require, module) {
@@ -6388,7 +6782,7 @@ module.exports = function (__obj) {
         __out.push('</strong>\t</h4>\t\t\t\t\t\t\t\t\t\t\t\t\t\n\t\t\t\t\t\t\t\t\t\t\t\t');
       }
     
-      __out.push('\t\n\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#" class="js-add-vitals"><i class="fa fa-lg fa-fw fa-user-md fa-2x"></i>  <span class="menu-item-parent">Add vitals</span></a>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t<h1>');
+      __out.push('\t\n\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#" class="js-add-vitals"><i class="fa fa-lg fa-fw fa-user-md fa-2x"></i>  <span class="menu-item-parent">Add vitals</span></a>\n\t\t\t\t\t\t\t\t\t\t\t\t<br>\n\t\t\t\t\t\t\t\t\t\t\t\t<a href="#" class="js-add-bill"><i class="fa fa-lg fa-fw fa-dollar-md fa-2x"></i>  <span class="menu-item-parent">Add bill</span></a>\n\t\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t</div>\n\t\t\t\t\t\t\t\t\t\t<div class="col-sm-6">\n\t\t\t\t\t\t\t\t\t\t\t<h1>');
     
       __out.push(__sanitize(this.firstName));
     

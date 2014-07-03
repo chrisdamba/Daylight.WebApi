@@ -94,6 +94,11 @@ namespace Daylight.WebApi.Repositories
                     vital.ObservationId = vital.ObservationId == Guid.Empty ? Guid.NewGuid() : vital.ObservationId;
                     vital.PatientId = patient.PatientId;
                 }
+
+                foreach (var bill in patient.Bills)
+                {
+                    bill.BillId = bill.BillId == Guid.Empty ? Guid.NewGuid() : bill.BillId;
+                }
                 
                 // Update the entities in the context
                 var entries = patient.Vitals.Cast<IStateEntity>()
