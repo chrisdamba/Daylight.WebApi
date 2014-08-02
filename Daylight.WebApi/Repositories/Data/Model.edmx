@@ -101,8 +101,6 @@ warning 6002: The table/view 'Daylight.dbo.BillPayment' does not have a primary 
           <Property Name="Address" Type="varchar" MaxLength="500" />
           <Property Name="Title" Type="varchar" MaxLength="10" />
         </EntityType>
-        <!--Errors Found During Generation:
-warning 6002: The table/view 'Daylight.dbo.PatientBill' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
         <EntityType Name="PatientBill">
           <Key>
             <PropertyRef Name="BillId" />
@@ -285,6 +283,7 @@ warning 6002: The table/view 'Daylight.dbo.PatientBill' does not have a primary 
           <EntitySet Name="MedicalAidMember" EntityType="Self.MedicalAidMember" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Medication" EntityType="Self.Medication" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Patient" EntityType="Self.Patient" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="PatientBill" EntityType="Self.PatientBill" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Payment" EntityType="Self.Payment" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="PaymentMethod" EntityType="Self.PaymentMethod" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="User" EntityType="Self.User" Schema="dbo" store:Type="Tables" />
@@ -294,12 +293,6 @@ warning 6002: The table/view 'Daylight.dbo.PatientBill' does not have a primary 
 [BillPayment].[BillId] AS [BillId], 
 [BillPayment].[PaymentTransactionId] AS [PaymentTransactionId]
 FROM [dbo].[BillPayment] AS [BillPayment]</DefiningQuery>
-          </EntitySet>
-          <EntitySet Name="PatientBill" EntityType="Self.PatientBill" store:Type="Tables" store:Schema="dbo">
-            <DefiningQuery>SELECT 
-[PatientBill].[BillId] AS [BillId], 
-[PatientBill].[PatientId] AS [PatientId]
-FROM [dbo].[PatientBill] AS [PatientBill]</DefiningQuery>
           </EntitySet>
           <AssociationSet Name="FK_BillPayment_Bill" Association="Self.FK_BillPayment_Bill">
             <End Role="Bill" EntitySet="Bill" />
